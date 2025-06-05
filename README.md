@@ -199,9 +199,16 @@ For solar-powered setups:
    - Schedule playback during peak solar hours
 
 3. **Battery Management:**
-   - Monitor battery voltage in system logs
-   - Set up low-power mode triggers
-   - Use wake-on-LAN for remote activation
+   - Monitor battery voltage in system logs -> I have no idea how to do this, as we just have a usual battery.
+   - Set up low-power mode triggers -> Same, we don't know how much power is in the battery.
+   - Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode.
+
+4. **To Dos**
+   -  upload wav files
+   -  install sensor (movement and illumination)
+   -   lock SD Card in read only-mode
+   -   unlock SD Card for uploading
+   -   move log files to RAM disk (as SD Card is locked)
 
 ## 🌿 SolarPunk Philosophy
 
