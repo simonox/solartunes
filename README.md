@@ -210,7 +210,6 @@ SolarTunes embodies SolarPunk principles:
 - **Sustainability**: Designed for renewable energy systems
 - **Accessibility**: Simple, intuitive interface for all users  
 - **Community**: Open source and hackable
-- **Harmony**: Blends technology with nature sounds
 - **Resilience**: Works offline and in low-power scenarios
 
 ## 🤝 Contributing
