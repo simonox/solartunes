@@ -22,6 +22,9 @@ cd "$PROJECT_DIR"
 print_status "Stopping SolarTunes service..."
 sudo systemctl stop solartunes
 
+print_status "Updating project..."
+git pull
+
 print_status "Updating dependencies..."
 pnpm install
 
