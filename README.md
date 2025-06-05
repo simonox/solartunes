@@ -1,4 +1,4 @@
-# Raspberry Pi Music App
+# SolarTunes
 
 ## Setup Instructions:
 
