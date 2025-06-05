@@ -15,31 +15,31 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built wit
 
 ### 1. Clone the Repository
 
-\`\`\`bash
+```bash
 mkdir ~/solartunes
 cd ~/solartunes
 git clone https://github.com/simonox/solartunes.git .
-\`\`\`
+```
 
 ### 2. Run the Setup Script
 
-\`\`\`bash
+```bash
 chmod +x scripts/setup-raspberry-pi.sh
 ./scripts/setup-raspberry-pi.sh
-\`\`\`
+```
 
 ### 3. Deploy the Project
 
-\`\`\`bash
+```bash
 chmod +x scripts/deploy-project.sh
 ./scripts/deploy-project.sh
-\`\`\`
+```
 
 ### 4. Start the Service
 
-\`\`\`bash
+```bash
 sudo systemctl start solartunes
-\`\`\`
+```
 
 ## 🔧 What the Setup Script Does
 
@@ -57,7 +57,7 @@ sudo systemctl start solartunes
 
 Use these commands to control your SolarTunes service:
 
-\`\`\`bash
+```bash
 # Start the service
 sudo systemctl start solartunes
 
@@ -78,11 +78,11 @@ sudo systemctl enable solartunes
 
 # Disable auto-start
 sudo systemctl disable solartunes
-\`\`\`
+```
 
 ## 📁 Project Structure
 
-\`\`\`
+```
 ~/solartunes/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -101,19 +101,19 @@ sudo systemctl disable solartunes
 │   ├── restart-solartunes.sh
 │   └── status-solartunes.sh
 └── README.md
-\`\`\`
+```
 
 ## 🎵 Adding Your Own Sound Files
 
 1. Copy your .wav files to the Music directory:
-   \`\`\`bash
+   ```bash
    cp your-sounds/*.wav ~/Music/
-   \`\`\`
+   ```
 
 2. Refresh the web interface or restart the service:
-   \`\`\`bash
+   ```bash
    sudo systemctl restart solartunes
-   \`\`\`
+   ```
 
 3. Your new files will appear in the Sound Library!
 
@@ -126,14 +126,14 @@ After setup, your SolarTunes player will be available at:
 **Network Access:** `http://[your-pi-ip]:3000`
 
 To find your Pi's IP address:
-\`\`\`bash
+```bash
 hostname -I
-\`\`\`
+```
 
 ## 🔧 Troubleshooting
 
 ### Service Won't Start
-\`\`\`bash
+```bash
 # Check service status
 sudo systemctl status solartunes
 
@@ -142,10 +142,10 @@ sudo journalctl -u solartunes -n 50
 
 # Restart the service
 sudo systemctl restart solartunes
-\`\`\`
+```
 
 ### No Audio Output
-\`\`\`bash
+```bash
 # List audio devices
 aplay -l
 
@@ -154,10 +154,10 @@ aplay ~/Music/test-tone.wav
 
 # Check audio groups
 groups $USER
-\`\`\`
+```
 
 ### Web Interface Not Loading
-\`\`\`bash
+```bash
 # Check if port 3000 is in use
 sudo netstat -tlnp | grep :3000
 
@@ -166,32 +166,32 @@ sudo ufw status
 
 # Restart networking
 sudo systemctl restart networking
-\`\`\`
+```
 
 ## 🔄 Updating SolarTunes
 
 To update your installation:
 
-\`\`\`bash
+```bash
 cd ~/solartunes
 git pull
 ./scripts/deploy-project.sh
 sudo systemctl restart solartunes
-\`\`\`
+```
 
 ## ⚡ Solar Power Optimization
 
 For solar-powered setups:
 
 1. **Monitor Power Usage:**
-   \`\`\`bash
+   ```bash
    # Check system load
    htop
    
    # Monitor power consumption
    vcgencmd measure_temp
    vcgencmd get_throttled
-   \`\`\`
+   ```
 
 2. **Optimize Performance:**
    - Use efficient .wav files (lower bitrates for longer playback)
