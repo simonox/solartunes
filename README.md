@@ -5,15 +5,16 @@
 1. **Copy the setup script to your Raspberry Pi:**
 
 ```shellscript
-wget https://raw.githubusercontent.com/your-repo/solartunes/main/scripts/setup-raspberry-pi.sh
-chmod +x setup-raspberry-pi.sh
+mkdir ~./solartunes
+cd ~./solartunes
+git clone https://github.com/simonox/solartunes.git
 ```
 
 
 2. **Run the setup script:**
 
 ```shellscript
-./setup-raspberry-pi.sh
+./scripts/setup-raspberry-pi.sh
 ```
 
 
@@ -21,7 +22,7 @@ chmod +x setup-raspberry-pi.sh
 
 ```shellscript
 # Copy your Next.js project files to ~/solartunes/
-cd ~/solartunes
+cd ~/solartunes/scripts
 ./deploy-project.sh
 ```
 
