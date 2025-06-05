@@ -109,7 +109,7 @@ export default function MusicPlayer() {
             </div>
             <div>
               <h1 className="text-4xl font-bold mb-2">SolarTunes</h1>
-              <p className="text-green-100 text-lg">Sustainable Music Player for Raspberry Pi</p>
+              <p className="text-green-100 text-lg">Sustainable Sound Player for Raspberry Pi</p>
             </div>
           </div>
           <div className="flex items-center gap-6 text-sm">
@@ -140,7 +140,7 @@ export default function MusicPlayer() {
               <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
                 <CardTitle className="flex items-center gap-2 text-green-800">
                   <Music className="h-5 w-5" />
-                  Music Library
+                  Sound Library
                   <Badge variant="secondary" className="ml-auto bg-green-100 text-green-700">
                     {files.length} tracks
                   </Badge>

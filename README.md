@@ -4,34 +4,34 @@
 
 1. **Copy the setup script to your Raspberry Pi:**
 
-```shellscript
+\`\`\`shellscript
 mkdir ~./solartunes
 cd ~./solartunes
 git clone https://github.com/simonox/solartunes.git
-```
+\`\`\`
 
 
 2. **Run the setup script:**
 
-```shellscript
+\`\`\`shellscript
 ./scripts/setup-raspberry-pi.sh
-```
+\`\`\`
 
 
 3. **Copy your project files to the Pi and deploy:**
 
-```shellscript
+\`\`\`shellscript
 # Copy your Next.js project files to ~/solartunes/
 cd ~/solartunes/scripts
 ./deploy-project.sh
-```
+\`\`\`
 
 
 4. **Start the service:**
 
-```shellscript
+\`\`\`shellscript
 sudo systemctl start solartunes
-```
+\`\`\`
 
 
 
@@ -51,7 +51,7 @@ sudo systemctl start solartunes
 
 ## 🚀 Service Management:
 
-```shellscript
+\`\`\`shellscript
 # Start the service
 sudo systemctl start solartunes
 
@@ -66,11 +66,11 @@ sudo systemctl status solartunes
 
 # View logs
 sudo journalctl -u solartunes -f
-```
+\`\`\`
 
 ## 🌐 Access:
 
 After setup, your SolarTunes player will be available at:
 `http://[your-pi-ip]:3000`
 
-The service will automatically start on boot, so your music player will always be ready! 🎵
+The service will automatically start on boot, so your sound player will always be ready! 🎵

@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server"
-import { exec } from "child_process"
-import { promisify } from "util"
-
-const execAsync = promisify(exec)
 
 export async function GET() {
   try {
-    const { stdout } = await execAsync("pgrep -f aplay || true")
-    const playing = stdout.trim().length > 0
+    // For preview purposes, randomly simulate playing/not playing
+    const playing = Math.random() > 0.7 // 30% chance of something playing
 
     return NextResponse.json({ playing })
   } catch (error) {

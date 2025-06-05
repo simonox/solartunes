@@ -6,9 +6,9 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "SolarTunes - Raspberry Pi Music Player",
-  description: "A sustainable music player for Raspberry Pi with SolarPunk aesthetics",
-    generator: 'v0.dev'
+  title: "SolarTunes - Raspberry Pi Sound Player",
+  description: "A sustainable sound player for Raspberry Pi with SolarPunk aesthetics",
+  generator: "v0.dev",
 }
 
 export default function RootLayout({

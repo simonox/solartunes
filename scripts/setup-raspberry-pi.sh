@@ -122,7 +122,7 @@ print_status "Creating systemd service for SolarTunes..."
 # Create systemd service file
 sudo tee /etc/systemd/system/solartunes.service > /dev/null << EOL
 [Unit]
-Description=SolarTunes Music Player
+Description=SolarTunes Sound Player
 After=network.target sound.target
 Wants=network.target
 
@@ -271,6 +271,6 @@ echo "• Project Directory: $PROJECT_DIR"
 echo "• Music Directory: $HOME/Music"
 echo "• Service File: /etc/systemd/system/solartunes.service"
 echo ""
-echo "🌐 Access your music player at: http://$(hostname -I | awk '{print $1}'):3000"
+echo "🌐 Access your sound player at: http://$(hostname -I | awk '{print $1}'):3000"
 echo ""
 print_status "Reboot recommended to ensure all changes take effect."
