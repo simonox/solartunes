@@ -38,23 +38,16 @@ export async function POST(request: Request) {
 
     console.log(`Playing file: ${filePath}`)
 
-    // HiFiBerry DAC+ specific configuration
+    // Use HiFiBerry DAC+ optimized settings but keep it simple
     currentProcess = spawn(
       "aplay",
       [
         "-D",
-        "hw:0,0", // Use HiFiBerry DAC+ directly (card 0, device 0)
-        "-f",
-        "S32_LE", // 32-bit signed little endian (matches your hardware)
-        "-r",
-        "44100", // Sample rate
-        "-c",
-        "2", // Stereo
-        "-v", // Verbose mode to see what's happening
+        "hw:0,0", // Direct HiFiBerry DAC+ access
         filePath,
       ],
       {
-        detached: true,
+        detached: true, // This should prevent Node.js from killing the process
         stdio: ["ignore", "pipe", "pipe"],
       },
     )
@@ -74,10 +67,11 @@ export async function POST(request: Request) {
         console.log(`Successfully finished playing ${fileName}`)
       } else if (code === 1) {
         console.error(`aplay failed with error code 1 for ${fileName}`)
-        console.error("HiFiBerry DAC+ specific troubleshooting:")
-        console.error("- Check if audio format matches DAC capabilities")
-        console.error("- Verify HiFiBerry DAC+ drivers are loaded")
-        console.error("- Check if another process is using the audio device")
+        console.error("This might be due to:")
+        console.error("- Audio device busy or unavailable")
+        console.error("- Unsupported audio format")
+        console.error("- File corruption")
+        console.error("- Audio system configuration issues")
       } else {
         console.error(`aplay failed with unexpected code ${code} for ${fileName}`)
       }
@@ -115,7 +109,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Playing ${fileName} on HiFiBerry DAC+`,
+      message: `Playing ${fileName}`,
       pid: currentProcess.pid,
     })
   } catch (error) {
