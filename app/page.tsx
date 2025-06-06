@@ -605,30 +605,6 @@ export default function MusicPlayer() {
               </CardContent>
             </Card>
 
-            {/* Currently Playing Status */}
-            {currentlyPlaying && (
-              <Card className="mt-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-xl">
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-white/20 rounded-full">
-                      <Play className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <p className="text-sm opacity-90">Now Playing</p>
-                      <p className="text-xl font-semibold">{currentlyPlaying}</p>
-                    </div>
-                    <div className="ml-auto">
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                        <div className="w-2 h-2 bg-white/70 rounded-full animate-pulse delay-100"></div>
-                        <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse delay-200"></div>
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
             {/* File Upload Widget */}
             <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
@@ -813,6 +789,30 @@ export default function MusicPlayer() {
             </Card>
           </div>
         </div>
+
+        {/* Currently Playing Status */}
+        {currentlyPlaying && (
+          <Card className="mt-8 bg-gradient-to-r from-green-500 to-emerald-500 text-white border-0 shadow-xl">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/20 rounded-full">
+                  <Play className="h-6 w-6" />
+                </div>
+                <div>
+                  <p className="text-sm opacity-90">Now Playing</p>
+                  <p className="text-xl font-semibold">{currentlyPlaying}</p>
+                </div>
+                <div className="ml-auto">
+                  <div className="flex items-center gap-1">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <div className="w-2 h-2 bg-white/70 rounded-full animate-pulse delay-100"></div>
+                    <div className="w-2 h-2 bg-white/50 rounded-full animate-pulse delay-200"></div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )
