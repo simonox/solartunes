@@ -73,6 +73,7 @@ sudo systemctl disable solartunes
 
 ## 📁 Project Structure
 
+<code>
 ~/solartunes/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -91,6 +92,7 @@ sudo systemctl disable solartunes
 │   ├── restart-solartunes.sh
 │   └── status-solartunes.sh
 └── README.md
+</code>
 
 ## 🎵 Adding Your Own Sound Files
 
