@@ -6,7 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
-import { Play, Pause, Music, Leaf, Sun, Zap, Volume2, VolumeX } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { Play, Pause, Music, Leaf, Sun, Zap, Volume2, VolumeX, AlertTriangle } from "lucide-react"
 
 interface MusicFile {
   name: string
@@ -20,6 +21,7 @@ export default function MusicPlayer() {
   const [loading, setLoading] = useState(true)
   const [volume, setVolume] = useState(50)
   const [isSettingVolume, setIsSettingVolume] = useState(false)
+  const [volumeError, setVolumeError] = useState<string | null>(null)
 
   // Fetch music files
   useEffect(() => {
@@ -73,26 +75,46 @@ export default function MusicPlayer() {
       const response = await fetch("/api/volume")
       const data = await response.json()
       setVolume(data.volume)
+
+      if (data.error) {
+        setVolumeError(data.error)
+        console.log("Available controls:", data.availableControls)
+      } else {
+        setVolumeError(null)
+      }
     } catch (error) {
       console.error("Failed to fetch volume:", error)
+      setVolumeError("Failed to connect to volume API")
     }
   }
 
   const handleVolumeChange = async (value: number[]) => {
     const newVolume = value[0]
     setVolume(newVolume)
+    setVolumeError(null)
 
     // Debounce volume changes to avoid too many API calls
     setIsSettingVolume(true)
 
     try {
-      await fetch("/api/volume", {
+      const response = await fetch("/api/volume", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ volume: newVolume }),
       })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setVolumeError(data.error || "Failed to set volume")
+        console.error("Volume error:", data.details)
+        if (data.availableControls) {
+          console.log("Available controls:", data.availableControls)
+        }
+      }
     } catch (error) {
       console.error("Failed to set volume:", error)
+      setVolumeError("Failed to connect to volume API")
     } finally {
       setIsSettingVolume(false)
     }
@@ -171,6 +193,16 @@ export default function MusicPlayer() {
       </div>
 
       <div className="container mx-auto px-6 py-8">
+        {/* Volume Error Alert */}
+        {volumeError && (
+          <Alert className="mb-6 border-yellow-200 bg-yellow-50">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Volume control issue: {volumeError}. Check the system logs for more details.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Volume Control */}
           <div className="lg:col-span-2 lg:order-1 order-2 flex lg:hidden mb-4">
@@ -195,6 +227,7 @@ export default function MusicPlayer() {
                   />
                   <span className="text-sm font-medium w-8 text-right">{volume}%</span>
                 </div>
+                {volumeError && <p className="text-xs text-yellow-600 mt-2">Volume control may not work properly</p>}
               </CardContent>
             </Card>
           </div>
@@ -232,6 +265,7 @@ export default function MusicPlayer() {
                     disabled={isSettingVolume}
                   />
                   <span className="text-sm font-medium">{volume}%</span>
+                  {volumeError && <p className="text-xs text-yellow-600 text-center">Volume control issue</p>}
                 </div>
 
                 {/* Files List */}
