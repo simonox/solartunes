@@ -45,13 +45,22 @@ export async function POST(request: Request) {
       // If motion detection is enabled and a file is selected, trigger playback
       if (motionSettings.enabled && motionSettings.selectedFile) {
         try {
-          // First check if something is already playing
-          const statusResponse = await fetch(
-            `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/status`,
-          )
-          const statusData = await statusResponse.json()
+          // Import the status checking logic directly instead of making HTTP calls
+          const { exec } = await import("child_process")
+          const { promisify } = await import("util")
+          const execAsync = promisify(exec)
 
-          if (statusData.playing) {
+          // Check if aplay is currently running
+          let isPlaying = false
+          try {
+            const { stdout } = await execAsync("pgrep aplay")
+            isPlaying = stdout.trim().length > 0
+          } catch (error) {
+            // pgrep returns non-zero exit code when no processes found, which is fine
+            isPlaying = false
+          }
+
+          if (isPlaying) {
             console.log("Motion detected but audio is already playing - ignoring trigger")
             return NextResponse.json({
               success: true,
@@ -60,7 +69,9 @@ export async function POST(request: Request) {
             })
           }
 
-          const playResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/play`, {
+          // Trigger playback by calling the play API
+          const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+          const playResponse = await fetch(`${baseUrl}/api/play`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ fileName: motionSettings.selectedFile }),
@@ -68,6 +79,8 @@ export async function POST(request: Request) {
 
           if (playResponse.ok) {
             console.log(`Motion triggered playback of: ${motionSettings.selectedFile}`)
+          } else {
+            console.error("Failed to trigger motion playback via API")
           }
         } catch (playError) {
           console.error("Failed to trigger motion playback:", playError)
