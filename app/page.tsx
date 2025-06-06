@@ -470,12 +470,13 @@ export default function MusicPlayer() {
     console.log("Performing aggressive cleanup...")
 
     try {
+      // Perform backend cleanup
       const response = await fetch("/api/cleanup", { method: "POST" })
       const data = await response.json()
 
       console.log("Cleanup results:", data)
 
-      // Force clear the playing state
+      // Reset all frontend state
       setCurrentlyPlaying(null)
 
       // Clear any status check intervals
@@ -484,9 +485,37 @@ export default function MusicPlayer() {
         statusCheckIntervalRef.current = null
       }
 
-      console.log("Cleanup completed")
+      // Reset motion state if needed
+      setMotion((prev) => ({
+        ...prev,
+        currentlyPlaying: null,
+      }))
+
+      // Force a refresh of the file list to ensure UI is in sync
+      await fetchFiles()
+
+      console.log("Frontend state reset completed")
+      console.log("All play buttons should now be enabled")
+
+      // Optional: Show a brief success message
+      setTimeout(() => {
+        console.log("Cleanup completed - app state fully reset")
+      }, 1000)
     } catch (error) {
       console.error("Cleanup failed:", error)
+
+      // Even if backend cleanup fails, reset frontend state
+      setCurrentlyPlaying(null)
+      if (statusCheckIntervalRef.current) {
+        clearInterval(statusCheckIntervalRef.current)
+        statusCheckIntervalRef.current = null
+      }
+      setMotion((prev) => ({
+        ...prev,
+        currentlyPlaying: null,
+      }))
+
+      console.log("Frontend state reset completed despite backend error")
     }
   }
 
