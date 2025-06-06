@@ -350,7 +350,7 @@ export default function MusicPlayer() {
                       max={100}
                       step={1}
                       orientation="vertical"
-                      className="h-[280px]"
+                      className="h-[280px] [&>span:first-child]:h-full [&>span:first-child]:w-1 [&>span:first-child]:bg-gray-200 [&>span:first-child]:rounded-full [&_[role=slider]]:bg-green-600 [&_[role=slider]]:border-2 [&_[role=slider]]:border-white [&_[role=slider]]:shadow-md [&>span:last-child]:bg-green-600 [&>span:last-child]:w-1"
                       onValueChange={handleVolumeChange}
                       disabled={isSettingVolume}
                     />
