@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     console.log(`Setting volume to ${volume}%`)
 
     // Use the working command format you discovered with card 0
-    const command = `amixer -c 0 sset 'Master' ${volume}%`
+    const command = `amixer sset 'Master' ${volume}%`
 
     try {
       console.log(`Executing command: ${command}`)
