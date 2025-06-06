@@ -6,6 +6,7 @@ const motionSettings = {
   selectedFile: null as string | null,
   lastMotionTime: null as string | null,
   motionCount: 0,
+  currentlyPlaying: null as string | null, // Track what's playing via motion
 }
 
 export async function GET() {
@@ -79,6 +80,8 @@ export async function POST(request: Request) {
 
           if (playResponse.ok) {
             console.log(`Motion triggered playback of: ${motionSettings.selectedFile}`)
+            // Set the currently playing file in motion settings
+            motionSettings.currentlyPlaying = motionSettings.selectedFile
           } else {
             console.error("Failed to trigger motion playback via API")
           }

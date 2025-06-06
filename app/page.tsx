@@ -48,6 +48,7 @@ interface MotionData {
   selectedFile: string | null
   lastMotionTime: string | null
   motionCount: number
+  currentlyPlaying: string | null
 }
 
 export default function MusicPlayer() {
@@ -64,6 +65,7 @@ export default function MusicPlayer() {
     selectedFile: null,
     lastMotionTime: null,
     motionCount: 0,
+    currentlyPlaying: null,
   })
   const [uploadStatus, setUploadStatus] = useState<{
     uploading: boolean
@@ -76,6 +78,7 @@ export default function MusicPlayer() {
   })
 
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const statusCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch music files
   useEffect(() => {
@@ -95,6 +98,37 @@ export default function MusicPlayer() {
   // Get initial volume
   useEffect(() => {
     fetchVolume()
+  }, [])
+
+  // Effect to update currentlyPlaying from motion detection
+  useEffect(() => {
+    if (motion.currentlyPlaying && !currentlyPlaying) {
+      setCurrentlyPlaying(motion.currentlyPlaying)
+
+      // Start status checking for this file
+      if (statusCheckIntervalRef.current) {
+        clearInterval(statusCheckIntervalRef.current)
+      }
+
+      statusCheckIntervalRef.current = setInterval(async () => {
+        const statusResponse = await fetch("/api/status")
+        const statusData = await statusResponse.json()
+        if (!statusData.playing) {
+          setCurrentlyPlaying(null)
+          clearInterval(statusCheckIntervalRef.current!)
+          statusCheckIntervalRef.current = null
+        }
+      }, 1000)
+    }
+  }, [motion.currentlyPlaying, currentlyPlaying])
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (statusCheckIntervalRef.current) {
+        clearInterval(statusCheckIntervalRef.current)
+      }
+    }
   }, [])
 
   const fetchFiles = async () => {
@@ -330,6 +364,13 @@ export default function MusicPlayer() {
       // Stop current playback
       await fetch("/api/stop", { method: "POST" })
       setCurrentlyPlaying(null)
+
+      // Clear any status check interval
+      if (statusCheckIntervalRef.current) {
+        clearInterval(statusCheckIntervalRef.current)
+        statusCheckIntervalRef.current = null
+      }
+
       return
     }
 
@@ -347,12 +388,20 @@ export default function MusicPlayer() {
 
       if (response.ok) {
         setCurrentlyPlaying(fileName)
-        const checkStatus = setInterval(async () => {
+
+        // Clear any existing interval
+        if (statusCheckIntervalRef.current) {
+          clearInterval(statusCheckIntervalRef.current)
+        }
+
+        // Set up new status check interval
+        statusCheckIntervalRef.current = setInterval(async () => {
           const statusResponse = await fetch("/api/status")
           const statusData = await statusResponse.json()
           if (!statusData.playing) {
             setCurrentlyPlaying(null)
-            clearInterval(checkStatus)
+            clearInterval(statusCheckIntervalRef.current!)
+            statusCheckIntervalRef.current = null
           }
         }, 1000)
       }
