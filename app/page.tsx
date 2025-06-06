@@ -1,6 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import type React from "react"
+
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
@@ -8,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
 import {
   Play,
   Pause,
@@ -22,6 +25,10 @@ import {
   Activity,
   Eye,
   EyeOff,
+  Upload,
+  CheckCircle,
+  XCircle,
+  Loader2,
 } from "lucide-react"
 
 interface MusicFile {
@@ -58,6 +65,17 @@ export default function MusicPlayer() {
     lastMotionTime: null,
     motionCount: 0,
   })
+  const [uploadStatus, setUploadStatus] = useState<{
+    uploading: boolean
+    success: boolean | null
+    message: string
+  }>({
+    uploading: false,
+    success: null,
+    message: "",
+  })
+
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch music files
   useEffect(() => {
@@ -236,6 +254,77 @@ export default function MusicPlayer() {
     }
   }
 
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    // Check file type
+    if (!file.name.toLowerCase().endsWith(".wav")) {
+      setUploadStatus({
+        uploading: false,
+        success: false,
+        message: "Only WAV files are accepted",
+      })
+      return
+    }
+
+    setUploadStatus({
+      uploading: true,
+      success: null,
+      message: "Uploading and processing file...",
+    })
+
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setUploadStatus({
+          uploading: false,
+          success: true,
+          message: `File "${data.fileName}" uploaded and processed successfully!`,
+        })
+
+        // Refresh the file list
+        await fetchFiles()
+
+        // Clear the input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ""
+        }
+      } else {
+        setUploadStatus({
+          uploading: false,
+          success: false,
+          message: data.error || "Upload failed",
+        })
+      }
+    } catch (error) {
+      console.error("Upload error:", error)
+      setUploadStatus({
+        uploading: false,
+        success: false,
+        message: "Failed to upload file",
+      })
+    }
+
+    // Clear status after 5 seconds
+    setTimeout(() => {
+      setUploadStatus({
+        uploading: false,
+        success: null,
+        message: "",
+      })
+    }, 5000)
+  }
+
   const playFile = async (fileName: string) => {
     if (currentlyPlaying === fileName) {
       await fetch("/api/stop", { method: "POST" })
@@ -323,7 +412,8 @@ export default function MusicPlayer() {
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Music Library */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 space-y-6">
+            {/* Sound Library Card */}
             <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
                 <CardTitle className="flex items-center gap-2 text-green-800">
@@ -457,6 +547,84 @@ export default function MusicPlayer() {
                       ))}
                     </div>
                   )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* File Upload Widget */}
+            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <Upload className="h-5 w-5" />
+                  Upload WAV File
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".wav"
+                      onChange={handleFileUpload}
+                      disabled={uploadStatus.uploading}
+                      className="flex-1"
+                    />
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadStatus.uploading}
+                      className="bg-blue-600 hover:bg-blue-700"
+                    >
+                      {uploadStatus.uploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Select File
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {uploadStatus.message && (
+                    <Alert
+                      className={`${
+                        uploadStatus.success === true
+                          ? "border-green-200 bg-green-50"
+                          : uploadStatus.success === false
+                            ? "border-red-200 bg-red-50"
+                            : "border-blue-200 bg-blue-50"
+                      }`}
+                    >
+                      {uploadStatus.success === true ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : uploadStatus.success === false ? (
+                        <XCircle className="h-4 w-4 text-red-600" />
+                      ) : (
+                        <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                      )}
+                      <AlertDescription
+                        className={
+                          uploadStatus.success === true
+                            ? "text-green-800"
+                            : uploadStatus.success === false
+                              ? "text-red-800"
+                              : "text-blue-800"
+                        }
+                      >
+                        {uploadStatus.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p>• Only WAV files are accepted</p>
+                    <p>• Files will be automatically processed to ensure compatibility</p>
+                    <p>• Processed files will be converted to: 16-bit PCM, 44.1kHz, Stereo</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
