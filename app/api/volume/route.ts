@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     console.log(`Setting volume to ${volume}%`)
 
     // Use the working command format you discovered
-    const command = `amixer -c 0 sset 'Master' ${volume}%`
+    const command = `amixer -c 0 sset 'Digital' ${volume}%`
 
     try {
       console.log(`Executing command: ${command}`)
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     // Get current volume level using the working command format
-    const command = "amixer -c 0 sget 'Master'"
+    const command = "amixer -c 0 sget 'Digital'"
 
     console.log(`Getting volume with: ${command}`)
     const { stdout } = await execAsync(command)
@@ -57,7 +57,7 @@ export async function GET() {
     const volumeMatch = stdout.match(/\[(\d+)%\]/)
     if (volumeMatch) {
       const volume = Number.parseInt(volumeMatch[1])
-      console.log(`Got volume ${volume}% from Master control`)
+      console.log(`Got volume ${volume}% from Digital control`)
       return NextResponse.json({ volume })
     }
 
@@ -67,7 +67,7 @@ export async function GET() {
       const current = Number.parseInt(absoluteMatch[1])
       const max = Number.parseInt(absoluteMatch[2])
       const volume = Math.round((current / max) * 100)
-      console.log(`Got volume ${volume}% (${current}/${max}) from Master control`)
+      console.log(`Got volume ${volume}% (${current}/${max}) from Digital control`)
       return NextResponse.json({ volume })
     }
 
