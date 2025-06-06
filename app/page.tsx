@@ -466,6 +466,30 @@ export default function MusicPlayer() {
     console.log("Force stop completed")
   }
 
+  const performCleanup = async () => {
+    console.log("Performing aggressive cleanup...")
+
+    try {
+      const response = await fetch("/api/cleanup", { method: "POST" })
+      const data = await response.json()
+
+      console.log("Cleanup results:", data)
+
+      // Force clear the playing state
+      setCurrentlyPlaying(null)
+
+      // Clear any status check intervals
+      if (statusCheckIntervalRef.current) {
+        clearInterval(statusCheckIntervalRef.current)
+        statusCheckIntervalRef.current = null
+      }
+
+      console.log("Cleanup completed")
+    } catch (error) {
+      console.error("Cleanup failed:", error)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-teal-50 to-green-100">
       {/* Header */}
@@ -852,7 +876,7 @@ export default function MusicPlayer() {
                   <p className="text-sm opacity-90">Now Playing</p>
                   <p className="text-xl font-semibold">{currentlyPlaying}</p>
                 </div>
-                <div className="ml-auto flex items-center gap-4">
+                <div className="ml-auto flex items-center gap-2">
                   <Button
                     onClick={forceStop}
                     variant="outline"
@@ -860,6 +884,14 @@ export default function MusicPlayer() {
                     className="bg-white/20 border-white/30 text-white hover:bg-white/30"
                   >
                     Force Stop
+                  </Button>
+                  <Button
+                    onClick={performCleanup}
+                    variant="outline"
+                    size="sm"
+                    className="bg-red-500/20 border-red-300/30 text-white hover:bg-red-500/30"
+                  >
+                    Cleanup
                   </Button>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>

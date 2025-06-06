@@ -10,13 +10,39 @@ export async function GET() {
     let processInfo = ""
     const debugInfo: string[] = []
 
-    // Method 1: Check with pgrep for aplay processes
+    // Method 1: Check with pgrep for aplay processes and verify they're actually running
     try {
       const { stdout: pgrepOutput } = await execAsync("pgrep -f 'aplay.*\\.wav'")
       if (pgrepOutput.trim()) {
-        isPlaying = true
-        processInfo = `PIDs: ${pgrepOutput.trim().replace(/\n/g, ", ")}`
-        debugInfo.push(`pgrep found: ${pgrepOutput.trim()}`)
+        const pids = pgrepOutput.trim().split("\n")
+        debugInfo.push(`pgrep found PIDs: ${pids.join(", ")}`)
+
+        // Check if these processes are actually running (not zombies)
+        const activePids: string[] = []
+        for (const pid of pids) {
+          try {
+            const { stdout: psOutput } = await execAsync(`ps -p ${pid} -o state= 2>/dev/null || echo "DEAD"`)
+            const state = psOutput.trim()
+            debugInfo.push(`PID ${pid} state: ${state}`)
+
+            // Only consider processes that are actually running (R, S, D states, not Z for zombie)
+            if (state && !state.includes("Z") && state !== "DEAD") {
+              activePids.push(pid)
+            } else {
+              debugInfo.push(`PID ${pid} is zombie/dead, ignoring`)
+            }
+          } catch (error) {
+            debugInfo.push(`PID ${pid} check failed, assuming dead`)
+          }
+        }
+
+        if (activePids.length > 0) {
+          isPlaying = true
+          processInfo = `Active PIDs: ${activePids.join(", ")}`
+          debugInfo.push(`Found ${activePids.length} active aplay processes`)
+        } else {
+          debugInfo.push("All aplay processes are zombies/dead")
+        }
       } else {
         debugInfo.push("pgrep found no aplay processes")
       }
@@ -24,23 +50,7 @@ export async function GET() {
       debugInfo.push("pgrep returned no processes (normal if nothing playing)")
     }
 
-    // Method 2: Check with ps if pgrep didn't find anything
-    if (!isPlaying) {
-      try {
-        const { stdout: psOutput } = await execAsync("ps aux | grep 'aplay.*\\.wav' | grep -v grep")
-        if (psOutput.trim()) {
-          isPlaying = true
-          processInfo = "Found via ps command"
-          debugInfo.push(`ps found: ${psOutput.trim().split("\n").length} processes`)
-        } else {
-          debugInfo.push("ps found no aplay processes")
-        }
-      } catch (error) {
-        debugInfo.push("ps check failed")
-      }
-    }
-
-    // Method 3: Check ALSA playback status
+    // Method 2: Check ALSA playback status - this is often more reliable
     let alsaInfo = ""
     try {
       const { stdout: alsaOutput } = await execAsync(
@@ -57,24 +67,33 @@ export async function GET() {
         debugInfo.push("ALSA state: RUNNING")
       } else {
         debugInfo.push("ALSA state: not running")
+
+        // If ALSA shows not running but we found processes, they're likely stuck
+        if (processInfo.includes("PIDs:")) {
+          debugInfo.push("ALSA not running but processes found - likely stuck processes")
+          isPlaying = false // Override - trust ALSA over process list
+          processInfo = "Stuck processes detected, not actually playing"
+        }
       }
     } catch (error) {
       alsaInfo = "Could not read ALSA status"
       debugInfo.push("ALSA check failed")
     }
 
-    // Method 4: Check for any audio-related processes
-    if (!isPlaying) {
-      try {
-        const { stdout: audioProcesses } = await execAsync("pgrep -f 'aplay|mpg123|vlc|mplayer' || echo ''")
-        if (audioProcesses.trim()) {
-          debugInfo.push(`Other audio processes: ${audioProcesses.trim()}`)
-        } else {
-          debugInfo.push("No audio processes found")
+    // Method 3: Double-check with lsof to see if any process has audio device open
+    try {
+      const { stdout: lsofOutput } = await execAsync("lsof /dev/snd/* 2>/dev/null || echo ''")
+      if (lsofOutput.trim() && lsofOutput.includes("aplay")) {
+        debugInfo.push("lsof shows aplay using audio device")
+        if (!isPlaying) {
+          isPlaying = true
+          processInfo = "Audio device in use by aplay"
         }
-      } catch (error) {
-        debugInfo.push("Audio process check failed")
+      } else {
+        debugInfo.push("lsof shows no aplay using audio device")
       }
+    } catch (error) {
+      debugInfo.push("lsof check failed")
     }
 
     console.log(`Status check: playing=${isPlaying}, debug=${debugInfo.join(", ")}`)
