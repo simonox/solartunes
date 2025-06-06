@@ -342,21 +342,46 @@ export default function MusicPlayer() {
   }
 
   const playFile = async (fileName: string) => {
-    // Check if another track is playing
-    if (currentlyPlaying) {
-      // Only block if motion detection is active AND current track was motion-triggered
-      if (motion.enabled && isMotionTriggered) {
-        addToast(`Motion detection is active. Stop "${currentlyPlaying}" first.`, "warning")
-        return
-      }
+    // If no track is currently playing, allow play
+    if (!currentlyPlaying) {
+      try {
+        const response = await fetch("/api/play", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fileName }),
+        })
 
-      // If motion detection is off or current track was manually started, show general message
-      addToast(`Already playing "${currentlyPlaying}". Stop it first to play another track.`, "warning")
+        if (response.ok) {
+          setCurrentlyPlaying(fileName)
+          setIsMotionTriggered(false) // Mark as manually triggered
+          addToast(`Playing "${fileName}"`, "success")
+        } else {
+          addToast("Failed to play file", "error")
+        }
+      } catch (error) {
+        console.error("Failed to play file:", error)
+        addToast("Failed to play file", "error")
+      }
       return
     }
 
-    // Play the selected file
+    // If a track is playing, check blocking conditions
+    // Only block if motion detection is active AND current track was motion-triggered
+    if (motion.enabled && isMotionTriggered) {
+      addToast(`Motion detection is active. Stop "${currentlyPlaying}" first to play another track.`, "warning")
+      return
+    }
+
+    // For all other cases (motion off, or manual track playing),
+    // stop current track and play new one
     try {
+      // Stop current track
+      await fetch("/api/stop", { method: "POST" })
+
+      // Small delay to ensure stop completes
+      await new Promise((resolve) => setTimeout(resolve, 100))
+
+      // Play new track
       const response = await fetch("/api/play", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -366,13 +391,19 @@ export default function MusicPlayer() {
       if (response.ok) {
         setCurrentlyPlaying(fileName)
         setIsMotionTriggered(false) // Mark as manually triggered
-        addToast(`Playing "${fileName}"`, "success")
+        addToast(`Now playing "${fileName}"`, "success")
       } else {
         addToast("Failed to play file", "error")
+        // Reset state if play failed
+        setCurrentlyPlaying(null)
+        setIsMotionTriggered(false)
       }
     } catch (error) {
-      console.error("Failed to play file:", error)
-      addToast("Failed to play file", "error")
+      console.error("Failed to switch tracks:", error)
+      addToast("Failed to switch tracks", "error")
+      // Reset state on error
+      setCurrentlyPlaying(null)
+      setIsMotionTriggered(false)
     }
   }
 
