@@ -7,11 +7,40 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Badge } from "@/components/ui/badge"
 import { Slider } from "@/components/ui/slider"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Play, Pause, Music, Leaf, Sun, Zap, Volume2, VolumeX, AlertTriangle } from "lucide-react"
+import { Switch } from "@/components/ui/switch"
+import {
+  Play,
+  Pause,
+  Music,
+  Leaf,
+  Sun,
+  Zap,
+  Volume2,
+  VolumeX,
+  AlertTriangle,
+  Thermometer,
+  Activity,
+  Eye,
+  EyeOff,
+} from "lucide-react"
 
 interface MusicFile {
   name: string
   path: string
+}
+
+interface TemperatureData {
+  temperature: number
+  unit: string
+  status: string
+  source?: string
+}
+
+interface MotionData {
+  enabled: boolean
+  selectedFile: string | null
+  lastMotionTime: string | null
+  motionCount: number
 }
 
 export default function MusicPlayer() {
@@ -22,15 +51,26 @@ export default function MusicPlayer() {
   const [volume, setVolume] = useState(50)
   const [isSettingVolume, setIsSettingVolume] = useState(false)
   const [volumeError, setVolumeError] = useState<string | null>(null)
+  const [temperature, setTemperature] = useState<TemperatureData | null>(null)
+  const [motion, setMotion] = useState<MotionData>({
+    enabled: false,
+    selectedFile: null,
+    lastMotionTime: null,
+    motionCount: 0,
+  })
 
   // Fetch music files
   useEffect(() => {
     fetchFiles()
   }, [])
 
-  // Poll for logs
+  // Poll for logs, temperature, and motion status
   useEffect(() => {
-    const interval = setInterval(fetchLogs, 2000)
+    const interval = setInterval(() => {
+      fetchLogs()
+      fetchTemperature()
+      fetchMotionStatus()
+    }, 2000)
     return () => clearInterval(interval)
   }, [])
 
@@ -70,6 +110,34 @@ export default function MusicPlayer() {
     }
   }
 
+  const fetchTemperature = async () => {
+    try {
+      const response = await fetch("/api/temperature")
+      const data = await response.json()
+
+      if (response.ok) {
+        setTemperature(data)
+      } else {
+        console.error("Temperature error:", data.error)
+      }
+    } catch (error) {
+      console.error("Failed to fetch temperature:", error)
+    }
+  }
+
+  const fetchMotionStatus = async () => {
+    try {
+      const response = await fetch("/api/motion")
+      const data = await response.json()
+
+      if (response.ok) {
+        setMotion(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch motion status:", error)
+    }
+  }
+
   const fetchVolume = async () => {
     try {
       const response = await fetch("/api/volume")
@@ -93,7 +161,6 @@ export default function MusicPlayer() {
     setVolume(newVolume)
     setVolumeError(null)
 
-    // Debounce volume changes to avoid too many API calls
     setIsSettingVolume(true)
 
     try {
@@ -118,16 +185,65 @@ export default function MusicPlayer() {
     }
   }
 
+  const toggleMotionDetection = async () => {
+    try {
+      const response = await fetch("/api/motion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "toggle" }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setMotion(data)
+      }
+    } catch (error) {
+      console.error("Failed to toggle motion detection:", error)
+    }
+  }
+
+  const setMotionFile = async (fileName: string | null) => {
+    try {
+      const response = await fetch("/api/motion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "setFile", fileName }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setMotion(data)
+      }
+    } catch (error) {
+      console.error("Failed to set motion file:", error)
+    }
+  }
+
+  const testMotion = async () => {
+    try {
+      const response = await fetch("/api/motion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "triggerMotion" }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setMotion(data)
+      }
+    } catch (error) {
+      console.error("Failed to test motion:", error)
+    }
+  }
+
   const playFile = async (fileName: string) => {
     if (currentlyPlaying === fileName) {
-      // Stop current playback
       await fetch("/api/stop", { method: "POST" })
       setCurrentlyPlaying(null)
       return
     }
 
     if (currentlyPlaying) {
-      // Stop any currently playing file
       await fetch("/api/stop", { method: "POST" })
     }
 
@@ -140,7 +256,6 @@ export default function MusicPlayer() {
 
       if (response.ok) {
         setCurrentlyPlaying(fileName)
-        // Poll for playback status
         const checkStatus = setInterval(async () => {
           const statusResponse = await fetch("/api/status")
           const statusData = await statusResponse.json()
@@ -153,6 +268,12 @@ export default function MusicPlayer() {
     } catch (error) {
       console.error("Failed to play file:", error)
     }
+  }
+
+  const getTemperatureColor = (temp: number) => {
+    if (temp > 70) return "text-red-600 bg-red-50"
+    if (temp > 50) return "text-orange-600 bg-orange-50"
+    return "text-green-600 bg-green-50"
   }
 
   return (
@@ -185,7 +306,6 @@ export default function MusicPlayer() {
             </div>
           </div>
         </div>
-        {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-32 translate-x-32"></div>
         <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
       </div>
@@ -267,44 +387,72 @@ export default function MusicPlayer() {
                           className={`flex items-center justify-between p-4 rounded-lg border transition-all duration-200 ${
                             currentlyPlaying === file.name
                               ? "bg-green-50 border-green-300 shadow-md"
-                              : "bg-white/50 border-gray-200 hover:bg-green-50/50 hover:border-green-200"
+                              : motion.selectedFile === file.name
+                                ? "bg-purple-50 border-purple-300 shadow-md"
+                                : "bg-white/50 border-gray-200 hover:bg-green-50/50 hover:border-green-200"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             <div
                               className={`p-2 rounded-full ${
-                                currentlyPlaying === file.name ? "bg-green-500 text-white" : "bg-gray-100 text-gray-600"
+                                currentlyPlaying === file.name
+                                  ? "bg-green-500 text-white"
+                                  : motion.selectedFile === file.name
+                                    ? "bg-purple-500 text-white"
+                                    : "bg-gray-100 text-gray-600"
                               }`}
                             >
-                              <Music className="h-4 w-4" />
+                              {motion.selectedFile === file.name ? (
+                                <Activity className="h-4 w-4" />
+                              ) : (
+                                <Music className="h-4 w-4" />
+                              )}
                             </div>
                             <div>
                               <p className="font-medium text-gray-900">{file.name}</p>
                               <p className="text-sm text-gray-500">{file.path}</p>
+                              {motion.selectedFile === file.name && (
+                                <p className="text-xs text-purple-600 font-medium">Motion Trigger</p>
+                              )}
                             </div>
                           </div>
-                          <Button
-                            onClick={() => playFile(file.name)}
-                            variant={currentlyPlaying === file.name ? "default" : "outline"}
-                            size="sm"
-                            className={
-                              currentlyPlaying === file.name
-                                ? "bg-green-600 hover:bg-green-700"
-                                : "border-green-300 text-green-700 hover:bg-green-50"
-                            }
-                          >
-                            {currentlyPlaying === file.name ? (
-                              <>
-                                <Pause className="h-4 w-4 mr-2" />
-                                Stop
-                              </>
-                            ) : (
-                              <>
-                                <Play className="h-4 w-4 mr-2" />
-                                Play
-                              </>
-                            )}
-                          </Button>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              onClick={() => setMotionFile(motion.selectedFile === file.name ? null : file.name)}
+                              variant="outline"
+                              size="sm"
+                              className={
+                                motion.selectedFile === file.name
+                                  ? "bg-purple-100 border-purple-300 text-purple-700 hover:bg-purple-200"
+                                  : "border-purple-300 text-purple-700 hover:bg-purple-50"
+                              }
+                            >
+                              <Activity className="h-4 w-4 mr-1" />
+                              {motion.selectedFile === file.name ? "Unset" : "Motion"}
+                            </Button>
+                            <Button
+                              onClick={() => playFile(file.name)}
+                              variant={currentlyPlaying === file.name ? "default" : "outline"}
+                              size="sm"
+                              className={
+                                currentlyPlaying === file.name
+                                  ? "bg-green-600 hover:bg-green-700"
+                                  : "border-green-300 text-green-700 hover:bg-green-50"
+                              }
+                            >
+                              {currentlyPlaying === file.name ? (
+                                <>
+                                  <Pause className="h-4 w-4 mr-2" />
+                                  Stop
+                                </>
+                              ) : (
+                                <>
+                                  <Play className="h-4 w-4 mr-2" />
+                                  Play
+                                </>
+                              )}
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -314,9 +462,84 @@ export default function MusicPlayer() {
             </Card>
           </div>
 
-          {/* System Logs */}
-          <div className="lg:col-span-1">
-            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl h-fit">
+          {/* Right Column - Widgets and Logs */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* System Widgets Row */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Temperature Widget */}
+              <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Thermometer className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-medium text-gray-700">CPU Temp</span>
+                  </div>
+                  {temperature ? (
+                    <div className={`text-center p-2 rounded ${getTemperatureColor(temperature.temperature)}`}>
+                      <div className="text-2xl font-bold">{temperature.temperature.toFixed(1)}°C</div>
+                      <div className="text-xs capitalize">{temperature.status}</div>
+                    </div>
+                  ) : (
+                    <div className="text-center p-2 text-gray-500">
+                      <div className="text-sm">Loading...</div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Motion Detection Widget */}
+              <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Activity className="h-4 w-4 text-purple-600" />
+                    <span className="text-sm font-medium text-gray-700">Motion</span>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Switch
+                        checked={motion.enabled}
+                        onCheckedChange={toggleMotionDetection}
+                        className="data-[state=checked]:bg-green-600"
+                      />
+                      <span className="text-xs">
+                        {motion.enabled ? (
+                          <span className="flex items-center gap-1 text-green-600">
+                            <Eye className="h-3 w-3" />
+                            Active
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 text-gray-500">
+                            <EyeOff className="h-3 w-3" />
+                            Inactive
+                          </span>
+                        )}
+                      </span>
+                    </div>
+
+                    {motion.selectedFile && (
+                      <div className="text-xs text-center text-purple-600 bg-purple-50 p-1 rounded">
+                        {motion.selectedFile}
+                      </div>
+                    )}
+
+                    <Button
+                      onClick={testMotion}
+                      size="sm"
+                      variant="outline"
+                      className="w-full h-6 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
+                    >
+                      Test Motion
+                    </Button>
+
+                    {motion.motionCount > 0 && (
+                      <div className="text-xs text-center text-gray-500">Triggered: {motion.motionCount}x</div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* System Logs */}
+            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
                 <CardTitle className="flex items-center gap-2 text-green-800">
                   <Zap className="h-5 w-5" />
@@ -324,7 +547,7 @@ export default function MusicPlayer() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <ScrollArea className="h-96 p-4">
+                <ScrollArea className="h-80 p-4">
                   <div className="space-y-1">
                     {logs.length === 0 ? (
                       <p className="text-gray-500 text-sm">No recent logs...</p>
