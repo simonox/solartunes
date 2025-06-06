@@ -15,31 +15,24 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built wit
 
 ### 1. Clone the Repository
 
-\`\`\`bash
+
 mkdir ~/solartunes
 cd ~/solartunes
 git clone https://github.com/simonox/solartunes.git .
-\`\`\`
 
 ### 2. Run the Setup Script
 
-\`\`\`bash
 chmod +x scripts/setup-raspberry-pi.sh
 ./scripts/setup-raspberry-pi.sh
-\`\`\`
 
 ### 3. Deploy the Project
 
-\`\`\`bash
 chmod +x scripts/deploy-project.sh
 ./scripts/deploy-project.sh
-\`\`\`
 
 ### 4. Start the Service
 
-\`\`\`bash
 sudo systemctl start solartunes
-\`\`\`
 
 ## 🔧 What the Setup Script Does
 
@@ -57,7 +50,6 @@ sudo systemctl start solartunes
 
 Use these commands to control your SolarTunes service:
 
-\`\`\`bash
 # Start the service
 sudo systemctl start solartunes
 
@@ -78,11 +70,9 @@ sudo systemctl enable solartunes
 
 # Disable auto-start
 sudo systemctl disable solartunes
-\`\`\`
 
 ## 📁 Project Structure
 
-\`\`\`
 ~/solartunes/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -101,19 +91,14 @@ sudo systemctl disable solartunes
 │   ├── restart-solartunes.sh
 │   └── status-solartunes.sh
 └── README.md
-\`\`\`
 
 ## 🎵 Adding Your Own Sound Files
 
 1. Copy your .wav files to the Music directory:
-   \`\`\`bash
    cp your-sounds/*.wav ~/Music/
-   \`\`\`
 
 2. Refresh the web interface or restart the service:
-   \`\`\`bash
    sudo systemctl restart solartunes
-   \`\`\`
 
 3. Your new files will appear in the Sound Library!
 
@@ -126,14 +111,11 @@ After setup, your SolarTunes player will be available at:
 **Network Access:** `http://[your-pi-ip]:3000`
 
 To find your Pi's IP address:
-\`\`\`bash
 hostname -I
-\`\`\`
 
 ## 🔧 Troubleshooting
 
 ### Service Won't Start
-\`\`\`bash
 # Check service status
 sudo systemctl status solartunes
 
@@ -142,10 +124,8 @@ sudo journalctl -u solartunes -n 50
 
 # Restart the service
 sudo systemctl restart solartunes
-\`\`\`
 
 ### No Audio Output
-\`\`\`bash
 # List audio devices
 aplay -l
 
@@ -154,10 +134,8 @@ aplay ~/Music/test-tone.wav
 
 # Check audio groups
 groups $USER
-\`\`\`
 
 ### Web Interface Not Loading
-\`\`\`bash
 # Check if port 3000 is in use
 sudo netstat -tlnp | grep :3000
 
@@ -166,32 +144,31 @@ sudo ufw status
 
 # Restart networking
 sudo systemctl restart networking
-\`\`\`
 
 ## 🔄 Updating SolarTunes
 
 To update your installation:
 
-\`\`\`bash
-cd ~/solartunes
-git pull
-./scripts/deploy-project.sh
-sudo systemctl restart solartunes
-\`\`\`
+cd ~/solartunes/
+./scripts/pdate-project.sh
+
+## Wav files that does not work
+
+Not all wav formats are supported, you can convert them using ffmpeg:
+
+ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fixed.wav
 
 ## ⚡ Solar Power Optimization
 
 For solar-powered setups:
 
 1. **Monitor Power Usage:**
-   \`\`\`bash
    # Check system load
    htop
    
    # Monitor power consumption
    vcgencmd measure_temp
    vcgencmd get_throttled
-   \`\`\`
 
 2. **Optimize Performance:**
    - Use efficient .wav files (lower bitrates for longer playback)
@@ -232,6 +209,14 @@ We welcome contributions! Please:
 ## 📄 License
 
 This project is open source and available under the MIT License.
+
+Copyright (c) 2025 CCL
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## 🆘 Support
 
