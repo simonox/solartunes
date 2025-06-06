@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     console.log(`Setting volume to ${volume}%`)
 
     // Use the working command format you discovered with card 0
-    const command = `amixer sset 'Master' ${volume}%`
+    const command = `amixer -c 0 sset 'Digital' ${volume}%`
 
     try {
       console.log(`Executing command: ${command}`)
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 export async function GET() {
   try {
     // Get current volume level using the working command format with card 0
-    const command = "amixer -c 0 sget 'Master'"
+    const command = "amixer -c 0 sget 'Digital'"
 
     console.log(`Getting volume with: ${command}`)
     const { stdout } = await execAsync(command)
