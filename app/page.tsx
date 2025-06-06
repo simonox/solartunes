@@ -327,13 +327,15 @@ export default function MusicPlayer() {
 
   const playFile = async (fileName: string) => {
     if (currentlyPlaying === fileName) {
+      // Stop current playback
       await fetch("/api/stop", { method: "POST" })
       setCurrentlyPlaying(null)
       return
     }
 
-    if (currentlyPlaying) {
-      await fetch("/api/stop", { method: "POST" })
+    // Prevent starting new track if something is already playing
+    if (currentlyPlaying && currentlyPlaying !== fileName) {
+      return // Do nothing if another track is playing
     }
 
     try {
@@ -524,10 +526,13 @@ export default function MusicPlayer() {
                               onClick={() => playFile(file.name)}
                               variant={currentlyPlaying === file.name ? "default" : "outline"}
                               size="sm"
+                              disabled={currentlyPlaying && currentlyPlaying !== file.name}
                               className={
                                 currentlyPlaying === file.name
                                   ? "bg-green-600 hover:bg-green-700"
-                                  : "border-green-300 text-green-700 hover:bg-green-50"
+                                  : currentlyPlaying && currentlyPlaying !== file.name
+                                    ? "border-gray-300 text-gray-400 cursor-not-allowed"
+                                    : "border-green-300 text-green-700 hover:bg-green-50"
                               }
                             >
                               {currentlyPlaying === file.name ? (

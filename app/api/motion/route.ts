@@ -44,8 +44,22 @@ export async function POST(request: Request) {
 
       // If motion detection is enabled and a file is selected, trigger playback
       if (motionSettings.enabled && motionSettings.selectedFile) {
-        // Here we would trigger the play API
         try {
+          // First check if something is already playing
+          const statusResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/status`,
+          )
+          const statusData = await statusResponse.json()
+
+          if (statusData.playing) {
+            console.log("Motion detected but audio is already playing - ignoring trigger")
+            return NextResponse.json({
+              success: true,
+              ...motionSettings,
+              message: "Motion detected but audio already playing",
+            })
+          }
+
           const playResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/api/play`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
