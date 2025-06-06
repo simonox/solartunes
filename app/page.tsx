@@ -108,9 +108,7 @@ export default function MusicPlayer() {
       if (!response.ok) {
         setVolumeError(data.error || "Failed to set volume")
         console.error("Volume error:", data.details)
-        if (data.availableControls) {
-          console.log("Available controls:", data.availableControls)
-        }
+        console.error("Failed command:", data.command)
       }
     } catch (error) {
       console.error("Failed to set volume:", error)
@@ -204,37 +202,9 @@ export default function MusicPlayer() {
         )}
 
         <div className="grid lg:grid-cols-3 gap-8">
-          {/* Volume Control */}
-          <div className="lg:col-span-2 lg:order-1 order-2 flex lg:hidden mb-4">
-            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl w-full">
-              <CardContent className="p-4">
-                <div className="flex items-center gap-4">
-                  <div className={`p-2 rounded-full ${volume === 0 ? "bg-gray-200" : "bg-green-100"}`}>
-                    {volume === 0 ? (
-                      <VolumeX className="h-5 w-5 text-gray-500" />
-                    ) : (
-                      <Volume2 className="h-5 w-5 text-green-600" />
-                    )}
-                  </div>
-                  <Slider
-                    defaultValue={[volume]}
-                    value={[volume]}
-                    max={100}
-                    step={1}
-                    className="flex-1"
-                    onValueChange={handleVolumeChange}
-                    disabled={isSettingVolume}
-                  />
-                  <span className="text-sm font-medium w-8 text-right">{volume}%</span>
-                </div>
-                {volumeError && <p className="text-xs text-yellow-600 mt-2">Volume control may not work properly</p>}
-              </CardContent>
-            </Card>
-          </div>
-
           {/* Music Library */}
-          <div className="lg:col-span-2 lg:order-1 order-3 flex">
-            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl w-full">
+          <div className="lg:col-span-2">
+            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-green-500/10 to-emerald-500/10">
                 <CardTitle className="flex items-center gap-2 text-green-800">
                   <Music className="h-5 w-5" />
@@ -246,7 +216,7 @@ export default function MusicPlayer() {
               </CardHeader>
               <CardContent className="p-6 flex gap-6">
                 {/* Volume Slider (Vertical) */}
-                <div className="hidden lg:flex flex-col items-center gap-3 pr-2 border-r border-green-100">
+                <div className="flex flex-col items-center gap-3 pr-4 border-r border-green-100 min-w-[60px]">
                   <div className={`p-2 rounded-full ${volume === 0 ? "bg-gray-200" : "bg-green-100"}`}>
                     {volume === 0 ? (
                       <VolumeX className="h-5 w-5 text-gray-500" />
@@ -254,18 +224,19 @@ export default function MusicPlayer() {
                       <Volume2 className="h-5 w-5 text-green-600" />
                     )}
                   </div>
-                  <Slider
-                    defaultValue={[volume]}
-                    value={[volume]}
-                    max={100}
-                    step={1}
-                    orientation="vertical"
-                    className="h-[300px]"
-                    onValueChange={handleVolumeChange}
-                    disabled={isSettingVolume}
-                  />
-                  <span className="text-sm font-medium">{volume}%</span>
-                  {volumeError && <p className="text-xs text-yellow-600 text-center">Volume control issue</p>}
+                  <div className="flex flex-col items-center h-[350px] justify-center">
+                    <Slider
+                      value={[volume]}
+                      max={100}
+                      step={1}
+                      orientation="vertical"
+                      className="h-[280px]"
+                      onValueChange={handleVolumeChange}
+                      disabled={isSettingVolume}
+                    />
+                  </div>
+                  <span className="text-sm font-medium text-center">{volume}%</span>
+                  {volumeError && <p className="text-xs text-yellow-600 text-center">Volume issue</p>}
                 </div>
 
                 {/* Files List */}
@@ -344,7 +315,7 @@ export default function MusicPlayer() {
           </div>
 
           {/* System Logs */}
-          <div className="lg:col-span-1 lg:order-2 order-4">
+          <div className="lg:col-span-1">
             <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl h-fit">
               <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
                 <CardTitle className="flex items-center gap-2 text-green-800">
