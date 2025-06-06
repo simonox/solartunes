@@ -111,14 +111,22 @@ export default function MusicPlayer() {
       }
 
       statusCheckIntervalRef.current = setInterval(async () => {
-        const statusResponse = await fetch("/api/status")
-        const statusData = await statusResponse.json()
-        if (!statusData.playing) {
-          setCurrentlyPlaying(null)
-          clearInterval(statusCheckIntervalRef.current!)
-          statusCheckIntervalRef.current = null
+        try {
+          const statusResponse = await fetch("/api/status")
+          const statusData = await statusResponse.json()
+
+          console.log("Motion playback status check:", statusData)
+
+          if (!statusData.playing) {
+            console.log("Motion-triggered playback stopped, clearing state")
+            setCurrentlyPlaying(null)
+            clearInterval(statusCheckIntervalRef.current!)
+            statusCheckIntervalRef.current = null
+          }
+        } catch (error) {
+          console.error("Motion status check failed:", error)
         }
-      }, 1000)
+      }, 500)
     }
   }, [motion.currentlyPlaying, currentlyPlaying])
 
@@ -394,16 +402,40 @@ export default function MusicPlayer() {
           clearInterval(statusCheckIntervalRef.current)
         }
 
-        // Set up new status check interval
+        // Set up new status check interval with improved logic
         statusCheckIntervalRef.current = setInterval(async () => {
-          const statusResponse = await fetch("/api/status")
-          const statusData = await statusResponse.json()
-          if (!statusData.playing) {
-            setCurrentlyPlaying(null)
-            clearInterval(statusCheckIntervalRef.current!)
-            statusCheckIntervalRef.current = null
+          try {
+            const statusResponse = await fetch("/api/status")
+            const statusData = await statusResponse.json()
+
+            console.log(`Status check for ${fileName}:`, statusData)
+
+            if (!statusData.playing) {
+              console.log(`Detected ${fileName} stopped playing, clearing state`)
+              setCurrentlyPlaying(null)
+              clearInterval(statusCheckIntervalRef.current!)
+              statusCheckIntervalRef.current = null
+            }
+          } catch (error) {
+            console.error("Status check failed:", error)
+            // If status check fails multiple times, assume playback stopped
+            // This prevents getting stuck in a playing state
           }
-        }, 1000)
+        }, 500) // Check more frequently (every 500ms instead of 1000ms)
+
+        // Also set up a fallback timeout to clear playing state after a reasonable time
+        // This prevents getting permanently stuck if status detection fails
+        setTimeout(
+          () => {
+            if (statusCheckIntervalRef.current) {
+              console.log(`Fallback timeout: clearing ${fileName} after 5 minutes`)
+              setCurrentlyPlaying(null)
+              clearInterval(statusCheckIntervalRef.current)
+              statusCheckIntervalRef.current = null
+            }
+          },
+          5 * 60 * 1000,
+        ) // 5 minute fallback timeout
       }
     } catch (error) {
       console.error("Failed to play file:", error)
@@ -414,6 +446,24 @@ export default function MusicPlayer() {
     if (temp > 70) return "text-red-600 bg-red-50"
     if (temp > 50) return "text-orange-600 bg-orange-50"
     return "text-green-600 bg-green-50"
+  }
+
+  const forceStop = async () => {
+    console.log("Force stopping all playback...")
+
+    // Stop any playing audio
+    await fetch("/api/stop", { method: "POST" })
+
+    // Clear the playing state
+    setCurrentlyPlaying(null)
+
+    // Clear any status check intervals
+    if (statusCheckIntervalRef.current) {
+      clearInterval(statusCheckIntervalRef.current)
+      statusCheckIntervalRef.current = null
+    }
+
+    console.log("Force stop completed")
   }
 
   return (
@@ -802,7 +852,15 @@ export default function MusicPlayer() {
                   <p className="text-sm opacity-90">Now Playing</p>
                   <p className="text-xl font-semibold">{currentlyPlaying}</p>
                 </div>
-                <div className="ml-auto">
+                <div className="ml-auto flex items-center gap-4">
+                  <Button
+                    onClick={forceStop}
+                    variant="outline"
+                    size="sm"
+                    className="bg-white/20 border-white/30 text-white hover:bg-white/30"
+                  >
+                    Force Stop
+                  </Button>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                     <div className="w-2 h-2 bg-white/70 rounded-full animate-pulse delay-100"></div>
