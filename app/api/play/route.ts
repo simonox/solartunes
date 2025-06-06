@@ -38,20 +38,24 @@ export async function POST(request: Request) {
 
     console.log(`Playing file: ${filePath}`)
 
-    // Start aplay process with better options for long files
+    // HiFiBerry DAC+ specific configuration
     currentProcess = spawn(
       "aplay",
       [
         "-D",
-        "default", // Use default audio device
+        "hw:0,0", // Use HiFiBerry DAC+ directly (card 0, device 0)
         "-f",
-        "cd", // CD quality format
-        "-q", // Quiet mode (less verbose output)
+        "S32_LE", // 32-bit signed little endian (matches your hardware)
+        "-r",
+        "44100", // Sample rate
+        "-c",
+        "2", // Stereo
+        "-v", // Verbose mode to see what's happening
         filePath,
       ],
       {
-        detached: true, // Detach from parent process
-        stdio: ["ignore", "pipe", "pipe"], // Ignore stdin, pipe stdout/stderr
+        detached: true,
+        stdio: ["ignore", "pipe", "pipe"],
       },
     )
 
@@ -70,11 +74,10 @@ export async function POST(request: Request) {
         console.log(`Successfully finished playing ${fileName}`)
       } else if (code === 1) {
         console.error(`aplay failed with error code 1 for ${fileName}`)
-        console.error("This might be due to:")
-        console.error("- Audio device busy or unavailable")
-        console.error("- Unsupported audio format")
-        console.error("- File corruption")
-        console.error("- Audio system configuration issues")
+        console.error("HiFiBerry DAC+ specific troubleshooting:")
+        console.error("- Check if audio format matches DAC capabilities")
+        console.error("- Verify HiFiBerry DAC+ drivers are loaded")
+        console.error("- Check if another process is using the audio device")
       } else {
         console.error(`aplay failed with unexpected code ${code} for ${fileName}`)
       }
@@ -110,23 +113,9 @@ export async function POST(request: Request) {
       })
     }
 
-    // Set a timeout to prevent zombie processes (optional, for very long files)
-    const maxPlayTime = 30 * 60 * 1000 // 30 minutes max
-    const timeoutId = setTimeout(() => {
-      if (currentProcess && !hasExited) {
-        console.log(`Stopping playback after ${maxPlayTime / 1000} seconds timeout`)
-        currentProcess.kill("SIGTERM")
-      }
-    }, maxPlayTime)
-
-    // Clear timeout when process exits
-    currentProcess.on("exit", () => {
-      clearTimeout(timeoutId)
-    })
-
     return NextResponse.json({
       success: true,
-      message: `Playing ${fileName}`,
+      message: `Playing ${fileName} on HiFiBerry DAC+`,
       pid: currentProcess.pid,
     })
   } catch (error) {
