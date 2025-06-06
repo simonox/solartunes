@@ -3,19 +3,24 @@
 // Inspired by react-hot-toast library
 import * as React from "react"
 
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
+import type { ToastActionElement, ToastProps } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_REMOVE_DELAY = 3000 // Updated from 1000000 to 3000 for auto-dismiss
 
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+}
+
+type ToastType = "info" | "success" | "warning" | "error"
+
+export interface Toast {
+  id: string
+  message: string
+  type: ToastType
 }
 
 const actionTypes = {
@@ -85,9 +90,7 @@ export const reducer = (state: State, action: Action): State => {
     case "UPDATE_TOAST":
       return {
         ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === action.toast.id ? { ...t, ...action.toast } : t
-        ),
+        toasts: state.toasts.map((t) => (t.id === action.toast.id ? { ...t, ...action.toast } : t)),
       }
 
     case "DISMISS_TOAST": {
@@ -111,7 +114,7 @@ export const reducer = (state: State, action: Action): State => {
                 ...t,
                 open: false,
               }
-            : t
+            : t,
         ),
       }
     }
@@ -140,37 +143,6 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
-
-function toast({ ...props }: Toast) {
-  const id = genId()
-
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
-
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
-    },
-  })
-
-  return {
-    id: id,
-    dismiss,
-    update,
-  }
-}
-
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
@@ -184,11 +156,31 @@ function useToast() {
     }
   }, [state])
 
+  const addToast = (message: string, type: ToastType = "info") => {
+    const id = genId()
+    const newToast = { id, message, type, open: true }
+    dispatch({
+      type: "ADD_TOAST",
+      toast: newToast,
+    })
+
+    // Auto-dismiss after 3 seconds
+    setTimeout(() => {
+      dispatch({ type: "DISMISS_TOAST", toastId: id })
+    }, TOAST_REMOVE_DELAY)
+
+    return id
+  }
+
+  const removeToast = (toastId: string) => {
+    dispatch({ type: "REMOVE_TOAST", toastId })
+  }
+
   return {
     ...state,
-    toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    addToast,
+    removeToast,
   }
 }
 
-export { useToast, toast }
+export { useToast }

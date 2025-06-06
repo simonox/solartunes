@@ -29,7 +29,9 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
+  X,
 } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 interface MusicFile {
   name: string
@@ -77,8 +79,10 @@ export default function MusicPlayer() {
     message: "",
   })
 
+  // Toast notifications
+  const { toasts, addToast, removeToast } = useToast()
+
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const statusCheckIntervalRef = useRef<NodeJS.Timeout | null>(null)
 
   // Fetch music files
   useEffect(() => {
@@ -104,40 +108,8 @@ export default function MusicPlayer() {
   useEffect(() => {
     if (motion.currentlyPlaying && !currentlyPlaying) {
       setCurrentlyPlaying(motion.currentlyPlaying)
-
-      // Start status checking for this file
-      if (statusCheckIntervalRef.current) {
-        clearInterval(statusCheckIntervalRef.current)
-      }
-
-      statusCheckIntervalRef.current = setInterval(async () => {
-        try {
-          const statusResponse = await fetch("/api/status")
-          const statusData = await statusResponse.json()
-
-          console.log("Motion playback status check:", statusData)
-
-          if (!statusData.playing) {
-            console.log("Motion-triggered playback stopped, clearing state")
-            setCurrentlyPlaying(null)
-            clearInterval(statusCheckIntervalRef.current!)
-            statusCheckIntervalRef.current = null
-          }
-        } catch (error) {
-          console.error("Motion status check failed:", error)
-        }
-      }, 500)
     }
   }, [motion.currentlyPlaying, currentlyPlaying])
-
-  // Cleanup interval on unmount
-  useEffect(() => {
-    return () => {
-      if (statusCheckIntervalRef.current) {
-        clearInterval(statusCheckIntervalRef.current)
-      }
-    }
-  }, [])
 
   const fetchFiles = async () => {
     try {
@@ -368,25 +340,26 @@ export default function MusicPlayer() {
   }
 
   const playFile = async (fileName: string) => {
+    // If this is the currently playing file, stop it
     if (currentlyPlaying === fileName) {
-      // Stop current playback
-      await fetch("/api/stop", { method: "POST" })
-      setCurrentlyPlaying(null)
-
-      // Clear any status check interval
-      if (statusCheckIntervalRef.current) {
-        clearInterval(statusCheckIntervalRef.current)
-        statusCheckIntervalRef.current = null
+      try {
+        await fetch("/api/stop", { method: "POST" })
+        setCurrentlyPlaying(null)
+        addToast("Playback stopped", "info")
+      } catch (error) {
+        console.error("Failed to stop playback:", error)
+        addToast("Failed to stop playback", "error")
       }
-
       return
     }
 
-    // Prevent starting new track if something is already playing
-    if (currentlyPlaying && currentlyPlaying !== fileName) {
-      return // Do nothing if another track is playing
+    // If another track is playing, show a toast and don't do anything else
+    if (currentlyPlaying) {
+      addToast(`Already playing "${currentlyPlaying}"`, "warning")
+      return
     }
 
+    // Otherwise, play the selected file
     try {
       const response = await fetch("/api/play", {
         method: "POST",
@@ -396,49 +369,13 @@ export default function MusicPlayer() {
 
       if (response.ok) {
         setCurrentlyPlaying(fileName)
-
-        // Clear any existing interval
-        if (statusCheckIntervalRef.current) {
-          clearInterval(statusCheckIntervalRef.current)
-        }
-
-        // Set up new status check interval with improved logic
-        statusCheckIntervalRef.current = setInterval(async () => {
-          try {
-            const statusResponse = await fetch("/api/status")
-            const statusData = await statusResponse.json()
-
-            console.log(`Status check for ${fileName}:`, statusData)
-
-            if (!statusData.playing) {
-              console.log(`Detected ${fileName} stopped playing, clearing state`)
-              setCurrentlyPlaying(null)
-              clearInterval(statusCheckIntervalRef.current!)
-              statusCheckIntervalRef.current = null
-            }
-          } catch (error) {
-            console.error("Status check failed:", error)
-            // If status check fails multiple times, assume playback stopped
-            // This prevents getting stuck in a playing state
-          }
-        }, 500) // Check more frequently (every 500ms instead of 1000ms)
-
-        // Also set up a fallback timeout to clear playing state after a reasonable time
-        // This prevents getting permanently stuck if status detection fails
-        setTimeout(
-          () => {
-            if (statusCheckIntervalRef.current) {
-              console.log(`Fallback timeout: clearing ${fileName} after 5 minutes`)
-              setCurrentlyPlaying(null)
-              clearInterval(statusCheckIntervalRef.current)
-              statusCheckIntervalRef.current = null
-            }
-          },
-          5 * 60 * 1000,
-        ) // 5 minute fallback timeout
+        addToast(`Playing "${fileName}"`, "success")
+      } else {
+        addToast("Failed to play file", "error")
       }
     } catch (error) {
       console.error("Failed to play file:", error)
+      addToast("Failed to play file", "error")
     }
   }
 
@@ -449,73 +386,47 @@ export default function MusicPlayer() {
   }
 
   const forceStop = async () => {
-    console.log("Force stopping all playback...")
-
-    // Stop any playing audio
-    await fetch("/api/stop", { method: "POST" })
-
-    // Clear the playing state
-    setCurrentlyPlaying(null)
-
-    // Clear any status check intervals
-    if (statusCheckIntervalRef.current) {
-      clearInterval(statusCheckIntervalRef.current)
-      statusCheckIntervalRef.current = null
+    try {
+      await fetch("/api/stop", { method: "POST" })
+      setCurrentlyPlaying(null)
+      addToast("Playback force stopped", "info")
+    } catch (error) {
+      console.error("Failed to force stop:", error)
+      addToast("Failed to force stop playback", "error")
     }
-
-    console.log("Force stop completed")
   }
 
-  const performCleanup = async () => {
-    console.log("Performing aggressive cleanup...")
-
+  const resetApp = async () => {
     try {
-      // Perform backend cleanup
-      const response = await fetch("/api/cleanup", { method: "POST" })
-      const data = await response.json()
+      // Stop any playing audio
+      await fetch("/api/stop", { method: "POST" })
 
-      console.log("Cleanup results:", data)
-
-      // Reset all frontend state
+      // Reset all state
       setCurrentlyPlaying(null)
-
-      // Clear any status check intervals
-      if (statusCheckIntervalRef.current) {
-        clearInterval(statusCheckIntervalRef.current)
-        statusCheckIntervalRef.current = null
-      }
-
-      // Reset motion state if needed
       setMotion((prev) => ({
         ...prev,
         currentlyPlaying: null,
       }))
 
-      // Force a refresh of the file list to ensure UI is in sync
-      await fetchFiles()
+      // Try to clean up any stuck processes
+      try {
+        await fetch("/api/cleanup", { method: "POST" })
+      } catch (error) {
+        console.error("Cleanup failed but continuing with reset:", error)
+      }
 
-      console.log("Frontend state reset completed")
-      console.log("All play buttons should now be enabled")
-
-      // Optional: Show a brief success message
-      setTimeout(() => {
-        console.log("Cleanup completed - app state fully reset")
-      }, 1000)
+      addToast("App state reset successfully", "success")
     } catch (error) {
-      console.error("Cleanup failed:", error)
+      console.error("Reset failed:", error)
 
-      // Even if backend cleanup fails, reset frontend state
+      // Even if backend fails, reset frontend state
       setCurrentlyPlaying(null)
-      if (statusCheckIntervalRef.current) {
-        clearInterval(statusCheckIntervalRef.current)
-        statusCheckIntervalRef.current = null
-      }
       setMotion((prev) => ({
         ...prev,
         currentlyPlaying: null,
       }))
 
-      console.log("Frontend state reset completed despite backend error")
+      addToast("Reset partially completed", "warning")
     }
   }
 
@@ -554,6 +465,29 @@ export default function MusicPlayer() {
       </div>
 
       <div className="container mx-auto px-6 py-8">
+        {/* Toast Notifications */}
+        <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
+          {toasts.map((toast) => (
+            <div
+              key={toast.id}
+              className={`p-3 rounded-md shadow-lg flex items-center justify-between min-w-[300px] ${
+                toast.type === "success"
+                  ? "bg-green-100 text-green-800 border border-green-200"
+                  : toast.type === "error"
+                    ? "bg-red-100 text-red-800 border border-red-200"
+                    : toast.type === "warning"
+                      ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
+                      : "bg-blue-100 text-blue-800 border border-blue-200"
+              }`}
+            >
+              <span>{toast.message}</span>
+              <button onClick={() => removeToast(toast.id)} className="ml-2 text-gray-500 hover:text-gray-700">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+
         {/* Volume Error Alert */}
         {volumeError && (
           <Alert className="mb-6 border-yellow-200 bg-yellow-50">
@@ -563,6 +497,17 @@ export default function MusicPlayer() {
             </AlertDescription>
           </Alert>
         )}
+
+        {/* Reset Button */}
+        <div className="mb-6 flex justify-end">
+          <Button
+            onClick={resetApp}
+            variant="outline"
+            className="bg-red-50 border-red-200 text-red-700 hover:bg-red-100"
+          >
+            Reset App State
+          </Button>
+        </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Music Library */}
@@ -678,13 +623,10 @@ export default function MusicPlayer() {
                               onClick={() => playFile(file.name)}
                               variant={currentlyPlaying === file.name ? "default" : "outline"}
                               size="sm"
-                              disabled={currentlyPlaying && currentlyPlaying !== file.name}
                               className={
                                 currentlyPlaying === file.name
                                   ? "bg-green-600 hover:bg-green-700"
-                                  : currentlyPlaying && currentlyPlaying !== file.name
-                                    ? "border-gray-300 text-gray-400 cursor-not-allowed"
-                                    : "border-green-300 text-green-700 hover:bg-green-50"
+                                  : "border-green-300 text-green-700 hover:bg-green-50"
                               }
                             >
                               {currentlyPlaying === file.name ? (
@@ -912,15 +854,7 @@ export default function MusicPlayer() {
                     size="sm"
                     className="bg-white/20 border-white/30 text-white hover:bg-white/30"
                   >
-                    Force Stop
-                  </Button>
-                  <Button
-                    onClick={performCleanup}
-                    variant="outline"
-                    size="sm"
-                    className="bg-red-500/20 border-red-300/30 text-white hover:bg-red-500/30"
-                  >
-                    Cleanup
+                    Stop
                   </Button>
                   <div className="flex items-center gap-1">
                     <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
