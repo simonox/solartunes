@@ -368,7 +368,7 @@ export default function MusicPlayer() {
     // If a track is playing, check blocking conditions
     // Only block if motion detection is active AND current track was motion-triggered
     if (motion.enabled && isMotionTriggered) {
-      addToast(`Motion detection is active. Stop "${currentlyPlaying}" first to play another track.`, "warning")
+      addToast(`Motion detection is active.`, "warning")
       return
     }
 
