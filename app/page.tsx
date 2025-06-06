@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
 import {
   Play,
-  Pause,
+  CircleStopIcon as Stop,
   Music,
   Leaf,
   Sun,
@@ -56,6 +56,7 @@ interface MotionData {
 export default function MusicPlayer() {
   const [files, setFiles] = useState<MusicFile[]>([])
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null)
+  const [isMotionTriggered, setIsMotionTriggered] = useState(false) // Track if current track was started by motion
   const [logs, setLogs] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [volume, setVolume] = useState(50)
@@ -108,6 +109,7 @@ export default function MusicPlayer() {
   useEffect(() => {
     if (motion.currentlyPlaying && !currentlyPlaying) {
       setCurrentlyPlaying(motion.currentlyPlaying)
+      setIsMotionTriggered(true) // Mark as motion-triggered
     }
   }, [motion.currentlyPlaying, currentlyPlaying])
 
@@ -340,26 +342,20 @@ export default function MusicPlayer() {
   }
 
   const playFile = async (fileName: string) => {
-    // If this is the currently playing file, stop it
-    if (currentlyPlaying === fileName) {
-      try {
-        await fetch("/api/stop", { method: "POST" })
-        setCurrentlyPlaying(null)
-        addToast("Playback stopped", "info")
-      } catch (error) {
-        console.error("Failed to stop playback:", error)
-        addToast("Failed to stop playback", "error")
-      }
-      return
-    }
-
-    // If another track is playing, show a toast and don't do anything else
+    // Check if another track is playing
     if (currentlyPlaying) {
-      addToast(`Already playing "${currentlyPlaying}"`, "warning")
+      // Only block if motion detection is active AND current track was motion-triggered
+      if (motion.enabled && isMotionTriggered) {
+        addToast(`Motion detection is active. Stop "${currentlyPlaying}" first.`, "warning")
+        return
+      }
+
+      // If motion detection is off or current track was manually started, show general message
+      addToast(`Already playing "${currentlyPlaying}". Stop it first to play another track.`, "warning")
       return
     }
 
-    // Otherwise, play the selected file
+    // Play the selected file
     try {
       const response = await fetch("/api/play", {
         method: "POST",
@@ -369,6 +365,7 @@ export default function MusicPlayer() {
 
       if (response.ok) {
         setCurrentlyPlaying(fileName)
+        setIsMotionTriggered(false) // Mark as manually triggered
         addToast(`Playing "${fileName}"`, "success")
       } else {
         addToast("Failed to play file", "error")
@@ -379,21 +376,22 @@ export default function MusicPlayer() {
     }
   }
 
+  const stopPlayback = async () => {
+    try {
+      await fetch("/api/stop", { method: "POST" })
+      setCurrentlyPlaying(null)
+      setIsMotionTriggered(false)
+      addToast("Playback stopped", "info")
+    } catch (error) {
+      console.error("Failed to stop playback:", error)
+      addToast("Failed to stop playback", "error")
+    }
+  }
+
   const getTemperatureColor = (temp: number) => {
     if (temp > 70) return "text-red-600 bg-red-50"
     if (temp > 50) return "text-orange-600 bg-orange-50"
     return "text-green-600 bg-green-50"
-  }
-
-  const forceStop = async () => {
-    try {
-      await fetch("/api/stop", { method: "POST" })
-      setCurrentlyPlaying(null)
-      addToast("Playback force stopped", "info")
-    } catch (error) {
-      console.error("Failed to force stop:", error)
-      addToast("Failed to force stop playback", "error")
-    }
   }
 
   const resetApp = async () => {
@@ -403,6 +401,7 @@ export default function MusicPlayer() {
 
       // Reset all state
       setCurrentlyPlaying(null)
+      setIsMotionTriggered(false)
       setMotion((prev) => ({
         ...prev,
         currentlyPlaying: null,
@@ -421,6 +420,7 @@ export default function MusicPlayer() {
 
       // Even if backend fails, reset frontend state
       setCurrentlyPlaying(null)
+      setIsMotionTriggered(false)
       setMotion((prev) => ({
         ...prev,
         currentlyPlaying: null,
@@ -603,6 +603,11 @@ export default function MusicPlayer() {
                               {motion.selectedFile === file.name && (
                                 <p className="text-xs text-purple-600 font-medium">Motion Trigger</p>
                               )}
+                              {currentlyPlaying === file.name && (
+                                <p className="text-xs text-green-600 font-medium">
+                                  {isMotionTriggered ? "Playing (Motion)" : "Playing (Manual)"}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
@@ -621,109 +626,18 @@ export default function MusicPlayer() {
                             </Button>
                             <Button
                               onClick={() => playFile(file.name)}
-                              variant={currentlyPlaying === file.name ? "default" : "outline"}
+                              variant="outline"
                               size="sm"
-                              className={
-                                currentlyPlaying === file.name
-                                  ? "bg-green-600 hover:bg-green-700"
-                                  : "border-green-300 text-green-700 hover:bg-green-50"
-                              }
+                              className="border-green-300 text-green-700 hover:bg-green-50"
                             >
-                              {currentlyPlaying === file.name ? (
-                                <>
-                                  <Pause className="h-4 w-4 mr-2" />
-                                  Stop
-                                </>
-                              ) : (
-                                <>
-                                  <Play className="h-4 w-4 mr-2" />
-                                  Play
-                                </>
-                              )}
+                              <Play className="h-4 w-4 mr-2" />
+                              Play
                             </Button>
                           </div>
                         </div>
                       ))}
                     </div>
                   )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* File Upload Widget */}
-            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
-              <CardHeader className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
-                <CardTitle className="flex items-center gap-2 text-blue-800">
-                  <Upload className="h-5 w-5" />
-                  Upload WAV File
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <Input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".wav"
-                      onChange={handleFileUpload}
-                      disabled={uploadStatus.uploading}
-                      className="flex-1"
-                    />
-                    <Button
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadStatus.uploading}
-                      className="bg-blue-600 hover:bg-blue-700"
-                    >
-                      {uploadStatus.uploading ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Processing...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="h-4 w-4 mr-2" />
-                          Select File
-                        </>
-                      )}
-                    </Button>
-                  </div>
-
-                  {uploadStatus.message && (
-                    <Alert
-                      className={`${
-                        uploadStatus.success === true
-                          ? "border-green-200 bg-green-50"
-                          : uploadStatus.success === false
-                            ? "border-red-200 bg-red-50"
-                            : "border-blue-200 bg-blue-50"
-                      }`}
-                    >
-                      {uploadStatus.success === true ? (
-                        <CheckCircle className="h-4 w-4 text-green-600" />
-                      ) : uploadStatus.success === false ? (
-                        <XCircle className="h-4 w-4 text-red-600" />
-                      ) : (
-                        <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
-                      )}
-                      <AlertDescription
-                        className={
-                          uploadStatus.success === true
-                            ? "text-green-800"
-                            : uploadStatus.success === false
-                              ? "text-red-800"
-                              : "text-blue-800"
-                        }
-                      >
-                        {uploadStatus.message}
-                      </AlertDescription>
-                    </Alert>
-                  )}
-
-                  <div className="text-sm text-gray-600 space-y-1">
-                    <p>• Only WAV files are accepted</p>
-                    <p>• Files will be automatically processed to ensure compatibility</p>
-                    <p>• Processed files will be converted to: 16-bit PCM, 44.1kHz, Stereo</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -832,6 +746,84 @@ export default function MusicPlayer() {
                 </ScrollArea>
               </CardContent>
             </Card>
+
+            {/* File Upload Widget */}
+            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
+                <CardTitle className="flex items-center gap-2 text-blue-800">
+                  <Upload className="h-5 w-5" />
+                  Upload WAV File
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div className="flex flex-col gap-4">
+                    <Input
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".wav"
+                      onChange={handleFileUpload}
+                      disabled={uploadStatus.uploading}
+                      className="w-full"
+                    />
+                    <Button
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploadStatus.uploading}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      {uploadStatus.uploading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <Upload className="h-4 w-4 mr-2" />
+                          Select File
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {uploadStatus.message && (
+                    <Alert
+                      className={`${
+                        uploadStatus.success === true
+                          ? "border-green-200 bg-green-50"
+                          : uploadStatus.success === false
+                            ? "border-red-200 bg-red-50"
+                            : "border-blue-200 bg-blue-50"
+                      }`}
+                    >
+                      {uploadStatus.success === true ? (
+                        <CheckCircle className="h-4 w-4 text-green-600" />
+                      ) : uploadStatus.success === false ? (
+                        <XCircle className="h-4 w-4 text-red-600" />
+                      ) : (
+                        <Loader2 className="h-4 w-4 text-blue-600 animate-spin" />
+                      )}
+                      <AlertDescription
+                        className={
+                          uploadStatus.success === true
+                            ? "text-green-800"
+                            : uploadStatus.success === false
+                              ? "text-red-800"
+                              : "text-blue-800"
+                        }
+                      >
+                        {uploadStatus.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p>• Only WAV files are accepted</p>
+                    <p>• Files will be automatically processed to ensure compatibility</p>
+                    <p>• Processed files will be converted to: 16-bit PCM, 44.1kHz, Stereo</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
@@ -843,17 +835,21 @@ export default function MusicPlayer() {
                 <div className="p-3 bg-white/20 rounded-full">
                   <Play className="h-6 w-6" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="text-sm opacity-90">Now Playing</p>
                   <p className="text-xl font-semibold">{currentlyPlaying}</p>
+                  <p className="text-sm opacity-75">
+                    {isMotionTriggered ? "Started by motion detection" : "Started manually"}
+                  </p>
                 </div>
-                <div className="ml-auto flex items-center gap-2">
+                <div className="flex items-center gap-4">
                   <Button
-                    onClick={forceStop}
+                    onClick={stopPlayback}
                     variant="outline"
                     size="sm"
                     className="bg-white/20 border-white/30 text-white hover:bg-white/30"
                   >
+                    <Stop className="h-4 w-4 mr-2" />
                     Stop
                   </Button>
                   <div className="flex items-center gap-1">
