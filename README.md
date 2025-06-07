@@ -528,7 +528,7 @@ The `~/Music/autoplay.conf` file uses JSON format:
 
 ### Managing Configuration
 
-Use the configuration management script for advanced control:
+SolarTunes takes care of the configuration if you are using the UI. If you want to do it on the command line: Use the configuration management script for advanced control:
 
 ```bash
 # Show current configuration
