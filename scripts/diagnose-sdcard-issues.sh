@@ -71,7 +71,7 @@ sudo journalctl --disk-usage || echo "Could not determine journal usage"
 
 echo ""
 echo "Journal configuration:"
-grep -r Storage /etc/systemd/journald.conf* || echo "No custom journal configuration found"
+grep -r Storage /etc/systemd/journald.conf* 2>/dev/null || echo "No custom journal configuration found"
 
 print_header "💾 Hardware Information"
 echo "======================"
@@ -143,7 +143,7 @@ else
         print_warning "Swap file is in use"
         echo "Try: sudo swapoff -a"
     fi
-}
+fi
 
 echo ""
 print_status "Diagnostic complete!"
