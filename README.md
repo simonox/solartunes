@@ -2,6 +2,17 @@
 
 A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built with Next.js and designed for eco-friendly, solar-powered setups.
 
+## 🚜 Hardware
+- 🍓 RaspberryPi 4
+- 🎸 HiFiBerry Amp2 (Class-D, 2×30 W RMS)
+- 🔉 JBL Control 1 speakers
+- 🔋 Pb accumulator AGWI Standard 12LS-7.2(F1)
+- ☀️ Solar Panel
+- ⚡️ MPPT charging regulator
+- 🏎️ PIR Sensor
+- 💾 MicroSD Card (64 GB)
+
+
 ## 🌱 Features
 
 - **🎵 Sound Library**: Browse and play .wav files from your Music directory
