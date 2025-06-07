@@ -14,6 +14,11 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built wit
 - **📱 File Upload**: Upload and process WAV files directly through the web interface
 - **🛡️ SD Card Protection**: Advanced read-only mode for SD card longevity
 
+## 🎬 Preview
+
+<img width="764" alt="screenshot" src="https://github.com/user-attachments/assets/821008a9-afb6-4d05-82b9-2d741c8e4eab" />
+
+
 ## 🚀 Quick Setup
 
 ### 1. Clone the Repository
