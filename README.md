@@ -1,6 +1,7 @@
 # SolarTunes
 
-A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built with Next.js and designed for eco-friendly, solar-powered setups.
+A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can upload tracks and play them. It can even start a selected track on motion detection. Services are started on startup. Events are logged with logd. Aplay is used for playback. Node.js ist the runtime environment. Typescript, Bash and Python are the languages used to build it. PNPM ist used as a package manger. Tailwind.CSS ist used for layout, widgets and as a design system. Frontend and backend is built with Next.js and designed for eco-friendly, solar-powered setups.
+
 
 ## 🚜 Hardware
 - 🍓 RaspberryPi 4
