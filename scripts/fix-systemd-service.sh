@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Fix SolarTunes Systemd Service
-# Restores proper service configuration for boot startup
+# Fixes the service to properly run as a daemon
 
-echo "🔧 Fixing SolarTunes Systemd Service"
-echo "==================================="
+echo "🔧 Fixing SolarTunes Systemd Service for Proper Daemon Operation"
+echo "=============================================================="
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -24,26 +24,14 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if running as root
-if [[ $EUID -eq 0 ]]; then
-   print_error "This script should not be run as root. Please run as a regular user."
-   exit 1
-fi
-
 PROJECT_DIR="$HOME/solartunes"
-
-# Check if project directory exists
-if [ ! -d "$PROJECT_DIR" ]; then
-    print_error "SolarTunes project directory not found at $PROJECT_DIR"
-    exit 1
-fi
 
 print_status "Stopping current service..."
 sudo systemctl stop solartunes 2>/dev/null || true
 
-print_status "Creating corrected systemd service..."
+print_status "Creating fixed systemd service configuration..."
 
-# Create a robust systemd service that handles both locked and unlocked states
+# Create a proper systemd service that runs as a daemon
 sudo tee /etc/systemd/system/solartunes.service > /dev/null << EOL
 [Unit]
 Description=SolarTunes Sound Player
@@ -51,56 +39,56 @@ After=network.target sound.target
 Wants=network.target
 
 [Service]
-Type=simple
+Type=exec
 User=$USER
+Group=$USER
 WorkingDirectory=$PROJECT_DIR
+
+# Environment variables
 Environment=NODE_ENV=production
 Environment=PORT=3000
+Environment=PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$HOME/.local/share/pnpm:$HOME/.local/bin
 
-# Pre-start script to ensure directories exist and detect SD card state
-ExecStartPre=/bin/bash -c '\
-    # Create RAM disk directories if they don'\''t exist \
-    mkdir -p /tmp/solartunes-ram/{logs,temp,cache} 2>/dev/null || true; \
-    chown -R $USER:$USER /tmp/solartunes-ram 2>/dev/null || true; \
-    \
-    # Check if SD card is read-only \
-    if mount | grep " / " | grep -q "ro,\\|ro)"; then \
-        echo "SD card is read-only, using RAM disk for logs"; \
-        export SOLARTUNES_USE_RAMDISK=true; \
-    else \
-        echo "SD card is read-write, using normal logging"; \
-        export SOLARTUNES_USE_RAMDISK=false; \
-    fi'
+# Pre-start setup
+ExecStartPre=/bin/bash -c 'mkdir -p /tmp/solartunes-ram/{logs,temp,cache} && chown -R $USER:$USER /tmp/solartunes-ram'
 
-# Main start command - use pnpm if available, fallback to npm
+# Main start command - find and use the correct package manager
 ExecStart=/bin/bash -c '\
-    # Check if pnpm is available \
-    if command -v pnpm >/dev/null 2>&1; then \
-        echo "Starting SolarTunes with pnpm..."; \
-        exec pnpm start; \
-    elif [ -x "$HOME/.local/share/pnpm/pnpm" ]; then \
-        echo "Starting SolarTunes with local pnpm..."; \
+    cd $PROJECT_DIR && \
+    if [ -x "$HOME/.local/share/pnpm/pnpm" ]; then \
+        echo "Starting with local pnpm..." && \
         exec $HOME/.local/share/pnpm/pnpm start; \
+    elif command -v pnpm >/dev/null 2>&1; then \
+        echo "Starting with system pnpm..." && \
+        exec pnpm start; \
     elif command -v npm >/dev/null 2>&1; then \
-        echo "Starting SolarTunes with npm..."; \
+        echo "Starting with npm..." && \
         exec npm start; \
     else \
-        echo "No package manager found!"; \
+        echo "No package manager found!" && \
         exit 1; \
     fi'
 
-# Restart policy
+# Restart configuration
 Restart=always
 RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
 
-# Logging - conditional based on SD card state
+# Process management
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
+
+# Logging
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=solartunes
 
-# Resource limits
+# Security and resource limits
+NoNewPrivileges=true
 MemoryMax=512M
-TasksMax=50
+TasksMax=100
 
 [Install]
 WantedBy=multi-user.target
@@ -109,244 +97,72 @@ EOL
 print_status "Reloading systemd daemon..."
 sudo systemctl daemon-reload
 
-print_status "Enabling SolarTunes service for boot startup..."
+print_status "Enabling service for boot startup..."
 sudo systemctl enable solartunes
 
 print_status "Testing service startup..."
-if sudo systemctl start solartunes; then
-    print_status "✅ Service started successfully"
+sudo systemctl start solartunes
+
+# Wait for startup
+sleep 10
+
+# Check if service is running
+if systemctl is-active --quiet solartunes; then
+    print_status "✅ Service is running successfully!"
     
-    # Wait a moment for startup
-    sleep 5
-    
-    # Check if it's actually running
-    if systemctl is-active --quiet solartunes; then
-        print_status "✅ Service is running and healthy"
-        
-        # Show status
-        echo ""
-        echo "📊 Service Status:"
-        sudo systemctl status solartunes --no-pager -l
-        
-        echo ""
-        echo "📋 Recent Logs:"
-        sudo journalctl -u solartunes -n 10 --no-pager
-        
-    else
-        print_error "❌ Service started but is not active"
-        echo ""
-        echo "📋 Error Logs:"
-        sudo journalctl -u solartunes -n 20 --no-pager
-    fi
-else
-    print_error "❌ Service failed to start"
+    # Show status
     echo ""
-    echo "📋 Error Details:"
+    echo "📊 Service Status:"
     sudo systemctl status solartunes --no-pager -l
+    
     echo ""
-    echo "📋 Error Logs:"
-    sudo journalctl -u solartunes -n 20 --no-pager
+    echo "📋 Recent Logs:"
+    sudo journalctl -u solartunes -n 15 --no-pager
+    
+    echo ""
+    echo "🌐 Access SolarTunes at: http://$(hostname -I | awk '{print $1}' 2>/dev/null || echo 'localhost'):3000"
+    
+else
+    print_error "❌ Service failed to start properly"
+    
+    echo ""
+    echo "📊 Service Status:"
+    sudo systemctl status solartunes --no-pager -l
+    
+    echo ""
+    echo "📋 Detailed Logs:"
+    sudo journalctl -u solartunes -n 30 --no-pager
+    
+    echo ""
+    print_status "Trying manual diagnosis..."
+    
+    # Test manual start to see what's wrong
+    echo "Testing manual start in project directory..."
+    cd "$PROJECT_DIR"
+    
+    if [ -x "$HOME/.local/share/pnpm/pnpm" ]; then
+        echo "Testing with local pnpm..."
+        timeout 5s $HOME/.local/share/pnpm/pnpm start || echo "Manual start test completed"
+    elif command -v pnpm >/dev/null 2>&1; then
+        echo "Testing with system pnpm..."
+        timeout 5s pnpm start || echo "Manual start test completed"
+    elif command -v npm >/dev/null 2>&1; then
+        echo "Testing with npm..."
+        timeout 5s npm start || echo "Manual start test completed"
+    fi
 fi
 
-print_status "Creating service management helper script..."
+print_status "Creating service monitoring script..."
 
-# Create a helper script for service management
-cat > $PROJECT_DIR/scripts/manage-service.sh << 'EOL'
+# Create a script to monitor and restart the service if needed
+cat > $PROJECT_DIR/scripts/monitor-service.sh << 'EOL'
 #!/bin/bash
 
-# SolarTunes Service Management Helper
-# Provides easy commands for managing the systemd service
+# SolarTunes Service Monitor
+# Monitors the service and provides detailed status information
 
-echo "🔧 SolarTunes Service Management"
-echo "==============================="
-
-# Colors for output
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-print_status() {
-    echo -e "${GREEN}[INFO]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-show_status() {
-    echo "📊 Service Status:"
-    echo "=================="
-    
-    if systemctl is-active --quiet solartunes; then
-        print_status "✅ SolarTunes is RUNNING"
-    else
-        print_error "❌ SolarTunes is STOPPED"
-    fi
-    
-    if systemctl is-enabled --quiet solartunes; then
-        print_status "✅ Auto-start is ENABLED"
-    else
-        print_warning "⚠️  Auto-start is DISABLED"
-    fi
-    
-    echo ""
-    echo "Detailed status:"
-    sudo systemctl status solartunes --no-pager -l
-    
-    echo ""
-    echo "Recent logs (last 10 lines):"
-    sudo journalctl -u solartunes -n 10 --no-pager
-}
-
-start_service() {
-    print_status "Starting SolarTunes service..."
-    if sudo systemctl start solartunes; then
-        sleep 3
-        if systemctl is-active --quiet solartunes; then
-            print_status "✅ Service started successfully"
-        else
-            print_error "❌ Service failed to start properly"
-            sudo journalctl -u solartunes -n 10 --no-pager
-        fi
-    else
-        print_error "❌ Failed to start service"
-    fi
-}
-
-stop_service() {
-    print_status "Stopping SolarTunes service..."
-    if sudo systemctl stop solartunes; then
-        print_status "✅ Service stopped successfully"
-    else
-        print_error "❌ Failed to stop service"
-    fi
-}
-
-restart_service() {
-    print_status "Restarting SolarTunes service..."
-    if sudo systemctl restart solartunes; then
-        sleep 3
-        if systemctl is-active --quiet solartunes; then
-            print_status "✅ Service restarted successfully"
-        else
-            print_error "❌ Service failed to restart properly"
-            sudo journalctl -u solartunes -n 10 --no-pager
-        fi
-    else
-        print_error "❌ Failed to restart service"
-    fi
-}
-
-enable_autostart() {
-    print_status "Enabling auto-start on boot..."
-    if sudo systemctl enable solartunes; then
-        print_status "✅ Auto-start enabled"
-    else
-        print_error "❌ Failed to enable auto-start"
-    fi
-}
-
-disable_autostart() {
-    print_status "Disabling auto-start on boot..."
-    if sudo systemctl disable solartunes; then
-        print_status "✅ Auto-start disabled"
-    else
-        print_error "❌ Failed to disable auto-start"
-    fi
-}
-
-show_logs() {
-    local lines=${1:-50}
-    echo "📋 Recent Logs (last $lines lines):"
-    echo "===================================="
-    sudo journalctl -u solartunes -n $lines --no-pager
-}
-
-follow_logs() {
-    print_status "Following logs (Ctrl+C to stop)..."
-    sudo journalctl -u solartunes -f
-}
-
-case "${1:-menu}" in
-    "status")
-        show_status
-        ;;
-    "start")
-        start_service
-        ;;
-    "stop")
-        stop_service
-        ;;
-    "restart")
-        restart_service
-        ;;
-    "enable")
-        enable_autostart
-        ;;
-    "disable")
-        disable_autostart
-        ;;
-    "logs")
-        show_logs ${2:-50}
-        ;;
-    "follow")
-        follow_logs
-        ;;
-    "menu"|*)
-        echo ""
-        echo "Choose an option:"
-        echo "1) Show service status"
-        echo "2) Start service"
-        echo "3) Stop service"
-        echo "4) Restart service"
-        echo "5) Enable auto-start on boot"
-        echo "6) Disable auto-start on boot"
-        echo "7) Show recent logs"
-        echo "8) Follow logs (live)"
-        echo "9) Exit"
-        echo ""
-        read -p "Enter your choice (1-9): " choice
-        
-        case $choice in
-            1) show_status ;;
-            2) start_service ;;
-            3) stop_service ;;
-            4) restart_service ;;
-            5) enable_autostart ;;
-            6) disable_autostart ;;
-            7) 
-                read -p "How many log lines to show? (default 50): " lines
-                show_logs ${lines:-50}
-                ;;
-            8) follow_logs ;;
-            9) print_status "Exiting..."; exit 0 ;;
-            *) print_error "Invalid choice"; exit 1 ;;
-        esac
-        ;;
-esac
-EOL
-
-chmod +x $PROJECT_DIR/scripts/manage-service.sh
-
-print_status "Creating package.json verification script..."
-
-# Create script to verify package.json and dependencies
-cat > $PROJECT_DIR/scripts/verify-dependencies.sh << 'EOL'
-#!/bin/bash
-
-# Verify SolarTunes Dependencies
-# Checks if all required files and dependencies are present
-
-echo "🔍 Verifying SolarTunes Dependencies"
-echo "==================================="
-
-PROJECT_DIR="$HOME/solartunes"
-cd "$PROJECT_DIR" || exit 1
+echo "📊 SolarTunes Service Monitor"
+echo "============================"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -366,138 +182,180 @@ print_error() {
     echo -e "${RED}[✗]${NC} $1"
 }
 
-errors=0
-
-# Check package.json
-if [ -f "package.json" ]; then
-    print_status "package.json exists"
+# Check service status
+if systemctl is-active --quiet solartunes; then
+    print_status "Service is RUNNING"
     
-    # Check if it has required scripts
-    if grep -q '"start"' package.json; then
-        print_status "Start script found in package.json"
+    # Get process info
+    PID=$(systemctl show solartunes --property=MainPID --value)
+    if [ "$PID" != "0" ]; then
+        print_status "Process ID: $PID"
+        
+        # Check if process is actually running
+        if kill -0 $PID 2>/dev/null; then
+            print_status "Process is alive and responding"
+            
+            # Check memory usage
+            MEM=$(ps -p $PID -o rss= 2>/dev/null | awk '{print int($1/1024)"MB"}')
+            print_status "Memory usage: $MEM"
+            
+            # Check if port 3000 is listening
+            if netstat -tlnp 2>/dev/null | grep -q ":3000.*$PID/" || ss -tlnp 2>/dev/null | grep -q ":3000.*pid=$PID"; then
+                print_status "Listening on port 3000"
+                
+                # Test HTTP response
+                if curl -s -o /dev/null -w "%{http_code}" http://localhost:3000 | grep -q "200"; then
+                    print_status "HTTP server responding correctly"
+                else
+                    print_warning "HTTP server not responding properly"
+                fi
+            else
+                print_warning "Not listening on port 3000"
+            fi
+        else
+            print_error "Process ID exists but process is not running"
+        fi
     else
-        print_error "Start script missing in package.json"
-        errors=$((errors + 1))
+        print_warning "No main process ID found"
     fi
 else
-    print_error "package.json missing"
-    errors=$((errors + 1))
-fi
-
-# Check node_modules
-if [ -d "node_modules" ]; then
-    print_status "node_modules directory exists"
-else
-    print_warning "node_modules directory missing - dependencies may need installation"
-fi
-
-# Check Next.js build
-if [ -d ".next" ]; then
-    print_status "Next.js build directory exists"
-else
-    print_warning "Next.js build missing - project may need building"
-fi
-
-# Check main application files
-required_files=(
-    "app/page.tsx"
-    "app/layout.tsx"
-    "app/api/files/route.ts"
-    "app/api/play/route.ts"
-    "app/api/stop/route.ts"
-)
-
-for file in "${required_files[@]}"; do
-    if [ -f "$file" ]; then
-        print_status "$file exists"
+    print_error "Service is NOT RUNNING"
+    
+    # Check if it's enabled
+    if systemctl is-enabled --quiet solartunes; then
+        print_status "Service is enabled for boot"
     else
-        print_error "$file missing"
-        errors=$((errors + 1))
+        print_warning "Service is NOT enabled for boot"
     fi
-done
-
-# Check package managers
-if command -v pnpm >/dev/null 2>&1; then
-    print_status "pnpm is available"
-elif [ -x "$HOME/.local/share/pnpm/pnpm" ]; then
-    print_status "Local pnpm is available"
-elif command -v npm >/dev/null 2>&1; then
-    print_warning "Only npm is available (pnpm recommended)"
-else
-    print_error "No package manager found"
-    errors=$((errors + 1))
-fi
-
-# Check Node.js
-if command -v node >/dev/null 2>&1; then
-    node_version=$(node --version)
-    print_status "Node.js is available: $node_version"
-else
-    print_error "Node.js not found"
-    errors=$((errors + 1))
+    
+    # Show recent failure logs
+    echo ""
+    echo "Recent failure logs:"
+    sudo journalctl -u solartunes -n 10 --no-pager
 fi
 
 echo ""
-if [ $errors -eq 0 ]; then
-    print_status "All dependencies verified successfully!"
-    echo ""
-    echo "🚀 Ready to start SolarTunes"
+echo "📋 Service Details:"
+sudo systemctl status solartunes --no-pager -l
+
+echo ""
+echo "🔄 Restart Count:"
+RESTART_COUNT=$(systemctl show solartunes --property=NRestarts --value)
+echo "Service has been restarted $RESTART_COUNT times"
+
+echo ""
+echo "⏰ Last Start Time:"
+LAST_START=$(systemctl show solartunes --property=ActiveEnterTimestamp --value)
+echo "$LAST_START"
+
+# Check for common issues
+echo ""
+echo "🔍 Common Issues Check:"
+
+# Check if project directory exists
+if [ -d "$HOME/solartunes" ]; then
+    print_status "Project directory exists"
 else
-    print_error "Found $errors error(s) that need to be fixed"
-    echo ""
-    echo "🔧 Suggested fixes:"
-    
-    if [ ! -f "package.json" ]; then
-        echo "• Run the deploy script: ./scripts/deploy-project.sh"
-    fi
-    
-    if [ ! -d "node_modules" ]; then
-        echo "• Install dependencies: pnpm install (or npm install)"
-    fi
-    
-    if [ ! -d ".next" ]; then
-        echo "• Build the project: pnpm build (or npm run build)"
-    fi
-    
-    if ! command -v node >/dev/null 2>&1; then
-        echo "• Install Node.js: curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - && sudo apt-get install -y nodejs"
-    fi
+    print_error "Project directory missing"
 fi
 
-exit $errors
+# Check if package.json exists
+if [ -f "$HOME/solartunes/package.json" ]; then
+    print_status "package.json exists"
+else
+    print_error "package.json missing"
+fi
+
+# Check if node_modules exists
+if [ -d "$HOME/solartunes/node_modules" ]; then
+    print_status "node_modules exists"
+else
+    print_error "node_modules missing - run 'pnpm install'"
+fi
+
+# Check if build exists
+if [ -d "$HOME/solartunes/.next" ]; then
+    print_status ".next build directory exists"
+else
+    print_error ".next build missing - run 'pnpm build'"
+fi
+
+# Check package managers
+if command -v pnpm >/dev/null 2>&1; then
+    print_status "pnpm available in PATH"
+elif [ -x "$HOME/.local/share/pnpm/pnpm" ]; then
+    print_status "pnpm available locally"
+elif command -v npm >/dev/null 2>&1; then
+    print_status "npm available"
+else
+    print_error "No package manager found"
+fi
+
+echo ""
+echo "💡 Quick Actions:"
+echo "• Restart service: sudo systemctl restart solartunes"
+echo "• View live logs:  sudo journalctl -u solartunes -f"
+echo "• Manual test:     cd ~/solartunes && pnpm start"
+echo "• Rebuild project: ~/solartunes/scripts/rebuild-project.sh"
 EOL
 
-chmod +x $PROJECT_DIR/scripts/verify-dependencies.sh
+chmod +x $PROJECT_DIR/scripts/monitor-service.sh
+
+print_status "Creating service restart helper..."
+
+# Create a simple restart script
+cat > $PROJECT_DIR/scripts/restart-service.sh << 'EOL'
+#!/bin/bash
+
+echo "🔄 Restarting SolarTunes Service"
+echo "==============================="
+
+# Stop the service
+echo "Stopping service..."
+sudo systemctl stop solartunes
+
+# Wait a moment
+sleep 3
+
+# Start the service
+echo "Starting service..."
+sudo systemctl start solartunes
+
+# Wait for startup
+sleep 5
+
+# Check status
+if systemctl is-active --quiet solartunes; then
+    echo "✅ Service restarted successfully!"
+    echo ""
+    echo "📊 Status:"
+    sudo systemctl status solartunes --no-pager -l
+    echo ""
+    echo "🌐 Access at: http://$(hostname -I | awk '{print $1}' 2>/dev/null || echo 'localhost'):3000"
+else
+    echo "❌ Service failed to restart"
+    echo ""
+    echo "📋 Logs:"
+    sudo journalctl -u solartunes -n 20 --no-pager
+fi
+EOL
+
+chmod +x $PROJECT_DIR/scripts/restart-service.sh
 
 echo ""
 print_status "✅ Systemd service fix complete!"
 echo ""
-echo "📋 What was fixed:"
-echo "• Corrected systemd service configuration"
-echo "• Added proper error handling and fallbacks"
-echo "• Enabled auto-start on boot"
-echo "• Created service management helper"
-echo "• Added dependency verification script"
+echo "📋 New management tools:"
+echo "• Monitor service:  ~/solartunes/scripts/monitor-service.sh"
+echo "• Restart service:  ~/solartunes/scripts/restart-service.sh"
+echo "• View logs:        sudo journalctl -u solartunes -f"
 echo ""
-echo "🔧 Management commands:"
-echo "• Service control:    ~/solartunes/scripts/manage-service.sh"
-echo "• Verify deps:        ~/solartunes/scripts/verify-dependencies.sh"
-echo "• Direct commands:    sudo systemctl {start|stop|restart|status} solartunes"
-echo ""
-echo "🌐 Your SolarTunes should now start automatically on boot!"
 
-# Final verification
-echo ""
-print_status "Running final verification..."
+# Final check
 if systemctl is-active --quiet solartunes; then
-    print_status "✅ Service is currently running"
+    print_status "🎉 SolarTunes is now running as a proper daemon!"
     echo "🌐 Access at: http://$(hostname -I | awk '{print $1}' 2>/dev/null || echo 'localhost'):3000"
 else
-    print_warning "⚠️  Service is not running - check logs with: sudo journalctl -u solartunes -n 20"
-fi
-
-if systemctl is-enabled --quiet solartunes; then
-    print_status "✅ Auto-start on boot is enabled"
-else
-    print_warning "⚠️  Auto-start is not enabled - run: sudo systemctl enable solartunes"
+    print_warning "⚠️  Service needs attention - run the monitor script for diagnosis"
+    echo "📊 Run: ~/solartunes/scripts/monitor-service.sh"
 fi
