@@ -6,40 +6,49 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built wit
 
 - **🎵 Sound Library**: Browse and play .wav files from your Music directory
 - **🎮 Simple Controls**: Click to play/stop with single-file playback protection
+- **🎯 Motion Detection**: PIR sensor integration for automatic sound triggering
 - **📊 System Monitoring**: Real-time system logs for debugging
 - **🌿 SolarPunk Design**: Beautiful green gradients and nature-inspired UI
 - **⚡ Low Power**: Optimized for solar-powered Raspberry Pi setups
 - **🔄 Auto-Start**: Systemd service for automatic startup on boot
+- **📱 File Upload**: Upload and process WAV files directly through the web interface
 
 ## 🚀 Quick Setup
 
 ### 1. Clone the Repository
 
-<code>
+```bash
 mkdir ~/solartunes
 cd ~/solartunes
 git clone https://github.com/simonox/solartunes.git .
-</code>
+```
 
 ### 2. Run the Setup Script
 
-<code>
+```bash
 chmod +x scripts/setup-raspberry-pi.sh
 ./scripts/setup-raspberry-pi.sh
-</code>
+```
 
 ### 3. Deploy the Project
 
-<code>
+```bash
 chmod +x scripts/deploy-project.sh
 ./scripts/deploy-project.sh
-</code>
+```
 
 ### 4. Start the Service
 
-<code>
+```bash
 sudo systemctl start solartunes
-</code>
+```
+
+### 5. Setup Motion Detection (Optional)
+
+```bash
+chmod +x scripts/setup-motion-sensor.sh
+./scripts/setup-motion-sensor.sh
+```
 
 ## 🔧 What the Setup Script Does
 
@@ -57,7 +66,7 @@ sudo systemctl start solartunes
 
 Use these commands to control your SolarTunes service:
 
-<code>
+```bash
 # Start the service
 sudo systemctl start solartunes
 
@@ -78,11 +87,11 @@ sudo systemctl enable solartunes
 
 # Disable auto-start
 sudo systemctl disable solartunes
-</code>
+```
 
 ## 📁 Project Structure
 
-<code>
+```
 ~/solartunes/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -90,28 +99,290 @@ sudo systemctl disable solartunes
 │   │   ├── play/          # Play audio files
 │   │   ├── stop/          # Stop playback
 │   │   ├── status/        # Check playback status
-│   │   └── logs/          # System logs
+│   │   ├── logs/          # System logs
+│   │   ├── motion/        # Motion detection API
+│   │   ├── upload/        # File upload handling
+│   │   ├── volume/        # Volume control
+│   │   ├── temperature/   # System temperature
+│   │   └── cleanup/       # Audio cleanup utilities
 │   ├── layout.tsx         # App layout
 │   └── page.tsx           # Main sound player interface
 ├── scripts/               # Setup and management scripts
 │   ├── setup-raspberry-pi.sh
 │   ├── deploy-project.sh
-│   ├── start-solartunes.sh
-│   ├── stop-solartunes.sh
-│   ├── restart-solartunes.sh
-│   └── status-solartunes.sh
+│   ├── setup-motion-sensor.sh
+│   ├── motion-detector.py
+│   ├── test-pir.py
+│   └── [management scripts]
 └── README.md
-</code>
+```
+
+## 📜 Shell Scripts Reference
+
+### Setup Scripts
+
+#### `setup-raspberry-pi.sh`
+**Purpose**: Complete Raspberry Pi environment setup for SolarTunes
+- Updates system packages
+- Installs audio dependencies (ALSA, PulseAudio)
+- Installs Node.js 20 and pnpm
+- Configures audio permissions and ALSA
+- Creates systemd service
+- Sets up log rotation
+- Creates test audio files
+- Generates helper scripts
+
+#### `deploy-project.sh`
+**Purpose**: Deploys the Next.js project to Raspberry Pi
+- Creates package.json with dependencies
+- Configures Next.js and Tailwind
+- Installs npm dependencies
+- Builds the production application
+
+#### `setup-motion-sensor.sh`
+**Purpose**: Sets up PIR motion sensor integration
+- Installs Python GPIO libraries
+- Creates motion detection script
+- Sets up systemd service for motion detection
+- Provides hardware wiring guide
+- Creates test and management scripts
+
+### Service Management Scripts
+
+#### `start-solartunes.sh`
+**Purpose**: Starts the SolarTunes service
+- Uses systemd if available
+- Falls back to manual start in development
+- Displays service status and access URL
+
+#### `stop-solartunes.sh`
+**Purpose**: Stops the SolarTunes service
+- Gracefully stops systemd service
+- Kills Node.js processes if systemd unavailable
+- Stops any audio playback
+
+#### `restart-solartunes.sh`
+**Purpose**: Restarts the SolarTunes service
+- Stops and starts the service
+- Shows recent logs
+- Displays access information
+
+#### `status-solartunes.sh`
+**Purpose**: Shows comprehensive system status
+- Service status and logs
+- Network and port information
+- Audio device status
+- System resources (memory, disk, temperature)
+- Power status and throttling info
+
+#### `update-project.sh`
+**Purpose**: Updates SolarTunes to latest version
+- Pulls latest code from Git
+- Updates dependencies
+- Rebuilds the project
+- Restarts services
+
+### Motion Detection Scripts
+
+#### `start-motion-detector.sh`
+**Purpose**: Starts the motion detection service
+- Starts systemd service or manual process
+- Verifies successful startup
+
+#### `stop-motion-detector.sh`
+**Purpose**: Stops the motion detection service
+- Stops systemd service gracefully
+- Kills motion detector processes
+
+#### `status-motion-detector.sh`
+**Purpose**: Shows motion detection status
+- Service status and logs
+- Recent motion detection events
+- Process information
+
+#### `motion-detector.py`
+**Purpose**: Main motion detection daemon
+- Monitors PIR sensor on GPIO5
+- Calls SolarTunes API when motion detected
+- Includes cooldown period and logging
+- Handles GPIO cleanup
+
+### Testing Scripts
+
+#### `test-pir.py`
+**Purpose**: Simple PIR sensor test
+- Basic GPIO5 motion detection
+- Minimal script for hardware verification
+- Real-time motion status display
+
+#### `test-pir-updated.py`
+**Purpose**: Advanced PIR sensor test with error handling
+- Comprehensive GPIO testing
+- Version information display
+- Better error handling and diagnostics
+
+#### `test-pir-gpiozero.py`
+**Purpose**: PIR testing using gpiozero library
+- Alternative to RPi.GPIO
+- Better compatibility with newer Pi models
+- Simplified motion detection API
+
+#### `gpio-diagnostic.py`
+**Purpose**: Comprehensive GPIO system diagnostics
+- Tests multiple GPIO libraries
+- Checks Raspberry Pi model compatibility
+- Provides troubleshooting recommendations
+
+#### `test-motion-sensor.sh`
+**Purpose**: Motion sensor integration test
+- Tests Python script functionality
+- Checks API endpoints
+- Verifies service status
+- Shows recent logs
+
+#### `test-motion-integration.sh`
+**Purpose**: Full motion detection integration test
+- Verifies SolarTunes is running
+- Tests API connectivity
+- Runs motion detector for testing period
+
+#### `test-audio.sh`
+**Purpose**: Audio system testing and diagnostics
+- Lists audio devices and controls
+- Tests various aplay configurations
+- Provides audio troubleshooting recommendations
+
+#### `test-hifiberry.sh`
+**Purpose**: Specific testing for HiFiBerry DAC+ audio HAT
+- Tests HiFiBerry driver loading
+- Checks DAC-specific controls
+- Tests various audio formats
+- Provides HiFiBerry-specific recommendations
+
+### Utility Scripts
+
+#### `install-gpio-libraries.sh`
+**Purpose**: Installs and updates GPIO libraries
+- Installs RPi.GPIO, gpiozero, and pigpio
+- Verifies successful installation
+- Starts pigpio daemon
+
+#### `fix-motion-setup.sh`
+**Purpose**: Emergency motion detection fix
+- Creates simplified motion detector
+- Provides basic functionality when main setup fails
+
+#### `update-motion-gpio.sh`
+**Purpose**: Updates motion detection to use different GPIO pin
+- Changes GPIO pin configuration
+- Updates all related scripts
+- Provides new wiring instructions
+
+#### `test-gpio5.sh`
+**Purpose**: Specific testing for GPIO5 pin
+- Tests GPIO5 pin access and functionality
+- Checks for GPIO conflicts
+- Verifies motion detector script
+
+#### `setup-working-motion.sh`
+**Purpose**: Sets up production motion detection
+- Creates production motion detector based on working test
+- Configures systemd service
+- Provides integration testing
+
+#### `start-motion-production.sh`
+**Purpose**: Starts complete SolarTunes system with motion detection
+- Starts both SolarTunes and motion detection services
+- Verifies both services are running
+- Provides status and next steps
+
+## 🔌 PIR Motion Sensor Wiring
+
+### Hardware Requirements
+- PIR Motion Sensor (HC-SR501 recommended)
+- 3 Female-to-Female jumper wires
+- Raspberry Pi with GPIO pins
+
+### Wiring Diagram
+
+```
+PIR Sensor          Raspberry Pi
+┌─────────────┐    ┌─────────────────┐
+│             │    │                 │
+│    VCC   ●──┼────┼──● Pin 2 (5V)   │
+│             │    │   or Pin 1(3.3V)│
+│    OUT   ●──┼────┼──● Pin 29(GPIO5) │
+│             │    │                 │
+│    GND   ●──┼────┼──● Pin 6 (GND)  │
+│             │    │                 │
+└─────────────┘    └─────────────────┘
+```
+
+### Pin Layout Reference
+
+```
+Raspberry Pi GPIO Header (40 pins)
+┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
+│  1  │  2  │  3  │  4  │  5  │  6  │  7  │  8  │  9  │ 10  │
+│3.3V │ 5V  │GPIO2│ 5V  │GPIO3│ GND │GPIO4│GPIO14│ GND │GPIO15│
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+│ 11  │ 12  │ 13  │ 14  │ 15  │ 16  │ 17  │ 18  │ 19  │ 20  │
+│GPIO17│GPIO18│GPIO27│ GND │GPIO22│GPIO23│3.3V │GPIO24│GPIO10│ GND │
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+│ 21  │ 22  │ 23  │ 24  │ 25  │ 26  │ 27  │ 28  │ 29  │ 30  │
+│GPIO9│GPIO25│GPIO11│GPIO8│ GND │GPIO7│GPIO0│GPIO1│GPIO5│ GND │
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+│ 31  │ 32  │ 33  │ 34  │ 35  │ 36  │ 37  │ 38  │ 39  │ 40  │
+│GPIO6│GPIO12│GPIO13│ GND │GPIO19│GPIO16│GPIO26│GPIO20│ GND │GPIO21│
+└─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
+
+Connection Points:
+• Pin 2 (5V) or Pin 1 (3.3V) → PIR VCC
+• Pin 29 (GPIO5) → PIR OUT  ← Motion detection pin
+• Pin 6 (GND) → PIR GND
+```
+
+### PIR Sensor Adjustment
+
+Most PIR sensors have two potentiometers for adjustment:
+
+```
+PIR Sensor Top View
+┌─────────────────┐
+│  ┌───┐    ┌───┐ │
+│  │ S │    │ T │ │  S = Sensitivity (detection range)
+│  └───┘    └───┘ │  T = Time delay (output duration)
+│                 │
+│    [Dome]       │
+│                 │
+│ VCC  OUT   GND  │
+└─────────────────┘
+```
+
+**Adjustment Tips:**
+- **Sensitivity (S)**: Turn clockwise to increase detection range (3-7 meters)
+- **Time Delay (T)**: Turn clockwise to increase output duration (5 seconds - 5 minutes)
+- Use a small screwdriver for adjustments
+- Test after each adjustment
 
 ## 🎵 Adding Your Own Sound Files
 
 1. Copy your .wav files to the Music directory:
-   <code>cp your-sounds/*.wav ~/Music/</code>
+   ```bash
+   cp your-sounds/*.wav ~/Music/
+   ```
 
-2. Refresh the web interface or restart the service:
-   <code>sudo systemctl restart solartunes</code>
+2. Or use the web interface upload feature:
+   - Click "Upload WAV File" in the web interface
+   - Select your .wav file
+   - Files are automatically processed for compatibility
 
-3. Your new files will appear in the Sound Library!
+3. Refresh the web interface or restart the service:
+   ```bash
+   sudo systemctl restart solartunes
+   ```
+
+4. Your new files will appear in the Sound Library!
 
 ## 🌐 Access Your Sound Player
 
@@ -121,14 +392,18 @@ After setup, your SolarTunes player will be available at:
 
 **Network Access:** `http://[your-pi-ip]:3000`
 
+**Custom Domain:** `http://solartunes.local:3000` (if mDNS configured)
+
 To find your Pi's IP address:
-<code>hostname -I</code>
+```bash
+hostname -I
+```
 
 ## 🔧 Troubleshooting
 
 ### Service Won't Start
 
-<code>
+```bash
 # Check service status
 sudo systemctl status solartunes
 
@@ -137,8 +412,11 @@ sudo journalctl -u solartunes -n 50
 
 # Restart the service
 sudo systemctl restart solartunes
+```
 
 ### No Audio Output
+
+```bash
 # List audio devices
 aplay -l
 
@@ -148,7 +426,31 @@ aplay ~/Music/test-tone.wav
 # Check audio groups
 groups $USER
 
+# Test volume control
+amixer -c 0 sset 'Digital' 50%
+```
+
+### Motion Detection Issues
+
+```bash
+# Test PIR sensor hardware
+python3 scripts/test-pir.py
+
+# Check motion detector service
+sudo systemctl status motion-detector
+
+# View motion logs
+tail -f /tmp/motion-detector.log
+
+# Test API endpoint
+curl -X POST http://localhost:3000/api/motion \
+     -H "Content-Type: application/json" \
+     -d '{"action": "triggerMotion"}'
+```
+
 ### Web Interface Not Loading
+
+```bash
 # Check if port 3000 is in use
 sudo netstat -tlnp | grep :3000
 
@@ -157,38 +459,38 @@ sudo ufw status
 
 # Restart networking
 sudo systemctl restart networking
-</code>
+```
 
 ## 🔄 Updating SolarTunes
 
 To update your installation:
 
-<code>
+```bash
 cd ~/solartunes/
-./scripts/pdate-project.sh
-</code>
+./scripts/update-project.sh
+```
 
-## Wav files that does not work
+## WAV Files That Don't Work
 
 Not all wav formats are supported, you can convert them using ffmpeg:
 
-<code>
+```bash
 ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fixed.wav
-</code>
+```
 
 ## ⚡ Solar Power Optimization
 
 For solar-powered setups:
 
 1. **Monitor Power Usage:**
-<code>
+   ```bash
    # Check system load
    htop
    
    # Monitor power consumption
    vcgencmd measure_temp
    vcgencmd get_throttled
-</code>
+   ```
 
 2. **Optimize Performance:**
    - Use efficient .wav files (lower bitrates for longer playback)
@@ -196,126 +498,120 @@ For solar-powered setups:
    - Schedule playback during peak solar hours
 
 3. **Battery Management:**
-   - Monitor battery voltage in system logs -> I have no idea how to do this, as we just have a usual battery.
-   - Set up low-power mode triggers -> Same, we don't know how much power is in the battery.
+   - Monitor battery voltage in system logs → I have no idea how to do this, as we just have a usual battery.
+   - Set up low-power mode triggers → Same, we don't know how much power is in the battery.
    - Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode.
 
 4. **To Dos**
-   -  upload wav files
-   -  install sensor (movement and illumination)
-   -  lock SD Card in read only-mode
-   -  unlock SD Card for uploading
-   -  move log files to RAM disk (as SD Card is locked)
-  
-# Setup Access Point
+   - ✅ upload wav files
+   - ✅ install sensor (movement and illumination)
+   - ⏳ lock SD Card in read only-mode
+   - ⏳ unlock SD Card for uploading
+   - ⏳ move log files to RAM disk (as SD Card is locked)
 
-🛠️ Step-by-Step Setup (No Internet Hotspot)
-1. Update Raspberry Pi
+## 🛠️ Setup Access Point
 
-sudo apt update && sudo apt upgrade -y
-2. Install Access Point and DHCP Tools
+### Step-by-Step Setup (No Internet Hotspot)
 
-sudo apt install hostapd dnsmasq
-Enable hostapd:
+1. **Update Raspberry Pi**
+   ```bash
+   sudo apt update && sudo apt upgrade -y
+   ```
 
-sudo systemctl unmask hostapd
-sudo systemctl enable hostapd
-3. Assign Static IP to wlan0
+2. **Install Access Point and DHCP Tools**
+   ```bash
+   sudo apt install hostapd dnsmasq
+   sudo systemctl unmask hostapd
+   sudo systemctl enable hostapd
+   ```
 
-Edit:
+3. **Assign Static IP to wlan0**
+   ```bash
+   sudo nano /etc/dhcpcd.conf
+   ```
+   Append:
+   ```
+   interface wlan0
+       static ip_address=192.168.4.1/24
+       nohook wpa_supplicant
+   ```
+   ```bash
+   sudo service dhcpcd restart
+   ```
 
-sudo nano /etc/dhcpcd.conf
-Append:
+4. **Configure dnsmasq (DHCP Server)**
+   ```bash
+   sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
+   sudo nano /etc/dnsmasq.conf
+   ```
+   Add:
+   ```
+   interface=wlan0
+   dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
+   ```
 
-interface wlan0
-    static ip_address=192.168.4.1/24
-    nohook wpa_supplicant
-Restart service:
+5. **Configure hostapd (Wi-Fi Hotspot)**
+   ```bash
+   sudo nano /etc/hostapd/hostapd.conf
+   ```
+   Example:
+   ```
+   interface=wlan0
+   driver=nl80211
+   ssid=MyPiAP
+   hw_mode=g
+   channel=7
+   wmm_enabled=0
+   macaddr_acl=0
+   auth_algs=1
+   ignore_broadcast_ssid=0
+   wpa=2
+   wpa_passphrase=raspberry123
+   wpa_key_mgmt=WPA-PSK
+   rsn_pairwise=CCMP
+   ```
+   ```bash
+   sudo nano /etc/default/hostapd
+   ```
+   Add or update:
+   ```
+   DAEMON_CONF="/etc/hostapd/hostapd.conf"
+   ```
 
-sudo service dhcpcd restart
-4. Configure dnsmasq (DHCP Server)
+6. **Start Services**
+   ```bash
+   sudo systemctl start hostapd
+   sudo systemctl start dnsmasq
+   sudo systemctl enable hostapd
+   sudo systemctl enable dnsmasq
+   ```
 
-Backup and create a new config:
+### Final Result
+- The Pi creates a Wi-Fi network called MyPiAP
+- Devices connecting get an IP (e.g., 192.168.4.2)
+- Your Node.js app is available at: `http://192.168.4.1:3000`
 
-sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
-sudo nano /etc/dnsmasq.conf
-Add:
+### Enable solartunes.local Using avahi-daemon
 
-interface=wlan0
-dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
-5. Configure hostapd (Wi-Fi Hotspot)
+1. **Install avahi-daemon**
+   ```bash
+   sudo apt install avahi-daemon
+   ```
 
-Create config:
-
-sudo nano /etc/hostapd/hostapd.conf
-Example:
-
-interface=wlan0
-driver=nl80211
-ssid=MyPiAP
-hw_mode=g
-channel=7
-wmm_enabled=0
-macaddr_acl=0
-auth_algs=1
-ignore_broadcast_ssid=0
-wpa=2
-wpa_passphrase=raspberry123
-wpa_key_mgmt=WPA-PSK
-rsn_pairwise=CCMP
-Point hostapd to this file:
-
-sudo nano /etc/default/hostapd
-Add or update:
-
-DAEMON_CONF="/etc/hostapd/hostapd.conf"
-6. Start Services
-
-sudo systemctl start hostapd
-sudo systemctl start dnsmasq
-sudo systemctl enable hostapd
-sudo systemctl enable dnsmasq
-✅ Final Result
-The Pi creates a Wi-Fi network called MyPiAP.
-Devices connecting to it get an IP (e.g., 192.168.4.2).
-Your Node.js app is available at:
-http://192.168.4.1:3000
-Let me know if you’d like optional extras like:
-
-A custom domain (e.g., http://mypi.local)
-A captive portal-style redirect when users connect
-Automatically opening the web app in a browser on Pi boot (for kiosk use)
-You said:
-A custom domain http://solartunes.local would be nice
-ChatGPT said:
-Perfect — you can achieve http://solartunes.local using mDNS (Multicast DNS), which allows local network hostname resolution without needing a DNS server.
-
-Here's how to set it up:
-
-🛠️ Enable solartunes.local Using avahi-daemon
-1. Install avahi-daemon
-
-sudo apt install avahi-daemon
-2. Set the Hostname
-
-Change the Raspberry Pi's hostname to solartunes:
-
-sudo raspi-config
-Choose: System Options → Hostname
-Enter: solartunes
-Or do it manually:
-
-echo "solartunes" | sudo tee /etc/hostname
-sudo sed -i 's/127.0.1.1.*/127.0.1.1 solartunes/' /etc/hosts
-Reboot to apply the new hostname:
-
-sudo reboot
-✅ Done!
-Now, any device that supports mDNS (like macOS, iOS, most Linux distros, and newer Android versions) can access your Node.js server with:
-
-http://solartunes.local:3000
-
+2. **Set the Hostname**
+   ```bash
+   sudo raspi-config
+   ```
+   Choose: System Options → Hostname → Enter: solartunes
    
+   Or manually:
+   ```bash
+   echo "solartunes" | sudo tee /etc/hostname
+   sudo sed -i 's/127.0.1.1.*/127.0.1.1 solartunes/' /etc/hosts
+   sudo reboot
+   ```
+
+Now access via: `http://solartunes.local:3000`
 
 ## 🌿 SolarPunk Philosophy
 
@@ -342,11 +638,11 @@ This project is open source and available under the MIT License.
 
 Copyright (c) 2025 CCL
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the “Software”), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 ## 🆘 Support
 
