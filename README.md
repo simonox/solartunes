@@ -438,21 +438,6 @@ PIR Sensor          Raspberry Pi
 ### Pin Layout Reference
 
 ```
-Raspberry Pi GPIO Header (40 pins)
-┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
-│  1  │  2  │  3  │  4  │  5  │  6  │  7  │  8  │  9  │ 10  │
-│3.3V │ 5V  │GPIO2│ 5V  │GPIO3│ GND │GPIO4│GPIO14│ GND │GPIO15│
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│ 11  │ 12  │ 13  │ 14  │ 15  │ 16  │ 17  │ 18  │ 19  │ 20  │
-│GPIO17│GPIO18│GPIO27│ GND │GPIO22│GPIO23│3.3V │GPIO24│GPIO10│ GND │
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│ 21  │ 22  │ 23  │ 24  │ 25  │ 26  │ 27  │ 28  │ 29  │ 30  │
-│GPIO9│GPIO25│GPIO11│GPIO8│ GND │GPIO7│GPIO0│GPIO1│GPIO5│ GND │
-├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
-│ 31  │ 32  │ 33  │ 34  │ 35  │ 36  │ 37  │ 38  │ 39  │ 40  │
-│GPIO6│GPIO12│GPIO13│ GND │GPIO19│GPIO16│GPIO26│GPIO20│ GND │GPIO21│
-└─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
-
 Connection Points:
 • Pin 2 (5V) or Pin 1 (3.3V) → PIR VCC
 • Pin 29 (GPIO5) → PIR OUT  ← Motion detection pin
