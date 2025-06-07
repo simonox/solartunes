@@ -166,6 +166,25 @@ export default function MusicPlayer() {
 
       if (response.ok) {
         setMotion(data)
+
+        // Auto-enable motion detection if a file is selected and motion is not already enabled
+        if (data.selectedFile && !data.enabled) {
+          console.log("Auto-enabling motion detection for configured file:", data.selectedFile)
+          try {
+            const enableResponse = await fetch("/api/motion", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ action: "toggle" }),
+            })
+
+            if (enableResponse.ok) {
+              const updatedData = await enableResponse.json()
+              setMotion(updatedData)
+            }
+          } catch (error) {
+            console.error("Failed to auto-enable motion detection:", error)
+          }
+        }
       }
     } catch (error) {
       console.error("Failed to fetch motion status:", error)
@@ -247,9 +266,16 @@ export default function MusicPlayer() {
       if (response.ok) {
         const data = await response.json()
         setMotion(data)
+
+        if (fileName) {
+          addToast(`Motion trigger set to "${fileName}"`, "success")
+        } else {
+          addToast("Motion trigger removed", "info")
+        }
       }
     } catch (error) {
       console.error("Failed to set motion file:", error)
+      addToast("Failed to update motion settings", "error")
     }
   }
 
