@@ -494,12 +494,7 @@ PIR Sensor Top View
    - Select your .wav file
    - Files are automatically processed for compatibility
 
-3. Refresh the web interface or restart the service:
-   ```bash
-   sudo systemctl restart solartunes
-   ```
-
-4. Your new files will appear in the Sound Library!
+3. Your new files will appear in the Sound Library!
 
 ## 🎯 Motion Detection Configuration
 
@@ -869,6 +864,133 @@ For solar-powered setups:
    ```
 
 Now access via: `http://solartunes.local:3000`
+
+# 🔋 Smart Battery-Powered Raspberry Pi with ESP-based Power Management
+
+This project uses an ESP8266 or ESP32 to monitor battery voltage and automatically control the power state of a Raspberry Pi. It enables clean shutdowns when the battery is low and reboots the Pi when the battery is recharged.
+
+## 🧹 Components
+
+* Raspberry Pi (any model)
+* ESP8266 or ESP32
+* Lithium battery (with protection circuit or BMS)
+* Voltage divider (resistors)
+* P-Channel MOSFET or relay
+* Optional: RTC or deep sleep logic for ESP
+
+## ⚙️ How It Works
+
+1. **Monitor Battery Voltage**
+   The ESP reads battery voltage via an analog input and a voltage divider. Thresholds are set to determine when to shut down or power on the Pi.
+
+2. **Shutdown Signal to Raspberry Pi**
+   If battery voltage drops below a `LOW_THRESHOLD`, the ESP sends a shutdown signal to the Pi:
+
+   * **Option A (GPIO):** Pull an ESP GPIO pin connected to a Pi GPIO. A daemon on the Pi listens and runs `sudo shutdown now`.
+   * **Option B (Wi-Fi):** ESP sends a shutdown command via HTTP or MQTT to the Pi.
+
+3. **Power Off the Pi**
+   After confirming shutdown (e.g., 30-second delay), the ESP cuts power to the Pi using a **P-Channel MOSFET** or **relay**.
+
+4. **Reboot When Battery is Charged**
+   Once battery voltage exceeds a `HIGH_THRESHOLD`, the ESP reconnects power to the Pi, which then auto-boots.
+
+---
+
+## 🧠 Logic Summary
+
+```text
+IF battery voltage < LOW_THRESHOLD:
+    Signal Pi to shutdown
+    Wait 30s
+    Cut power to Pi
+
+ELSE IF battery voltage > HIGH_THRESHOLD:
+    Restore power to Pi
+```
+
+---
+
+## 🔌 Circuit Overview
+
+* **Voltage Divider:** Reduces battery voltage to ESP-safe levels (max 3.3V).
+* **MOSFET:** Controls power line between battery and Pi.
+* **ESP GPIO → Pi GPIO:** (Optional) For shutdown signaling.
+
+---
+
+## 🗅️ Pi Shutdown Script (GPIO Example)
+
+Create a script on the Pi to listen for shutdown signal:
+
+```bash
+#!/bin/bash
+
+GPIO=17
+echo "$GPIO" > /sys/class/gpio/export
+echo "in" > /sys/class/gpio/gpio$GPIO/direction
+
+while true; do
+  if [ "$(cat /sys/class/gpio/gpio$GPIO/value)" -eq 0 ]; then
+    sudo shutdown now
+    break
+  fi
+  sleep 1
+done
+```
+
+---
+
+## 🦪 ESP Sample Code (ESP8266/ESP32)
+
+```cpp
+const int analogPin = A0; // Or GPIO 34 for ESP32
+const float R1 = 10000.0; // Voltage divider resistor 1 (top)
+const float R2 = 10000.0; // Resistor 2 (bottom)
+const float LOW_THRESHOLD = 3.3;
+const float HIGH_THRESHOLD = 3.7;
+const int powerControlPin = 5; // Controls MOSFET
+
+void setup() {
+  pinMode(powerControlPin, OUTPUT);
+  digitalWrite(powerControlPin, HIGH); // Assume HIGH = Pi ON
+}
+
+void loop() {
+  float voltage = analogRead(analogPin) / 1023.0 * 3.3 * (R1 + R2) / R2;
+
+  if (voltage < LOW_THRESHOLD) {
+    signalPiShutdown();
+    delay(30000); // Wait for Pi to shut down
+    digitalWrite(powerControlPin, LOW); // Cut power
+  } else if (voltage > HIGH_THRESHOLD) {
+    digitalWrite(powerControlPin, HIGH); // Power on
+  }
+
+  delay(10000); // Check every 10 seconds
+}
+
+void signalPiShutdown() {
+  // Optionally use GPIO or send HTTP/MQTT command
+}
+```
+
+---
+
+## ⚠️ Notes
+
+* Ensure the Raspberry Pi is configured to **boot on power restore**.
+* Use a MOSFET with sufficient current rating.
+* ESP can use **deep sleep** to conserve power when idle.
+
+---
+
+## 📦 To-Do
+
+* [ ] Add circuit diagrams
+* [ ] Add HTTP/MQTT shutdown example
+* [ ] Add support for multiple ESPs in mesh mode (optional)
+
 
 ## 🌿 SolarPunk Philosophy
 
