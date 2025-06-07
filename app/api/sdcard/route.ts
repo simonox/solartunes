@@ -1,8 +1,19 @@
 import { NextResponse } from "next/server"
 import { exec } from "child_process"
 import { promisify } from "util"
+import { access } from "fs/promises"
 
 const execAsync = promisify(exec)
+
+// Check if wrapper script exists
+async function hasWrapperScript(): Promise<boolean> {
+  try {
+    await access("/usr/local/bin/solartunes-mount")
+    return true
+  } catch {
+    return false
+  }
+}
 
 export async function GET() {
   try {
@@ -60,6 +71,9 @@ export async function GET() {
       sdCardInfo.filesystem = "unknown"
     }
 
+    // Check if wrapper script is available
+    sdCardInfo.hasWrapper = await hasWrapperScript()
+
     return NextResponse.json(sdCardInfo)
   } catch (error) {
     console.error("Error getting SD card info:", error)
@@ -73,16 +87,20 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { action } = await request.json()
+    const useWrapper = await hasWrapperScript()
 
     if (action === "remountReadOnly") {
       console.log("Remounting filesystem as read-only...")
 
       try {
-        // Sync all pending writes first
-        await execAsync("sync")
-
-        // Remount root filesystem as read-only
-        await execAsync("sudo mount -o remount,ro /")
+        if (useWrapper) {
+          // Use wrapper script
+          await execAsync("sudo /usr/local/bin/solartunes-mount lock")
+        } else {
+          // Use direct mount commands
+          await execAsync("sync")
+          await execAsync("sudo mount -o remount,ro /")
+        }
 
         return NextResponse.json({
           success: true,
@@ -103,8 +121,13 @@ export async function POST(request: Request) {
       console.log("Remounting filesystem as read-write...")
 
       try {
-        // Remount root filesystem as read-write
-        await execAsync("sudo mount -o remount,rw /")
+        if (useWrapper) {
+          // Use wrapper script
+          await execAsync("sudo /usr/local/bin/solartunes-mount unlock")
+        } else {
+          // Use direct mount command
+          await execAsync("sudo mount -o remount,rw /")
+        }
 
         return NextResponse.json({
           success: true,
