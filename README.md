@@ -212,8 +212,8 @@ PIR Sensor Top View
    ```
 
 2. Or use the web interface upload feature:
-   - Click "Upload WAV File" in the web interface
-   - Select your .wav file
+   - Click "Upload WAV File" in the web interface (or use drag'n' drop on most modern web browsers)
+   - Select your .wav file (already done when using drag'n'drop)
    - Files are automatically processed for compatibility
 
 3. Your new files will appear in the Sound Library!
