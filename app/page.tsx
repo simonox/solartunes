@@ -93,7 +93,6 @@ export default function MusicPlayer() {
     currentlyPlaying: null,
   })
   const [sdCard, setSDCard] = useState<SDCardData | null>(null)
-  const [sdCardLoading, setSDCardLoading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<{
     uploading: boolean
     success: boolean | null
@@ -297,53 +296,6 @@ export default function MusicPlayer() {
       }
     } catch (error) {
       console.error("Failed to toggle motion detection:", error)
-    }
-  }
-
-  const toggleSDCardWriteProtection = async () => {
-    if (!sdCard) return
-
-    setSDCardLoading(true)
-
-    try {
-      const action = sdCard.readOnly ? "remountReadWrite" : "remountReadOnly"
-      const response = await fetch("/api/sdcard", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        setSDCard((prev) => (prev ? { ...prev, readOnly: data.readOnly, serviceRunning: data.serviceRestarted } : null))
-
-        if (data.readOnly) {
-          if (data.serviceRestarted) {
-            addToast("SD Card locked safely - service restarted with RAM disk", "success")
-          } else {
-            addToast("SD Card locked (read-only)", "success")
-          }
-        } else {
-          if (data.serviceRestarted) {
-            addToast("SD Card unlocked safely - service restarted", "info")
-          } else {
-            addToast("SD Card unlocked (read-write)", "info")
-          }
-        }
-
-        // Refresh SD card status after a moment
-        setTimeout(() => {
-          fetchSDCardStatus()
-        }, 2000)
-      } else {
-        const errorData = await response.json()
-        addToast(`Failed to toggle SD card protection: ${errorData.error}`, "error")
-      }
-    } catch (error) {
-      console.error("Failed to toggle SD card protection:", error)
-      addToast("Failed to toggle SD card protection", "error")
-    } finally {
-      setSDCardLoading(false)
     }
   }
 
@@ -665,6 +617,7 @@ export default function MusicPlayer() {
               SD Card is locked (read-only). The app is running from RAM disk.
               {sdCard.ramDiskUsage && ` RAM usage: ${sdCard.ramDiskUsage}`}
               {!sdCard.serviceRunning && " Service may need restart."}
+              Use shell scripts to manage SD card protection.
             </AlertDescription>
           </Alert>
         )}
@@ -702,7 +655,7 @@ export default function MusicPlayer() {
             </CardContent>
           </Card>
 
-          {/* SD Card Widget */}
+          {/* SD Card Widget - Status Only */}
           <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
             <CardContent className="p-4">
               <div className="flex items-center gap-2 mb-2">
@@ -736,19 +689,7 @@ export default function MusicPlayer() {
                     )}
                   </div>
 
-                  <Button
-                    onClick={toggleSDCardWriteProtection}
-                    disabled={sdCardLoading || sdCard.hardwareWriteProtect === true}
-                    size="sm"
-                    variant="outline"
-                    className={`w-full h-6 text-xs ${
-                      sdCard.readOnly
-                        ? "border-yellow-300 text-yellow-700 hover:bg-yellow-50"
-                        : "border-green-300 text-green-700 hover:bg-green-50"
-                    }`}
-                  >
-                    {sdCardLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : sdCard.readOnly ? "Unlock" : "Lock"}
-                  </Button>
+                  <div className="text-xs text-center text-gray-600">Use shell scripts to manage</div>
 
                   {sdCard.hardwareWriteProtect === true && (
                     <div className="text-xs text-center text-red-600">HW Protected</div>
