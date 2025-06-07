@@ -506,7 +506,7 @@ This conversion is already done if the wav file is uploaded with the web UI.
 
 ## 🎯 Motion Detection Playback Configuration
 
-The idea behing motion detection is, that SolarTunes plays a *selected* track if a motion is detected. If there is already a track playing, it will not interrupt the playback, but create a log entry. Selectd tracks should survive a re-boot of the system.
+SolarTunes plays a *selected* track if a motion is detected. If there is already a track playing, it will not interrupt the playback, but create a log entry. Selectd tracks should survive a re-boot of the system. So a configuration file is stored next to your Tracks in the `~/Music` directory.
 
 SolarTunes automatically saves your motion detection settings to `~/Music/autoplay.conf`. When the app starts, it will:
 
