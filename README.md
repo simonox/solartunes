@@ -8,7 +8,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built wit
 - **🎮 Simple Controls**: Click to play/stop with single-file playback protection
 - **🎯 Motion Detection**: PIR sensor integration for automatic sound triggering
 - **📊 System Monitoring**: Real-time system logs for debugging
-- **🌿 SolarPunk Design**: Beautiful green gradients and nature-inspired UI
+- **🌿 SolarPunk Design**: Beautiful green gradients and nature-inspired UI (not really, just green color)
 - **⚡ Low Power**: Optimized for solar-powered Raspberry Pi setups
 - **🔄 Auto-Start**: Systemd service for automatic startup on boot
 - **📱 File Upload**: Upload and process WAV files directly through the web interface
