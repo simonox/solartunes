@@ -496,6 +496,15 @@ PIR Sensor Top View
 
 3. Your new files will appear in the Sound Library!
 
+### 💩 WAV Files That Don't Work
+
+Not all wav formats are supported, you can convert them using ffmpeg:
+
+```bash
+ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fixed.wav
+```
+This conversion is already done if the wav file is uploaded with the web UI.
+
 ## 🎯 Motion Detection Configuration
 
 SolarTunes automatically saves your motion detection settings to `~/Music/autoplay.conf`. When the app starts, it will:
@@ -720,14 +729,6 @@ To update your installation:
 ```bash
 cd ~/solartunes/
 ./scripts/update-project.sh
-```
-
-## WAV Files That Don't Work
-
-Not all wav formats are supported, you can convert them using ffmpeg:
-
-```bash
-ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fixed.wav
 ```
 
 ## ⚡ Solar Power Optimization
