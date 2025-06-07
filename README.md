@@ -424,15 +424,15 @@ sudo systemctl disable solartunes
 
 ```
 PIR Sensor          Raspberry Pi
-┌─────────────┐    ┌─────────────────┐
-│             │    │                 │
-│    VCC   ●──┼────┼──● Pin 2 (5V)   │
-│             │    │   or Pin 1(3.3V)│
+┌─────────────┐    ┌────────────────-─┐
+│             │    │                  │
+│    VCC   ●──┼────┼──● Pin 2 (5V)    │ (or any other 5V output, see photo!)
+│             │    │   or Pin 1(3.3V) │
 │    OUT   ●──┼────┼──● Pin 29(GPIO5) │
-│             │    │                 │
-│    GND   ●──┼────┼──● Pin 6 (GND)  │
-│             │    │                 │
-└─────────────┘    └─────────────────┘
+│             │    │                  │
+│    GND   ●──┼────┼──● Pin 6 (GND)   │ (or any other GND input, see photo!)
+│             │    │                  │
+└─────────────┘    └─────────────────-┘
 ```
 
 ### Pin Layout Reference
