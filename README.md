@@ -12,7 +12,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built wit
 - **⚡ Low Power**: Optimized for solar-powered Raspberry Pi setups
 - **🔄 Auto-Start**: Systemd service for automatic startup on boot
 - **📱 File Upload**: Upload and process WAV files directly through the web interface
-- **🛡️ SD Card Protection**: Advanced read-only mode for SD card longevity
+- **🛡️ SD Card Protection**: Advanced read-only mode for SD card longevity [ ] untested
 
 ## 🎬 Preview
 
