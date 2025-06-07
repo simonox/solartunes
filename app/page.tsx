@@ -30,6 +30,10 @@ import {
   XCircle,
   Loader2,
   X,
+  HardDrive,
+  Lock,
+  Unlock,
+  Database,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -53,6 +57,24 @@ interface MotionData {
   currentlyPlaying: string | null
 }
 
+interface SDCardData {
+  readOnly: boolean
+  mountInfo?: string
+  usage?: {
+    total: string
+    used: string
+    available: string
+    percentage: string
+  }
+  ramDiskUsage?: string
+  serviceRunning?: boolean
+  healthInfo?: string[]
+  hardwareWriteProtect?: boolean | null
+  filesystem?: string
+  hasServiceManagement?: boolean
+  timestamp: string
+}
+
 export default function MusicPlayer() {
   const [files, setFiles] = useState<MusicFile[]>([])
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null)
@@ -70,6 +92,7 @@ export default function MusicPlayer() {
     motionCount: 0,
     currentlyPlaying: null,
   })
+  const [sdCard, setSDCard] = useState<SDCardData | null>(null)
   const [uploadStatus, setUploadStatus] = useState<{
     uploading: boolean
     success: boolean | null
@@ -96,6 +119,7 @@ export default function MusicPlayer() {
       fetchLogs()
       fetchTemperature()
       fetchMotionStatus()
+      fetchSDCardStatus()
     }, 2000)
     return () => clearInterval(interval)
   }, [])
@@ -103,6 +127,11 @@ export default function MusicPlayer() {
   // Get initial volume
   useEffect(() => {
     fetchVolume()
+  }, [])
+
+  // Get initial SD card status
+  useEffect(() => {
+    fetchSDCardStatus()
   }, [])
 
   // Effect to update currentlyPlaying from motion detection
@@ -188,6 +217,21 @@ export default function MusicPlayer() {
       }
     } catch (error) {
       console.error("Failed to fetch motion status:", error)
+    }
+  }
+
+  const fetchSDCardStatus = async () => {
+    try {
+      const response = await fetch("/api/sdcard")
+      const data = await response.json()
+
+      if (response.ok) {
+        setSDCard(data)
+      } else {
+        console.error("SD card status error:", data.error)
+      }
+    } catch (error) {
+      console.error("Failed to fetch SD card status:", error)
     }
   }
 
@@ -299,6 +343,16 @@ export default function MusicPlayer() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
+
+    // Check if SD card is locked
+    if (sdCard?.readOnly) {
+      setUploadStatus({
+        uploading: false,
+        success: false,
+        message: "Cannot upload files while SD card is locked. Please unlock the SD card first.",
+      })
+      return
+    }
 
     // Check file type
     if (!file.name.toLowerCase().endsWith(".wav")) {
@@ -555,6 +609,19 @@ export default function MusicPlayer() {
           </Alert>
         )}
 
+        {/* SD Card Locked Alert */}
+        {sdCard?.readOnly && (
+          <Alert className="mb-6 border-blue-200 bg-blue-50">
+            <Lock className="h-4 w-4" />
+            <AlertDescription>
+              SD Card is locked (read-only). The app is running from RAM disk.
+              {sdCard.ramDiskUsage && ` RAM usage: ${sdCard.ramDiskUsage}`}
+              {!sdCard.serviceRunning && " Service may need restart."}
+              Use shell scripts to manage SD card protection.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Reset Button */}
         <div className="mb-6 flex justify-end">
           <Button
@@ -564,6 +631,130 @@ export default function MusicPlayer() {
           >
             Reset App State
           </Button>
+        </div>
+
+        {/* System Widgets Row */}
+        <div className="grid grid-cols-3 gap-4 mb-8">
+          {/* Temperature Widget */}
+          <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Thermometer className="h-4 w-4 text-blue-600" />
+                <span className="text-sm font-medium text-gray-700">CPU Temp</span>
+              </div>
+              {temperature ? (
+                <div className={`text-center p-2 rounded ${getTemperatureColor(temperature.temperature)}`}>
+                  <div className="text-2xl font-bold">{temperature.temperature.toFixed(1)}°C</div>
+                  <div className="text-xs capitalize">{temperature.status}</div>
+                </div>
+              ) : (
+                <div className="text-center p-2 text-gray-500">
+                  <div className="text-sm">Loading...</div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* SD Card Widget - Status Only */}
+          <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <HardDrive className="h-4 w-4 text-orange-600" />
+                <span className="text-sm font-medium text-gray-700">SD Card</span>
+                {sdCard?.readOnly && <Database className="h-3 w-3 text-blue-600" title="Using RAM disk" />}
+              </div>
+              {sdCard ? (
+                <div className="space-y-2">
+                  <div
+                    className={`text-center p-2 rounded ${
+                      sdCard.readOnly ? "bg-green-50 text-green-700" : "bg-yellow-50 text-yellow-700"
+                    }`}
+                  >
+                    <div className="flex items-center justify-center gap-1 text-sm font-medium">
+                      {sdCard.readOnly ? (
+                        <>
+                          <Lock className="h-3 w-3" />
+                          Locked
+                        </>
+                      ) : (
+                        <>
+                          <Unlock className="h-3 w-3" />
+                          Unlocked
+                        </>
+                      )}
+                    </div>
+                    {sdCard.usage && <div className="text-xs mt-1">{sdCard.usage.percentage} used</div>}
+                    {sdCard.readOnly && sdCard.ramDiskUsage && (
+                      <div className="text-xs mt-1 text-blue-600">RAM: {sdCard.ramDiskUsage}</div>
+                    )}
+                  </div>
+
+                  <div className="text-xs text-center text-gray-600">Use shell scripts to manage</div>
+
+                  {sdCard.hardwareWriteProtect === true && (
+                    <div className="text-xs text-center text-red-600">HW Protected</div>
+                  )}
+
+                  {!sdCard.serviceRunning && <div className="text-xs text-center text-orange-600">Service Stopped</div>}
+                </div>
+              ) : (
+                <div className="text-center p-2 text-gray-500">
+                  <div className="text-sm">Loading...</div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Motion Detection Widget */}
+          <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Activity className="h-4 w-4 text-purple-600" />
+                <span className="text-sm font-medium text-gray-700">Motion</span>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Switch
+                    checked={motion.enabled}
+                    onCheckedChange={toggleMotionDetection}
+                    className="data-[state=checked]:bg-green-600"
+                  />
+                  <span className="text-xs">
+                    {motion.enabled ? (
+                      <span className="flex items-center gap-1 text-green-600">
+                        <Eye className="h-3 w-3" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-gray-500">
+                        <EyeOff className="h-3 w-3" />
+                        Inactive
+                      </span>
+                    )}
+                  </span>
+                </div>
+
+                {motion.selectedFile && (
+                  <div className="text-xs text-center text-purple-600 bg-purple-50 p-1 rounded">
+                    {motion.selectedFile}
+                  </div>
+                )}
+
+                <Button
+                  onClick={testMotion}
+                  size="sm"
+                  variant="outline"
+                  className="w-full h-6 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
+                >
+                  Test Motion
+                </Button>
+
+                {motion.motionCount > 0 && (
+                  <div className="text-xs text-center text-gray-500">Triggered: {motion.motionCount}x</div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
@@ -702,86 +893,13 @@ export default function MusicPlayer() {
 
           {/* Right Column - Widgets and Logs */}
           <div className="lg:col-span-1 space-y-6">
-            {/* System Widgets Row */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Temperature Widget */}
-              <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Thermometer className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-gray-700">CPU Temp</span>
-                  </div>
-                  {temperature ? (
-                    <div className={`text-center p-2 rounded ${getTemperatureColor(temperature.temperature)}`}>
-                      <div className="text-2xl font-bold">{temperature.temperature.toFixed(1)}°C</div>
-                      <div className="text-xs capitalize">{temperature.status}</div>
-                    </div>
-                  ) : (
-                    <div className="text-center p-2 text-gray-500">
-                      <div className="text-sm">Loading...</div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              {/* Motion Detection Widget */}
-              <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
-                <CardContent className="p-4">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Activity className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-medium text-gray-700">Motion</span>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        checked={motion.enabled}
-                        onCheckedChange={toggleMotionDetection}
-                        className="data-[state=checked]:bg-green-600"
-                      />
-                      <span className="text-xs">
-                        {motion.enabled ? (
-                          <span className="flex items-center gap-1 text-green-600">
-                            <Eye className="h-3 w-3" />
-                            Active
-                          </span>
-                        ) : (
-                          <span className="flex items-center gap-1 text-gray-500">
-                            <EyeOff className="h-3 w-3" />
-                            Inactive
-                          </span>
-                        )}
-                      </span>
-                    </div>
-
-                    {motion.selectedFile && (
-                      <div className="text-xs text-center text-purple-600 bg-purple-50 p-1 rounded">
-                        {motion.selectedFile}
-                      </div>
-                    )}
-
-                    <Button
-                      onClick={testMotion}
-                      size="sm"
-                      variant="outline"
-                      className="w-full h-6 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
-                    >
-                      Test Motion
-                    </Button>
-
-                    {motion.motionCount > 0 && (
-                      <div className="text-xs text-center text-gray-500">Triggered: {motion.motionCount}x</div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
             {/* System Logs */}
             <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
                 <CardTitle className="flex items-center gap-2 text-green-800">
                   <Zap className="h-5 w-5" />
                   System Logs
+                  {sdCard?.readOnly && <Database className="h-4 w-4 text-blue-600" title="From RAM disk" />}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -810,6 +928,7 @@ export default function MusicPlayer() {
                 <CardTitle className="flex items-center gap-2 text-blue-800">
                   <Upload className="h-5 w-5" />
                   Upload WAV File
+                  {sdCard?.readOnly && <Lock className="h-4 w-4 text-red-600" title="SD card locked" />}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
@@ -820,18 +939,23 @@ export default function MusicPlayer() {
                       type="file"
                       accept=".wav"
                       onChange={handleFileUpload}
-                      disabled={uploadStatus.uploading}
+                      disabled={uploadStatus.uploading || sdCard?.readOnly}
                       className="w-full"
                     />
                     <Button
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadStatus.uploading}
+                      disabled={uploadStatus.uploading || sdCard?.readOnly}
                       className="w-full bg-blue-600 hover:bg-blue-700"
                     >
                       {uploadStatus.uploading ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                           Processing...
+                        </>
+                      ) : sdCard?.readOnly ? (
+                        <>
+                          <Lock className="h-4 w-4 mr-2" />
+                          SD Card Locked
                         </>
                       ) : (
                         <>
@@ -877,6 +1001,7 @@ export default function MusicPlayer() {
                     <p>• Only WAV files are accepted</p>
                     <p>• Files will be automatically processed to ensure compatibility</p>
                     <p>• Processed files will be converted to: 16-bit PCM, 44.1kHz, Stereo</p>
+                    {sdCard?.readOnly && <p className="text-red-600">• Unlock SD card before uploading files</p>}
                   </div>
                 </div>
               </CardContent>
@@ -897,6 +1022,7 @@ export default function MusicPlayer() {
                   <p className="text-xl font-semibold">{currentlyPlaying}</p>
                   <p className="text-sm opacity-75">
                     {isMotionTriggered ? "Started by motion detection" : "Started manually"}
+                    {sdCard?.readOnly && " • Running from RAM disk"}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
