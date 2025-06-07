@@ -414,6 +414,13 @@ sudo systemctl disable solartunes
 
 ![wiring](https://github.com/user-attachments/assets/3e9a0fef-aa41-4b92-96b0-9c75816b41b9)
 
+### Video
+
+
+
+https://github.com/user-attachments/assets/ed1aca57-9e36-4d69-b596-c51ba345ed4f
+
+
 
 ### Hardware Requirements
 - PIR Motion Sensor (HC-SR501 recommended)
