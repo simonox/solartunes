@@ -15,6 +15,16 @@ async function hasWrapperScript(): Promise<boolean> {
   }
 }
 
+// Check if service management script exists
+async function hasServiceManagement(): Promise<boolean> {
+  try {
+    await access("/home/pi/solartunes/scripts/manage-sdcard-with-service.sh")
+    return true
+  } catch {
+    return false
+  }
+}
+
 export async function GET() {
   try {
     const sdCardInfo: any = {
@@ -47,6 +57,27 @@ export async function GET() {
       sdCardInfo.usageError = "Could not get disk usage"
     }
 
+    // Check RAM disk usage
+    try {
+      const { stdout: ramUsage } = await execAsync(
+        "du -sh /tmp/solartunes-ram 2>/dev/null || echo '0 /tmp/solartunes-ram'",
+      )
+      const ramParts = ramUsage.trim().split(/\s+/)
+      if (ramParts.length >= 2) {
+        sdCardInfo.ramDiskUsage = ramParts[0]
+      }
+    } catch (error) {
+      sdCardInfo.ramDiskUsage = "unknown"
+    }
+
+    // Check if SolarTunes service is running
+    try {
+      const { stdout: serviceStatus } = await execAsync("systemctl is-active solartunes 2>/dev/null || echo 'inactive'")
+      sdCardInfo.serviceRunning = serviceStatus.trim() === "active"
+    } catch (error) {
+      sdCardInfo.serviceRunning = false
+    }
+
     // Check SD card health (if available)
     try {
       const { stdout: sdHealth } = await execAsync("dmesg | grep -i 'mmc\\|sd' | tail -5")
@@ -73,6 +104,7 @@ export async function GET() {
 
     // Check if wrapper script is available
     sdCardInfo.hasWrapper = await hasWrapperScript()
+    sdCardInfo.hasServiceManagement = await hasServiceManagement()
 
     // Check for busy processes that might prevent locking
     try {
@@ -100,122 +132,108 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { action } = await request.json()
-    const useWrapper = await hasWrapperScript()
+    const hasServiceMgmt = await hasServiceManagement()
 
     if (action === "remountReadOnly") {
-      console.log("Remounting filesystem as read-only...")
+      console.log("Safely locking SD card with service management...")
 
       try {
-        // First, sync all pending writes
-        await execAsync("sync")
+        if (hasServiceMgmt) {
+          // Use the safe service management script
+          const { stdout, stderr } = await execAsync("/home/pi/solartunes/scripts/manage-sdcard-with-service.sh lock")
+          console.log("Safe lock output:", stdout)
+          if (stderr) console.log("Safe lock stderr:", stderr)
 
-        // Try to stop processes that might be keeping the filesystem busy
-        try {
-          console.log("Stopping processes that might be keeping the filesystem busy...")
-          await execAsync(
-            "lsof / 2>/dev/null | grep -v 'node\\|solartunes\\|bash\\|sh\\|sudo' | awk '{print $2}' | sort -u | xargs -r kill -TERM",
-          )
-          // Wait a moment for processes to terminate
-          await new Promise((resolve) => setTimeout(resolve, 2000))
-        } catch (error) {
-          console.log("No processes to terminate or error terminating processes:", error)
-        }
-
-        if (useWrapper) {
-          // Use wrapper script
-          const { stdout, stderr } = await execAsync("sudo /usr/local/bin/solartunes-mount lock")
-          console.log("Wrapper output:", stdout, stderr)
-        } else {
-          // Use direct mount command
-          await execAsync("sudo mount -o remount,ro /")
-        }
-
-        // Verify the remount was successful
-        const { stdout: mountInfo } = await execAsync("mount | grep ' / ' | head -1")
-        const isReadOnly = mountInfo.includes("ro,") || mountInfo.includes("(ro)")
-
-        if (isReadOnly) {
-          return NextResponse.json({
-            success: true,
-            message: "Filesystem remounted as read-only",
-            readOnly: true,
-          })
-        } else {
-          throw new Error("Remount command completed but filesystem is still read-write")
-        }
-      } catch (error) {
-        console.error("Failed to remount as read-only:", error)
-
-        // Try alternative approach
-        try {
-          console.log("Trying alternative approach...")
-
-          // Force sync again
-          await execAsync("sync")
-
-          // Try direct mount with lazy option
-          await execAsync("sudo mount -o remount,ro,noatime /")
-
-          // Verify the remount was successful
+          // Verify the lock was successful
           const { stdout: mountInfo } = await execAsync("mount | grep ' / ' | head -1")
           const isReadOnly = mountInfo.includes("ro,") || mountInfo.includes("(ro)")
 
           if (isReadOnly) {
             return NextResponse.json({
               success: true,
-              message: "Filesystem remounted as read-only (alternative method)",
+              message: "SD card safely locked with service restart",
               readOnly: true,
+              serviceRestarted: true,
             })
           } else {
-            return NextResponse.json(
-              {
-                error: "Failed to remount as read-only",
-                details: "Filesystem is busy. Try stopping services or restarting the device.",
-              },
-              { status: 500 },
-            )
+            throw new Error("Safe lock completed but filesystem is still read-write")
           }
-        } catch (altError) {
-          console.error("Alternative approach also failed:", altError)
-          return NextResponse.json(
-            {
-              error: "Failed to remount as read-only",
-              details: error instanceof Error ? error.message : "Unknown error",
-            },
-            { status: 500 },
-          )
-        }
-      }
-    } else if (action === "remountReadWrite") {
-      console.log("Remounting filesystem as read-write...")
-
-      try {
-        if (useWrapper) {
-          // Use wrapper script
-          await execAsync("sudo /usr/local/bin/solartunes-mount unlock")
         } else {
-          // Use direct mount command
-          await execAsync("sudo mount -o remount,rw /")
-        }
+          // Fallback to basic method
+          const useWrapper = await hasWrapperScript()
 
-        // Verify the remount was successful
-        const { stdout: mountInfo } = await execAsync("mount | grep ' / ' | head -1")
-        const isReadOnly = mountInfo.includes("ro,") || mountInfo.includes("(ro)")
+          // First, sync all pending writes
+          await execAsync("sync")
 
-        if (!isReadOnly) {
+          if (useWrapper) {
+            await execAsync("sudo /usr/local/bin/solartunes-mount lock")
+          } else {
+            await execAsync("sudo mount -o remount,ro /")
+          }
+
           return NextResponse.json({
             success: true,
-            message: "Filesystem remounted as read-write",
-            readOnly: false,
+            message: "SD card locked (service may need manual restart)",
+            readOnly: true,
+            serviceRestarted: false,
           })
-        } else {
-          throw new Error("Remount command completed but filesystem is still read-only")
         }
       } catch (error) {
-        console.error("Failed to remount as read-write:", error)
+        console.error("Failed to safely lock SD card:", error)
         return NextResponse.json(
           {
-            error: "Failed to remount as read-write",
+            error: "Failed to safely lock SD card",
+            details: error instanceof Error ? error.message : "Unknown error",
+          },
+          { status: 500 },
+        )
+      }
+    } else if (action === "remountReadWrite") {
+      console.log("Safely unlocking SD card with service management...")
+
+      try {
+        if (hasServiceMgmt) {
+          // Use the safe service management script
+          const { stdout, stderr } = await execAsync("/home/pi/solartunes/scripts/manage-sdcard-with-service.sh unlock")
+          console.log("Safe unlock output:", stdout)
+          if (stderr) console.log("Safe unlock stderr:", stderr)
+
+          // Verify the unlock was successful
+          const { stdout: mountInfo } = await execAsync("mount | grep ' / ' | head -1")
+          const isReadOnly = mountInfo.includes("ro,") || mountInfo.includes("(ro)")
+
+          if (!isReadOnly) {
+            return NextResponse.json({
+              success: true,
+              message: "SD card safely unlocked with service restart",
+              readOnly: false,
+              serviceRestarted: true,
+            })
+          } else {
+            throw new Error("Safe unlock completed but filesystem is still read-only")
+          }
+        } else {
+          // Fallback to basic method
+          const useWrapper = await hasWrapperScript()
+
+          if (useWrapper) {
+            await execAsync("sudo /usr/local/bin/solartunes-mount unlock")
+          } else {
+            await execAsync("sudo mount -o remount,rw /")
+          }
+
+          return NextResponse.json({
+            success: true,
+            message: "SD card unlocked (service may need manual restart)",
+            readOnly: false,
+            serviceRestarted: false,
+          })
+        }
+      } catch (error) {
+        console.error("Failed to safely unlock SD card:", error)
+        return NextResponse.json(
+          {
+            error: "Failed to safely unlock SD card",
             details: error instanceof Error ? error.message : "Unknown error",
           },
           { status: 500 },

@@ -33,6 +33,7 @@ import {
   HardDrive,
   Lock,
   Unlock,
+  Database,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
@@ -65,9 +66,12 @@ interface SDCardData {
     available: string
     percentage: string
   }
+  ramDiskUsage?: string
+  serviceRunning?: boolean
   healthInfo?: string[]
   hardwareWriteProtect?: boolean | null
   filesystem?: string
+  hasServiceManagement?: boolean
   timestamp: string
 }
 
@@ -311,13 +315,26 @@ export default function MusicPlayer() {
 
       if (response.ok) {
         const data = await response.json()
-        setSDCard((prev) => (prev ? { ...prev, readOnly: data.readOnly } : null))
+        setSDCard((prev) => (prev ? { ...prev, readOnly: data.readOnly, serviceRunning: data.serviceRestarted } : null))
 
         if (data.readOnly) {
-          addToast("SD Card locked (read-only)", "success")
+          if (data.serviceRestarted) {
+            addToast("SD Card locked safely - service restarted with RAM disk", "success")
+          } else {
+            addToast("SD Card locked (read-only)", "success")
+          }
         } else {
-          addToast("SD Card unlocked (read-write)", "info")
+          if (data.serviceRestarted) {
+            addToast("SD Card unlocked safely - service restarted", "info")
+          } else {
+            addToast("SD Card unlocked (read-write)", "info")
+          }
         }
+
+        // Refresh SD card status after a moment
+        setTimeout(() => {
+          fetchSDCardStatus()
+        }, 2000)
       } else {
         const errorData = await response.json()
         addToast(`Failed to toggle SD card protection: ${errorData.error}`, "error")
@@ -374,6 +391,16 @@ export default function MusicPlayer() {
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
     if (!file) return
+
+    // Check if SD card is locked
+    if (sdCard?.readOnly) {
+      setUploadStatus({
+        uploading: false,
+        success: false,
+        message: "Cannot upload files while SD card is locked. Please unlock the SD card first.",
+      })
+      return
+    }
 
     // Check file type
     if (!file.name.toLowerCase().endsWith(".wav")) {
@@ -630,6 +657,18 @@ export default function MusicPlayer() {
           </Alert>
         )}
 
+        {/* SD Card Locked Alert */}
+        {sdCard?.readOnly && (
+          <Alert className="mb-6 border-blue-200 bg-blue-50">
+            <Lock className="h-4 w-4" />
+            <AlertDescription>
+              SD Card is locked (read-only). The app is running from RAM disk.
+              {sdCard.ramDiskUsage && ` RAM usage: ${sdCard.ramDiskUsage}`}
+              {!sdCard.serviceRunning && " Service may need restart."}
+            </AlertDescription>
+          </Alert>
+        )}
+
         {/* Reset Button */}
         <div className="mb-6 flex justify-end">
           <Button
@@ -642,7 +681,7 @@ export default function MusicPlayer() {
         </div>
 
         {/* System Widgets Row */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-4 mb-8">
           {/* Temperature Widget */}
           <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
             <CardContent className="p-4">
@@ -669,6 +708,7 @@ export default function MusicPlayer() {
               <div className="flex items-center gap-2 mb-2">
                 <HardDrive className="h-4 w-4 text-orange-600" />
                 <span className="text-sm font-medium text-gray-700">SD Card</span>
+                {sdCard?.readOnly && <Database className="h-3 w-3 text-blue-600" title="Using RAM disk" />}
               </div>
               {sdCard ? (
                 <div className="space-y-2">
@@ -691,6 +731,9 @@ export default function MusicPlayer() {
                       )}
                     </div>
                     {sdCard.usage && <div className="text-xs mt-1">{sdCard.usage.percentage} used</div>}
+                    {sdCard.readOnly && sdCard.ramDiskUsage && (
+                      <div className="text-xs mt-1 text-blue-600">RAM: {sdCard.ramDiskUsage}</div>
+                    )}
                   </div>
 
                   <Button
@@ -710,6 +753,8 @@ export default function MusicPlayer() {
                   {sdCard.hardwareWriteProtect === true && (
                     <div className="text-xs text-center text-red-600">HW Protected</div>
                   )}
+
+                  {!sdCard.serviceRunning && <div className="text-xs text-center text-orange-600">Service Stopped</div>}
                 </div>
               ) : (
                 <div className="text-center p-2 text-gray-500">
@@ -913,6 +958,7 @@ export default function MusicPlayer() {
                 <CardTitle className="flex items-center gap-2 text-green-800">
                   <Zap className="h-5 w-5" />
                   System Logs
+                  {sdCard?.readOnly && <Database className="h-4 w-4 text-blue-600" title="From RAM disk" />}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
@@ -941,6 +987,7 @@ export default function MusicPlayer() {
                 <CardTitle className="flex items-center gap-2 text-blue-800">
                   <Upload className="h-5 w-5" />
                   Upload WAV File
+                  {sdCard?.readOnly && <Lock className="h-4 w-4 text-red-600" title="SD card locked" />}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
@@ -951,18 +998,23 @@ export default function MusicPlayer() {
                       type="file"
                       accept=".wav"
                       onChange={handleFileUpload}
-                      disabled={uploadStatus.uploading}
+                      disabled={uploadStatus.uploading || sdCard?.readOnly}
                       className="w-full"
                     />
                     <Button
                       onClick={() => fileInputRef.current?.click()}
-                      disabled={uploadStatus.uploading}
+                      disabled={uploadStatus.uploading || sdCard?.readOnly}
                       className="w-full bg-blue-600 hover:bg-blue-700"
                     >
                       {uploadStatus.uploading ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                           Processing...
+                        </>
+                      ) : sdCard?.readOnly ? (
+                        <>
+                          <Lock className="h-4 w-4 mr-2" />
+                          SD Card Locked
                         </>
                       ) : (
                         <>
@@ -1008,6 +1060,7 @@ export default function MusicPlayer() {
                     <p>• Only WAV files are accepted</p>
                     <p>• Files will be automatically processed to ensure compatibility</p>
                     <p>• Processed files will be converted to: 16-bit PCM, 44.1kHz, Stereo</p>
+                    {sdCard?.readOnly && <p className="text-red-600">• Unlock SD card before uploading files</p>}
                   </div>
                 </div>
               </CardContent>
@@ -1028,6 +1081,7 @@ export default function MusicPlayer() {
                   <p className="text-xl font-semibold">{currentlyPlaying}</p>
                   <p className="text-sm opacity-75">
                     {isMotionTriggered ? "Started by motion detection" : "Started manually"}
+                    {sdCard?.readOnly && " • Running from RAM disk"}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
