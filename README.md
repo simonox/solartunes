@@ -70,7 +70,7 @@ Use these commands to control your SolarTunes service:
 # Start the service
 sudo systemctl start solartunes
 
-# Stop the service  
+# Stop the service
 sudo systemctl stop solartunes
 
 # Restart the service
@@ -383,6 +383,59 @@ PIR Sensor Top View
    ```
 
 4. Your new files will appear in the Sound Library!
+
+## 🎯 Motion Detection Configuration
+
+SolarTunes automatically saves your motion detection settings to `~/Music/autoplay.conf`. When the app starts, it will:
+
+- ✅ **Restore Selected File**: Automatically select the previously configured motion trigger file
+- ✅ **Auto-Enable Motion**: Activate motion detection if a file was previously selected
+- ✅ **Persist Settings**: Save any changes to motion settings automatically
+
+### Configuration File Format
+
+The `~/Music/autoplay.conf` file uses JSON format:
+
+```json
+{
+  "enabled": true,
+  "selectedFile": "your-sound-file.wav",
+  "lastSaved": "2025-01-07T15:30:00.000Z"
+}
+```
+
+### Managing Configuration
+
+Use the configuration management script for advanced control:
+
+```bash
+# Show current configuration
+./scripts/manage-autoplay-config.sh show
+
+# Set a specific file for motion triggering
+./scripts/manage-autoplay-config.sh set your-file.wav
+
+# Enable/disable motion detection
+./scripts/manage-autoplay-config.sh toggle
+
+# Backup current configuration
+./scripts/manage-autoplay-config.sh backup
+
+# Interactive menu
+./scripts/manage-autoplay-config.sh
+```
+
+### Manual Configuration
+
+You can also manually edit the configuration file:
+
+```bash
+# Edit configuration directly
+nano ~/Music/autoplay.conf
+
+# Restart SolarTunes to apply changes
+sudo systemctl restart solartunes
+```
 
 ## 🌐 Access Your Sound Player
 
