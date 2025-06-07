@@ -17,38 +17,38 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built wit
 
 ### 1. Clone the Repository
 
-````bash
+```bash
 mkdir ~/solartunes
 cd ~/solartunes
 git clone https://github.com/simonox/solartunes.git .
-````
+```
 
 ### 2. Run the Setup Script
 
-````bash
+```bash
 chmod +x scripts/setup-raspberry-pi.sh
 ./scripts/setup-raspberry-pi.sh
-````
+```
 
 ### 3. Deploy the Project
 
-````bash
+```bash
 chmod +x scripts/deploy-project.sh
 ./scripts/deploy-project.sh
-````
+```
 
 ### 4. Start the Service
 
-````bash
+```bash
 sudo systemctl start solartunes
-````
+```
 
 ### 5. Setup Motion Detection (Optional)
 
-````bash
+```bash
 chmod +x scripts/setup-motion-sensor.sh
 ./scripts/setup-motion-sensor.sh
-````
+```
 
 ## 🔧 What the Setup Script Does
 
@@ -66,7 +66,7 @@ chmod +x scripts/setup-motion-sensor.sh
 
 Use these commands to control your SolarTunes service:
 
-````bash
+```bash
 # Start the service
 sudo systemctl start solartunes
 
@@ -87,11 +87,11 @@ sudo systemctl enable solartunes
 
 # Disable auto-start
 sudo systemctl disable solartunes
-````
+```
 
 ## 📁 Project Structure
 
-````
+```
 ~/solartunes/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -115,7 +115,7 @@ sudo systemctl disable solartunes
 │   ├── test-pir.py
 │   └── [management scripts]
 └── README.md
-````
+```
 
 ## 📜 Shell Scripts Reference
 
@@ -305,7 +305,7 @@ sudo systemctl disable solartunes
 
 ### Wiring Diagram
 
-````
+```
 PIR Sensor          Raspberry Pi
 ┌─────────────┐    ┌─────────────────┐
 │             │    │                 │
@@ -316,11 +316,11 @@ PIR Sensor          Raspberry Pi
 │    GND   ●──┼────┼──● Pin 6 (GND)  │
 │             │    │                 │
 └─────────────┘    └─────────────────┘
-````
+```
 
 ### Pin Layout Reference
 
-````
+```
 Raspberry Pi GPIO Header (40 pins)
 ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
 │  1  │  2  │  3  │  4  │  5  │  6  │  7  │  8  │  9  │ 10  │
@@ -340,13 +340,13 @@ Connection Points:
 • Pin 2 (5V) or Pin 1 (3.3V) → PIR VCC
 • Pin 29 (GPIO5) → PIR OUT  ← Motion detection pin
 • Pin 6 (GND) → PIR GND
-````
+```
 
 ### PIR Sensor Adjustment
 
 Most PIR sensors have two potentiometers for adjustment:
 
-````
+```
 PIR Sensor Top View
 ┌─────────────────┐
 │  ┌───┐    ┌───┐ │
@@ -357,7 +357,7 @@ PIR Sensor Top View
 │                 │
 │ VCC  OUT   GND  │
 └─────────────────┘
-````
+```
 
 **Adjustment Tips:**
 - **Sensitivity (S)**: Turn clockwise to increase detection range (3-7 meters)
@@ -368,9 +368,9 @@ PIR Sensor Top View
 ## 🎵 Adding Your Own Sound Files
 
 1. Copy your .wav files to the Music directory:
-   ````bash
+   ```bash
    cp your-sounds/*.wav ~/Music/
-   ````
+   ```
 
 2. Or use the web interface upload feature:
    - Click "Upload WAV File" in the web interface
@@ -378,9 +378,9 @@ PIR Sensor Top View
    - Files are automatically processed for compatibility
 
 3. Refresh the web interface or restart the service:
-   ````bash
+   ```bash
    sudo systemctl restart solartunes
-   ````
+   ```
 
 4. Your new files will appear in the Sound Library!
 
@@ -396,19 +396,19 @@ SolarTunes automatically saves your motion detection settings to `~/Music/autopl
 
 The `~/Music/autoplay.conf` file uses JSON format:
 
-````json
+```json
 {
   "enabled": true,
   "selectedFile": "your-sound-file.wav",
   "lastSaved": "2025-01-07T15:30:00.000Z"
 }
-````
+```
 
 ### Managing Configuration
 
 Use the configuration management script for advanced control:
 
-````bash
+```bash
 # Show current configuration
 ./scripts/manage-autoplay-config.sh show
 
@@ -423,19 +423,19 @@ Use the configuration management script for advanced control:
 
 # Interactive menu
 ./scripts/manage-autoplay-config.sh
-````
+```
 
 ### Manual Configuration
 
 You can also manually edit the configuration file:
 
-````bash
+```bash
 # Edit configuration directly
 nano ~/Music/autoplay.conf
 
 # Restart SolarTunes to apply changes
 sudo systemctl restart solartunes
-````
+```
 
 ## 🌐 Access Your Sound Player
 
@@ -448,15 +448,15 @@ After setup, your SolarTunes player will be available at:
 **Custom Domain:** `http://solartunes.local:3000` (if mDNS configured)
 
 To find your Pi's IP address:
-````bash
+```bash
 hostname -I
-````
+```
 
 ## 🔧 Troubleshooting
 
 ### Service Won't Start
 
-````bash
+```bash
 # Check service status
 sudo systemctl status solartunes
 
@@ -465,11 +465,11 @@ sudo journalctl -u solartunes -n 50
 
 # Restart the service
 sudo systemctl restart solartunes
-````
+```
 
 ### No Audio Output
 
-````bash
+```bash
 # List audio devices
 aplay -l
 
@@ -481,11 +481,11 @@ groups $USER
 
 # Test volume control
 amixer -c 0 sset 'Digital' 50%
-````
+```
 
 ### Motion Detection Issues
 
-````bash
+```bash
 # Test PIR sensor hardware
 python3 scripts/test-pir.py
 
@@ -499,11 +499,11 @@ tail -f /tmp/motion-detector.log
 curl -X POST http://localhost:3000/api/motion \
      -H "Content-Type: application/json" \
      -d '{"action": "triggerMotion"}'
-````
+```
 
 ### Web Interface Not Loading
 
-````bash
+```bash
 # Check if port 3000 is in use
 sudo netstat -tlnp | grep :3000
 
@@ -512,38 +512,38 @@ sudo ufw status
 
 # Restart networking
 sudo systemctl restart networking
-````
+```
 
 ## 🔄 Updating SolarTunes
 
 To update your installation:
 
-````bash
+```bash
 cd ~/solartunes/
 ./scripts/update-project.sh
-````
+```
 
 ## WAV Files That Don't Work
 
 Not all wav formats are supported, you can convert them using ffmpeg:
 
-````bash
+```bash
 ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fixed.wav
-````
+```
 
 ## ⚡ Solar Power Optimization
 
 For solar-powered setups:
 
 1. **Monitor Power Usage:**
-   ````bash
+   ```bash
    # Check system load
    htop
    
    # Monitor power consumption
    vcgencmd measure_temp
    vcgencmd get_throttled
-   ````
+   ```
 
 2. **Optimize Performance:**
    - Use efficient .wav files (lower bitrates for longer playback)
@@ -567,48 +567,48 @@ For solar-powered setups:
 ### Step-by-Step Setup (No Internet Hotspot)
 
 1. **Update Raspberry Pi**
-   ````bash
+   ```bash
    sudo apt update && sudo apt upgrade -y
-   ````
+   ```
 
 2. **Install Access Point and DHCP Tools**
-   ````bash
+   ```bash
    sudo apt install hostapd dnsmasq
    sudo systemctl unmask hostapd
    sudo systemctl enable hostapd
-   ````
+   ```
 
 3. **Assign Static IP to wlan0**
-   ````bash
+   ```bash
    sudo nano /etc/dhcpcd.conf
-   ````
+   ```
    Append:
-   ````
+   ```
    interface wlan0
        static ip_address=192.168.4.1/24
        nohook wpa_supplicant
-   ````
-   ````bash
+   ```
+   ```bash
    sudo service dhcpcd restart
-   ````
+   ```
 
 4. **Configure dnsmasq (DHCP Server)**
-   ````bash
+   ```bash
    sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
    sudo nano /etc/dnsmasq.conf
-   ````
+   ```
    Add:
-   ````
+   ```
    interface=wlan0
    dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
-   ````
+   ```
 
 5. **Configure hostapd (Wi-Fi Hotspot)**
-   ````bash
+   ```bash
    sudo nano /etc/hostapd/hostapd.conf
-   ````
+   ```
    Example:
-   ````
+   ```
    interface=wlan0
    driver=nl80211
    ssid=MyPiAP
@@ -622,22 +622,22 @@ For solar-powered setups:
    wpa_passphrase=raspberry123
    wpa_key_mgmt=WPA-PSK
    rsn_pairwise=CCMP
-   ````
-   ````bash
+   ```
+   ```bash
    sudo nano /etc/default/hostapd
-   ````
+   ```
    Add or update:
-   ````
+   ```
    DAEMON_CONF="/etc/hostapd/hostapd.conf"
-   ````
+   ```
 
 6. **Start Services**
-   ````bash
+   ```bash
    sudo systemctl start hostapd
    sudo systemctl start dnsmasq
    sudo systemctl enable hostapd
    sudo systemctl enable dnsmasq
-   ````
+   ```
 
 ### Final Result
 - The Pi creates a Wi-Fi network called MyPiAP
@@ -647,22 +647,22 @@ For solar-powered setups:
 ### Enable solartunes.local Using avahi-daemon
 
 1. **Install avahi-daemon**
-   ````bash
+   ```bash
    sudo apt install avahi-daemon
-   ````
+   ```
 
 2. **Set the Hostname**
-   ````bash
+   ```bash
    sudo raspi-config
-   ````
+   ```
    Choose: System Options → Hostname → Enter: solartunes
    
    Or manually:
-   ````bash
+   ```bash
    echo "solartunes" | sudo tee /etc/hostname
    sudo sed -i 's/127.0.1.1.*/127.0.1.1 solartunes/' /etc/hosts
    sudo reboot
-   ````
+   ```
 
 Now access via: `http://solartunes.local:3000`
 
