@@ -94,7 +94,7 @@ logging.basicConfig(
 )
 
 # Configuration
-MOTION_PIN = 17  # GPIO pin connected to motion sensor (Pin 11)
+MOTION_PIN = 5   # GPIO pin connected to motion sensor (Pin 29)
 API_URL = "http://localhost:3000/api/motion"
 COOLDOWN_PERIOD = 10  # Seconds between triggers
 SIMULATION_MODE = False  # Set to True for testing without hardware
@@ -429,7 +429,7 @@ echo ""
 echo "PIR Sensor Pin  →  Raspberry Pi Pin"
 echo "─────────────────────────────────────"
 echo "VCC (Power)     →  Pin 2 (5V) or Pin 1 (3.3V)"
-echo "OUT (Signal)    →  Pin 11 (GPIO17)"
+echo "OUT (Signal)    →  Pin 29 (GPIO5)"
 echo "GND (Ground)    →  Pin 6 (Ground)"
 echo ""
 echo "📍 Pin Layout Reference:"
