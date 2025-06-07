@@ -40,7 +40,8 @@ sudo usermod -a -G disk $USER
 print_status "Creating sudoers rule for mount operations..."
 sudo tee /etc/sudoers.d/solartunes-mount > /dev/null << EOL
 # Allow SolarTunes user to remount filesystem without password
-$USER ALL=(ALL) NOPASSWD: /bin/mount -o remount,ro /, /bin/mount -o remount,rw /
+$USER ALL=(ALL) NOPASSWD: /bin/mount -o remount,ro /
+$USER ALL=(ALL) NOPASSWD: /bin/mount -o remount,rw /
 EOL
 
 # Create SD card management script
