@@ -738,7 +738,7 @@ For solar-powered setups:
 3. **Battery Management:**
    - [ ] Monitor battery voltage in system logs → I have no idea how to do this, as we just have a usual battery.
    - [ ] Set up low-power mode triggers → Same, we don't know how much power is in the battery.
-   - [ ] Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode. Also, der PIR does not deliver illumnation, just movement, so we have to add also an illumination sensor for that. 🤷‍♂️
+   - [ ] Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode. Also, the PIR does not deliver illumnation, just movement, so we have to add also an illumination sensor for that. 🤷‍♂️
 
 4. **To Dos**
    - ✅ upload wav files
