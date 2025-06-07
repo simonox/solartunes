@@ -135,294 +135,6 @@ sudo systemctl disable solartunes
 └── README.md
 ```
 
-## 📜 Shell Scripts Reference
-
-### Setup Scripts
-
-#### `setup-raspberry-pi.sh`
-**Purpose**: Complete Raspberry Pi environment setup for SolarTunes
-- Updates system packages
-- Installs audio dependencies (ALSA, PulseAudio)
-- Installs Node.js 20 and pnpm
-- Configures audio permissions and ALSA
-- Creates systemd service
-- Sets up log rotation
-- Creates test audio files
-- Generates helper scripts
-
-#### `deploy-project.sh`
-**Purpose**: Deploys the Next.js project to Raspberry Pi
-- Creates package.json with dependencies
-- Configures Next.js and Tailwind
-- Installs npm dependencies
-- Builds the production application
-
-#### `setup-motion-sensor.sh`
-**Purpose**: Sets up PIR motion sensor integration
-- Installs Python GPIO libraries
-- Creates motion detection script
-- Sets up systemd service for motion detection
-- Provides hardware wiring guide
-- Creates test and management scripts
-
-### Service Management Scripts
-
-#### `start-solartunes.sh`
-**Purpose**: Starts the SolarTunes service
-- Uses systemd if available
-- Falls back to manual start in development
-- Displays service status and access URL
-
-#### `stop-solartunes.sh`
-**Purpose**: Stops the SolarTunes service
-- Gracefully stops systemd service
-- Kills Node.js processes if systemd unavailable
-- Stops any audio playback
-
-#### `restart-solartunes.sh`
-**Purpose**: Restarts the SolarTunes service
-- Stops and starts the service
-- Shows recent logs
-- Displays access information
-
-#### `status-solartunes.sh`
-**Purpose**: Shows comprehensive system status
-- Service status and logs
-- Network and port information
-- Audio device status
-- System resources (memory, disk, temperature)
-- Power status and throttling info
-
-#### `update-project.sh`
-**Purpose**: Updates SolarTunes to latest version
-- Pulls latest code from Git
-- Updates dependencies
-- Rebuilds the project
-- Restarts services
-
-### Motion Detection Scripts
-
-#### `start-motion-detector.sh`
-**Purpose**: Starts the motion detection service
-- Starts systemd service or manual process
-- Verifies successful startup
-
-#### `stop-motion-detector.sh`
-**Purpose**: Stops the motion detection service
-- Stops systemd service gracefully
-- Kills motion detector processes
-
-#### `status-motion-detector.sh`
-**Purpose**: Shows motion detection status
-- Service status and logs
-- Recent motion detection events
-- Process information
-
-#### `motion-detector.py`
-**Purpose**: Main motion detection daemon
-- Monitors PIR sensor on GPIO5
-- Calls SolarTunes API when motion detected
-- Includes cooldown period and logging
-- Handles GPIO cleanup
-
-### Testing Scripts
-
-#### `test-pir.py`
-**Purpose**: Simple PIR sensor test
-- Basic GPIO5 motion detection
-- Minimal script for hardware verification
-- Real-time motion status display
-
-#### `test-pir-updated.py`
-**Purpose**: Advanced PIR sensor test with error handling
-- Comprehensive GPIO testing
-- Version information display
-- Better error handling and diagnostics
-
-#### `test-pir-gpiozero.py`
-**Purpose**: PIR testing using gpiozero library
-- Alternative to RPi.GPIO
-- Better compatibility with newer Pi models
-- Simplified motion detection API
-
-#### `gpio-diagnostic.py`
-**Purpose**: Comprehensive GPIO system diagnostics
-- Tests multiple GPIO libraries
-- Checks Raspberry Pi model compatibility
-- Provides troubleshooting recommendations
-
-#### `test-motion-sensor.sh`
-**Purpose**: Motion sensor integration test
-- Tests Python script functionality
-- Checks API endpoints
-- Verifies service status
-- Shows recent logs
-
-#### `test-motion-integration.sh`
-**Purpose**: Full motion detection integration test
-- Verifies SolarTunes is running
-- Tests API connectivity
-- Runs motion detector for testing period
-
-#### `test-audio.sh`
-**Purpose**: Audio system testing and diagnostics
-- Lists audio devices and controls
-- Tests various aplay configurations
-- Provides audio troubleshooting recommendations
-
-#### `test-hifiberry.sh`
-**Purpose**: Specific testing for HiFiBerry DAC+ audio HAT
-- Tests HiFiBerry driver loading
-- Checks DAC-specific controls
-- Tests various audio formats
-- Provides HiFiBerry-specific recommendations
-
-### Utility Scripts
-
-#### `install-gpio-libraries.sh`
-**Purpose**: Installs and updates GPIO libraries
-- Installs RPi.GPIO, gpiozero, and pigpio
-- Verifies successful installation
-- Starts pigpio daemon
-
-#### `fix-motion-setup.sh`
-**Purpose**: Emergency motion detection fix
-- Creates simplified motion detector
-- Provides basic functionality when main setup fails
-
-#### `update-motion-gpio.sh`
-**Purpose**: Updates motion detection to use different GPIO pin
-- Changes GPIO pin configuration
-- Updates all related scripts
-- Provides new wiring instructions
-
-#### `test-gpio5.sh`
-**Purpose**: Specific testing for GPIO5 pin
-- Tests GPIO5 pin access and functionality
-- Checks for GPIO conflicts
-- Verifies motion detector script
-
-#### `setup-working-motion.sh`
-**Purpose**: Sets up production motion detection
-- Creates production motion detector based on working test
-- Configures systemd service
-- Provides integration testing
-
-#### `start-motion-production.sh`
-**Purpose**: Starts complete SolarTunes system with motion detection
-- Starts both SolarTunes and motion detection services
-- Verifies both services are running
-- Provides status and next steps
-
-#### `make-scripts-executable.sh`
-**Purpose**: Makes all scripts executable
-- Sets execute permissions on all shell and Python scripts
-- Lists all available scripts
-
-#### `manage-autoplay-config.sh`
-**Purpose**: Manages motion detection configuration
-- Shows current autoplay configuration
-- Sets motion trigger files
-- Enables/disables motion detection
-- Backs up and restores configuration
-
-### SD Card Protection Scripts
-
-#### `setup-sdcard-protection.sh`
-**Purpose**: Sets up SD card write protection system
-- Creates mount wrapper scripts
-- Sets up sudoers rules for mount operations
-- Creates SD card management utilities
-- Configures automatic protection on shutdown
-
-#### `setup-ramdisk.sh`
-**Purpose**: Sets up RAM disk for logs when SD card is locked
-- Creates RAM disk directories
-- Configures systemd tmpfiles
-- Sets up log rotation for RAM disk
-- Updates services to use RAM disk when needed
-
-#### `restore-readwrite.sh`
-**Purpose**: Restores system to normal read-write mode
-- Undoes changes made by read-only boot configuration
-- Disables read-only boot service
-- Restores normal SolarTunes operation
-- Re-enables system logging services
-
-#### `reboot-to-readonly.sh`
-**Purpose**: Configures system to boot directly into read-only mode
-- Creates systemd service for read-only boot
-- Updates SolarTunes service for RAM disk operation
-- Disables disk-writing services
-- Provides automatic read-only protection
-
-#### `check-readonly-status.sh`
-**Purpose**: Checks current filesystem status and read-only configuration
-- Shows current mount status (read-only vs read-write)
-- Checks read-only boot service configuration
-- Displays SolarTunes service status
-- Shows RAM disk usage
-- Provides quick action commands
-
-#### `quick-sdcard-fix.sh`
-**Purpose**: Simple approach to fix common SD card locking issues
-- Tries basic fixes for filesystem locking
-- Stops interfering services
-- Provides quick diagnosis of busy processes
-- Offers next steps if simple fixes fail
-
-#### `force-readonly.sh`
-**Purpose**: Aggressively forces SD card into read-only mode
-- Stops all user services and processes
-- Kills processes that might prevent locking
-- Uses multiple sync and cache clearing attempts
-- Last resort before emergency methods
-
-#### `emergency-sdcard-lock.sh`
-**Purpose**: Emergency SD card protection using extreme measures
-- Identifies processes keeping filesystem busy
-- Aggressively stops services and processes
-- Uses multiple remount strategies
-- Provides comprehensive status and diagnostics
-
-#### `diagnose-sdcard-issues.sh`
-**Purpose**: Comprehensive SD card diagnostics
-- Analyzes filesystem activity and open files
-- Checks for hardware write protection
-- Identifies services that might interfere
-- Provides detailed recommendations
-
-### System Diagnostics and Repair Scripts
-
-#### `diagnose-startup-issue.sh`
-**Purpose**: Comprehensive diagnostic for SolarTunes startup problems
-- Checks environment and project structure
-- Analyzes package.json and dependencies
-- Tests manual startup
-- Reviews service logs and system resources
-- Provides step-by-step troubleshooting recommendations
-
-#### `rebuild-project.sh`
-**Purpose**: Complete project rebuild from scratch
-- Cleans old build artifacts
-- Creates fresh configuration files
-- Reinstalls all dependencies
-- Rebuilds the project
-- Tests manual and service startup
-
-#### `simple-start-test.sh`
-**Purpose**: Simple manual startup test
-- Tests if SolarTunes can start without systemd
-- Kills conflicting processes
-- Sets proper environment variables
-- Uses available package manager
-
-#### `fix-systemd-service.sh`
-**Purpose**: Fixes systemd service configuration for proper daemon operation
-- Creates improved service configuration
-- Handles package manager detection
-- Sets up proper restart and logging
-- Creates monitoring and management tools
 
 ## 🔌 PIR Motion Sensor Wiring
 
@@ -766,6 +478,295 @@ For solar-powered setups:
    - [ ] Monitor battery voltage in system logs → I have no idea how to do this, as we just have a usual battery.
    - [ ] Set up low-power mode triggers → Same, we don't know how much power is in the battery.
    - [ ] Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode. Also, the PIR does not deliver illumnation, just movement, so we have to add also an illumination sensor for that. 🤷‍♂️
+
+## 📜 Shell Scripts Reference
+
+### Setup Scripts
+
+#### `setup-raspberry-pi.sh`
+**Purpose**: Complete Raspberry Pi environment setup for SolarTunes
+- Updates system packages
+- Installs audio dependencies (ALSA, PulseAudio)
+- Installs Node.js 20 and pnpm
+- Configures audio permissions and ALSA
+- Creates systemd service
+- Sets up log rotation
+- Creates test audio files
+- Generates helper scripts
+
+#### `deploy-project.sh`
+**Purpose**: Deploys the Next.js project to Raspberry Pi
+- Creates package.json with dependencies
+- Configures Next.js and Tailwind
+- Installs npm dependencies
+- Builds the production application
+
+#### `setup-motion-sensor.sh`
+**Purpose**: Sets up PIR motion sensor integration
+- Installs Python GPIO libraries
+- Creates motion detection script
+- Sets up systemd service for motion detection
+- Provides hardware wiring guide
+- Creates test and management scripts
+
+### Service Management Scripts
+
+#### `start-solartunes.sh`
+**Purpose**: Starts the SolarTunes service
+- Uses systemd if available
+- Falls back to manual start in development
+- Displays service status and access URL
+
+#### `stop-solartunes.sh`
+**Purpose**: Stops the SolarTunes service
+- Gracefully stops systemd service
+- Kills Node.js processes if systemd unavailable
+- Stops any audio playback
+
+#### `restart-solartunes.sh`
+**Purpose**: Restarts the SolarTunes service
+- Stops and starts the service
+- Shows recent logs
+- Displays access information
+
+#### `status-solartunes.sh`
+**Purpose**: Shows comprehensive system status
+- Service status and logs
+- Network and port information
+- Audio device status
+- System resources (memory, disk, temperature)
+- Power status and throttling info
+
+#### `update-project.sh`
+**Purpose**: Updates SolarTunes to latest version
+- Pulls latest code from Git
+- Updates dependencies
+- Rebuilds the project
+- Restarts services
+
+### Motion Detection Scripts
+
+#### `start-motion-detector.sh`
+**Purpose**: Starts the motion detection service
+- Starts systemd service or manual process
+- Verifies successful startup
+
+#### `stop-motion-detector.sh`
+**Purpose**: Stops the motion detection service
+- Stops systemd service gracefully
+- Kills motion detector processes
+
+#### `status-motion-detector.sh`
+**Purpose**: Shows motion detection status
+- Service status and logs
+- Recent motion detection events
+- Process information
+
+#### `motion-detector.py`
+**Purpose**: Main motion detection daemon
+- Monitors PIR sensor on GPIO5
+- Calls SolarTunes API when motion detected
+- Includes cooldown period and logging
+- Handles GPIO cleanup
+
+### Testing Scripts
+
+#### `test-pir.py`
+**Purpose**: Simple PIR sensor test
+- Basic GPIO5 motion detection
+- Minimal script for hardware verification
+- Real-time motion status display
+
+#### `test-pir-updated.py`
+**Purpose**: Advanced PIR sensor test with error handling
+- Comprehensive GPIO testing
+- Version information display
+- Better error handling and diagnostics
+
+#### `test-pir-gpiozero.py`
+**Purpose**: PIR testing using gpiozero library
+- Alternative to RPi.GPIO
+- Better compatibility with newer Pi models
+- Simplified motion detection API
+
+#### `gpio-diagnostic.py`
+**Purpose**: Comprehensive GPIO system diagnostics
+- Tests multiple GPIO libraries
+- Checks Raspberry Pi model compatibility
+- Provides troubleshooting recommendations
+
+#### `test-motion-sensor.sh`
+**Purpose**: Motion sensor integration test
+- Tests Python script functionality
+- Checks API endpoints
+- Verifies service status
+- Shows recent logs
+
+#### `test-motion-integration.sh`
+**Purpose**: Full motion detection integration test
+- Verifies SolarTunes is running
+- Tests API connectivity
+- Runs motion detector for testing period
+
+#### `test-audio.sh`
+**Purpose**: Audio system testing and diagnostics
+- Lists audio devices and controls
+- Tests various aplay configurations
+- Provides audio troubleshooting recommendations
+
+#### `test-hifiberry.sh`
+**Purpose**: Specific testing for HiFiBerry DAC+ audio HAT
+- Tests HiFiBerry driver loading
+- Checks DAC-specific controls
+- Tests various audio formats
+- Provides HiFiBerry-specific recommendations
+
+### Utility Scripts
+
+#### `install-gpio-libraries.sh`
+**Purpose**: Installs and updates GPIO libraries
+- Installs RPi.GPIO, gpiozero, and pigpio
+- Verifies successful installation
+- Starts pigpio daemon
+
+#### `fix-motion-setup.sh`
+**Purpose**: Emergency motion detection fix
+- Creates simplified motion detector
+- Provides basic functionality when main setup fails
+
+#### `update-motion-gpio.sh`
+**Purpose**: Updates motion detection to use different GPIO pin
+- Changes GPIO pin configuration
+- Updates all related scripts
+- Provides new wiring instructions
+
+#### `test-gpio5.sh`
+**Purpose**: Specific testing for GPIO5 pin
+- Tests GPIO5 pin access and functionality
+- Checks for GPIO conflicts
+- Verifies motion detector script
+
+#### `setup-working-motion.sh`
+**Purpose**: Sets up production motion detection
+- Creates production motion detector based on working test
+- Configures systemd service
+- Provides integration testing
+
+#### `start-motion-production.sh`
+**Purpose**: Starts complete SolarTunes system with motion detection
+- Starts both SolarTunes and motion detection services
+- Verifies both services are running
+- Provides status and next steps
+
+#### `make-scripts-executable.sh`
+**Purpose**: Makes all scripts executable
+- Sets execute permissions on all shell and Python scripts
+- Lists all available scripts
+
+#### `manage-autoplay-config.sh`
+**Purpose**: Manages motion detection configuration
+- Shows current autoplay configuration
+- Sets motion trigger files
+- Enables/disables motion detection
+- Backs up and restores configuration
+
+### SD Card Protection Scripts
+
+#### `setup-sdcard-protection.sh`
+**Purpose**: Sets up SD card write protection system
+- Creates mount wrapper scripts
+- Sets up sudoers rules for mount operations
+- Creates SD card management utilities
+- Configures automatic protection on shutdown
+
+#### `setup-ramdisk.sh`
+**Purpose**: Sets up RAM disk for logs when SD card is locked
+- Creates RAM disk directories
+- Configures systemd tmpfiles
+- Sets up log rotation for RAM disk
+- Updates services to use RAM disk when needed
+
+#### `restore-readwrite.sh`
+**Purpose**: Restores system to normal read-write mode
+- Undoes changes made by read-only boot configuration
+- Disables read-only boot service
+- Restores normal SolarTunes operation
+- Re-enables system logging services
+
+#### `reboot-to-readonly.sh`
+**Purpose**: Configures system to boot directly into read-only mode
+- Creates systemd service for read-only boot
+- Updates SolarTunes service for RAM disk operation
+- Disables disk-writing services
+- Provides automatic read-only protection
+
+#### `check-readonly-status.sh`
+**Purpose**: Checks current filesystem status and read-only configuration
+- Shows current mount status (read-only vs read-write)
+- Checks read-only boot service configuration
+- Displays SolarTunes service status
+- Shows RAM disk usage
+- Provides quick action commands
+
+#### `quick-sdcard-fix.sh`
+**Purpose**: Simple approach to fix common SD card locking issues
+- Tries basic fixes for filesystem locking
+- Stops interfering services
+- Provides quick diagnosis of busy processes
+- Offers next steps if simple fixes fail
+
+#### `force-readonly.sh`
+**Purpose**: Aggressively forces SD card into read-only mode
+- Stops all user services and processes
+- Kills processes that might prevent locking
+- Uses multiple sync and cache clearing attempts
+- Last resort before emergency methods
+
+#### `emergency-sdcard-lock.sh`
+**Purpose**: Emergency SD card protection using extreme measures
+- Identifies processes keeping filesystem busy
+- Aggressively stops services and processes
+- Uses multiple remount strategies
+- Provides comprehensive status and diagnostics
+
+#### `diagnose-sdcard-issues.sh`
+**Purpose**: Comprehensive SD card diagnostics
+- Analyzes filesystem activity and open files
+- Checks for hardware write protection
+- Identifies services that might interfere
+- Provides detailed recommendations
+
+### System Diagnostics and Repair Scripts
+
+#### `diagnose-startup-issue.sh`
+**Purpose**: Comprehensive diagnostic for SolarTunes startup problems
+- Checks environment and project structure
+- Analyzes package.json and dependencies
+- Tests manual startup
+- Reviews service logs and system resources
+- Provides step-by-step troubleshooting recommendations
+
+#### `rebuild-project.sh`
+**Purpose**: Complete project rebuild from scratch
+- Cleans old build artifacts
+- Creates fresh configuration files
+- Reinstalls all dependencies
+- Rebuilds the project
+- Tests manual and service startup
+
+#### `simple-start-test.sh`
+**Purpose**: Simple manual startup test
+- Tests if SolarTunes can start without systemd
+- Kills conflicting processes
+- Sets proper environment variables
+- Uses available package manager
+
+#### `fix-systemd-service.sh`
+**Purpose**: Fixes systemd service configuration for proper daemon operation
+- Creates improved service configuration
+- Handles package manager detection
+- Sets up proper restart and logging
+- Creates monitoring and management tools
 
 
 ## 🛠️ Setup Access Point
