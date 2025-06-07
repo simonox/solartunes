@@ -415,6 +415,8 @@ sudo systemctl disable solartunes
 
 ## 🔌 PIR Motion Sensor Wiring
 
+To auto-start a track when motion is detected, we have to add a PIR sensor to SolarTunes.
+
 ### Photo
 
 ![wiring](https://github.com/user-attachments/assets/3e9a0fef-aa41-4b92-96b0-9c75816b41b9)
