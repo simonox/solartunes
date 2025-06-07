@@ -410,6 +410,11 @@ sudo systemctl disable solartunes
 
 ## 🔌 PIR Motion Sensor Wiring
 
+### Photo
+
+![wiring](https://github.com/user-attachments/assets/3e9a0fef-aa41-4b92-96b0-9c75816b41b9)
+
+
 ### Hardware Requirements
 - PIR Motion Sensor (HC-SR501 recommended)
 - 3 Female-to-Female jumper wires
