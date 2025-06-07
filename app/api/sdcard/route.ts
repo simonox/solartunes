@@ -15,10 +15,10 @@ async function hasWrapperScript(): Promise<boolean> {
   }
 }
 
-// Check if service management script exists
-async function hasServiceManagement(): Promise<boolean> {
+// Check if safe management script exists
+async function hasSafeManagement(): Promise<boolean> {
   try {
-    await access("/home/pi/solartunes/scripts/manage-sdcard-with-service.sh")
+    await access("/home/pi/solartunes/scripts/safe-sdcard-manager.sh")
     return true
   } catch {
     return false
@@ -78,6 +78,20 @@ export async function GET() {
       sdCardInfo.serviceRunning = false
     }
 
+    // Check for busy processes that might prevent locking
+    try {
+      const { stdout: busyProcesses } = await execAsync(
+        "lsof / 2>/dev/null | grep -v 'COMMAND\\|systemd\\|kernel' | head -5 || echo ''",
+      )
+      sdCardInfo.busyProcesses = busyProcesses.trim().length > 0
+      if (sdCardInfo.busyProcesses) {
+        sdCardInfo.busyProcessCount = (busyProcesses.match(/\n/g) || []).length + 1
+        sdCardInfo.busyProcessesSample = busyProcesses.split("\n").slice(0, 3)
+      }
+    } catch (error) {
+      sdCardInfo.busyProcesses = false
+    }
+
     // Check SD card health (if available)
     try {
       const { stdout: sdHealth } = await execAsync("dmesg | grep -i 'mmc\\|sd' | tail -5")
@@ -102,22 +116,9 @@ export async function GET() {
       sdCardInfo.filesystem = "unknown"
     }
 
-    // Check if wrapper script is available
+    // Check if management scripts are available
     sdCardInfo.hasWrapper = await hasWrapperScript()
-    sdCardInfo.hasServiceManagement = await hasServiceManagement()
-
-    // Check for busy processes that might prevent locking
-    try {
-      const { stdout: busyProcesses } = await execAsync(
-        "lsof / 2>/dev/null | grep -v 'solartunes\\|bash\\|sh\\|sudo' | head -5 || echo ''",
-      )
-      sdCardInfo.busyProcesses = busyProcesses.trim().length > 0
-      if (sdCardInfo.busyProcesses) {
-        sdCardInfo.busyProcessCount = (busyProcesses.match(/\n/g) || []).length + 1
-      }
-    } catch (error) {
-      sdCardInfo.busyProcesses = false
-    }
+    sdCardInfo.hasSafeManagement = await hasSafeManagement()
 
     return NextResponse.json(sdCardInfo)
   } catch (error) {
@@ -132,15 +133,15 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const { action } = await request.json()
-    const hasServiceMgmt = await hasServiceManagement()
+    const hasSafeMgmt = await hasSafeManagement()
 
     if (action === "remountReadOnly") {
-      console.log("Safely locking SD card with service management...")
+      console.log("Attempting safe SD card lock...")
 
       try {
-        if (hasServiceMgmt) {
-          // Use the safe service management script
-          const { stdout, stderr } = await execAsync("/home/pi/solartunes/scripts/manage-sdcard-with-service.sh lock")
+        if (hasSafeMgmt) {
+          // Use the safe management script
+          const { stdout, stderr } = await execAsync("/home/pi/solartunes/scripts/safe-sdcard-manager.sh lock")
           console.log("Safe lock output:", stdout)
           if (stderr) console.log("Safe lock stderr:", stderr)
 
@@ -151,50 +152,69 @@ export async function POST(request: Request) {
           if (isReadOnly) {
             return NextResponse.json({
               success: true,
-              message: "SD card safely locked with service restart",
+              message: "SD card safely locked with service management",
               readOnly: true,
-              serviceRestarted: true,
+              method: "safe",
             })
           } else {
-            throw new Error("Safe lock completed but filesystem is still read-write")
+            // If safe method failed, suggest emergency method
+            return NextResponse.json(
+              {
+                error: "Safe lock failed - filesystem may be busy",
+                suggestion: "Try using emergency lock or check for busy processes",
+                busyProcesses: true,
+              },
+              { status: 500 },
+            )
           }
         } else {
-          // Fallback to basic method
+          // Fallback to basic method with better error handling
           const useWrapper = await hasWrapperScript()
 
-          // First, sync all pending writes
-          await execAsync("sync")
+          try {
+            // First, sync all pending writes
+            await execAsync("sync")
 
-          if (useWrapper) {
-            await execAsync("sudo /usr/local/bin/solartunes-mount lock")
-          } else {
-            await execAsync("sudo mount -o remount,ro /")
+            if (useWrapper) {
+              await execAsync("sudo /usr/local/bin/solartunes-mount lock")
+            } else {
+              await execAsync("sudo mount -o remount,ro /")
+            }
+
+            return NextResponse.json({
+              success: true,
+              message: "SD card locked (basic method)",
+              readOnly: true,
+              method: "basic",
+            })
+          } catch (lockError) {
+            return NextResponse.json(
+              {
+                error: "Failed to lock SD card - filesystem is busy",
+                details: lockError instanceof Error ? lockError.message : "Unknown error",
+                suggestion: "Install improved SD card protection scripts",
+              },
+              { status: 500 },
+            )
           }
-
-          return NextResponse.json({
-            success: true,
-            message: "SD card locked (service may need manual restart)",
-            readOnly: true,
-            serviceRestarted: false,
-          })
         }
       } catch (error) {
-        console.error("Failed to safely lock SD card:", error)
+        console.error("Failed to lock SD card:", error)
         return NextResponse.json(
           {
-            error: "Failed to safely lock SD card",
+            error: "Failed to lock SD card",
             details: error instanceof Error ? error.message : "Unknown error",
           },
           { status: 500 },
         )
       }
     } else if (action === "remountReadWrite") {
-      console.log("Safely unlocking SD card with service management...")
+      console.log("Attempting safe SD card unlock...")
 
       try {
-        if (hasServiceMgmt) {
-          // Use the safe service management script
-          const { stdout, stderr } = await execAsync("/home/pi/solartunes/scripts/manage-sdcard-with-service.sh unlock")
+        if (hasSafeMgmt) {
+          // Use the safe management script
+          const { stdout, stderr } = await execAsync("/home/pi/solartunes/scripts/safe-sdcard-manager.sh unlock")
           console.log("Safe unlock output:", stdout)
           if (stderr) console.log("Safe unlock stderr:", stderr)
 
@@ -205,9 +225,9 @@ export async function POST(request: Request) {
           if (!isReadOnly) {
             return NextResponse.json({
               success: true,
-              message: "SD card safely unlocked with service restart",
+              message: "SD card safely unlocked with service management",
               readOnly: false,
-              serviceRestarted: true,
+              method: "safe",
             })
           } else {
             throw new Error("Safe unlock completed but filesystem is still read-only")
@@ -224,24 +244,42 @@ export async function POST(request: Request) {
 
           return NextResponse.json({
             success: true,
-            message: "SD card unlocked (service may need manual restart)",
+            message: "SD card unlocked (basic method)",
             readOnly: false,
-            serviceRestarted: false,
+            method: "basic",
           })
         }
       } catch (error) {
-        console.error("Failed to safely unlock SD card:", error)
+        console.error("Failed to unlock SD card:", error)
         return NextResponse.json(
           {
-            error: "Failed to safely unlock SD card",
+            error: "Failed to unlock SD card",
             details: error instanceof Error ? error.message : "Unknown error",
           },
           { status: 500 },
         )
       }
+    } else if (action === "checkBusyProcesses") {
+      // New action to check for busy processes
+      try {
+        const { stdout: busyProcesses } = await execAsync(
+          "lsof / 2>/dev/null | grep -v 'COMMAND\\|systemd\\|kernel' | head -10 || echo ''",
+        )
+
+        return NextResponse.json({
+          success: true,
+          busyProcesses: busyProcesses.trim().length > 0,
+          processes: busyProcesses.split("\n").filter((line) => line.trim()),
+        })
+      } catch (error) {
+        return NextResponse.json({
+          success: false,
+          error: "Failed to check busy processes",
+        })
+      }
     } else {
       return NextResponse.json(
-        { error: "Invalid action. Use 'remountReadOnly' or 'remountReadWrite'" },
+        { error: "Invalid action. Use 'remountReadOnly', 'remountReadWrite', or 'checkBusyProcesses'" },
         { status: 400 },
       )
     }
