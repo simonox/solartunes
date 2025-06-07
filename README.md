@@ -12,6 +12,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built wit
 - **⚡ Low Power**: Optimized for solar-powered Raspberry Pi setups
 - **🔄 Auto-Start**: Systemd service for automatic startup on boot
 - **📱 File Upload**: Upload and process WAV files directly through the web interface
+- **🛡️ SD Card Protection**: Advanced read-only mode for SD card longevity
 
 ## 🚀 Quick Setup
 
@@ -104,7 +105,8 @@ sudo systemctl disable solartunes
 │   │   ├── upload/        # File upload handling
 │   │   ├── volume/        # Volume control
 │   │   ├── temperature/   # System temperature
-│   │   └── cleanup/       # Audio cleanup utilities
+│   │   ├── cleanup/       # Audio cleanup utilities
+│   │   └── sdcard/        # SD card status and management
 │   ├── layout.tsx         # App layout
 │   └── page.tsx           # Main sound player interface
 ├── scripts/               # Setup and management scripts
@@ -296,6 +298,116 @@ sudo systemctl disable solartunes
 - Verifies both services are running
 - Provides status and next steps
 
+#### `make-scripts-executable.sh`
+**Purpose**: Makes all scripts executable
+- Sets execute permissions on all shell and Python scripts
+- Lists all available scripts
+
+#### `manage-autoplay-config.sh`
+**Purpose**: Manages motion detection configuration
+- Shows current autoplay configuration
+- Sets motion trigger files
+- Enables/disables motion detection
+- Backs up and restores configuration
+
+### SD Card Protection Scripts
+
+#### `setup-sdcard-protection.sh`
+**Purpose**: Sets up SD card write protection system
+- Creates mount wrapper scripts
+- Sets up sudoers rules for mount operations
+- Creates SD card management utilities
+- Configures automatic protection on shutdown
+
+#### `setup-ramdisk.sh`
+**Purpose**: Sets up RAM disk for logs when SD card is locked
+- Creates RAM disk directories
+- Configures systemd tmpfiles
+- Sets up log rotation for RAM disk
+- Updates services to use RAM disk when needed
+
+#### `restore-readwrite.sh`
+**Purpose**: Restores system to normal read-write mode
+- Undoes changes made by read-only boot configuration
+- Disables read-only boot service
+- Restores normal SolarTunes operation
+- Re-enables system logging services
+
+#### `reboot-to-readonly.sh`
+**Purpose**: Configures system to boot directly into read-only mode
+- Creates systemd service for read-only boot
+- Updates SolarTunes service for RAM disk operation
+- Disables disk-writing services
+- Provides automatic read-only protection
+
+#### `check-readonly-status.sh`
+**Purpose**: Checks current filesystem status and read-only configuration
+- Shows current mount status (read-only vs read-write)
+- Checks read-only boot service configuration
+- Displays SolarTunes service status
+- Shows RAM disk usage
+- Provides quick action commands
+
+#### `quick-sdcard-fix.sh`
+**Purpose**: Simple approach to fix common SD card locking issues
+- Tries basic fixes for filesystem locking
+- Stops interfering services
+- Provides quick diagnosis of busy processes
+- Offers next steps if simple fixes fail
+
+#### `force-readonly.sh`
+**Purpose**: Aggressively forces SD card into read-only mode
+- Stops all user services and processes
+- Kills processes that might prevent locking
+- Uses multiple sync and cache clearing attempts
+- Last resort before emergency methods
+
+#### `emergency-sdcard-lock.sh`
+**Purpose**: Emergency SD card protection using extreme measures
+- Identifies processes keeping filesystem busy
+- Aggressively stops services and processes
+- Uses multiple remount strategies
+- Provides comprehensive status and diagnostics
+
+#### `diagnose-sdcard-issues.sh`
+**Purpose**: Comprehensive SD card diagnostics
+- Analyzes filesystem activity and open files
+- Checks for hardware write protection
+- Identifies services that might interfere
+- Provides detailed recommendations
+
+### System Diagnostics and Repair Scripts
+
+#### `diagnose-startup-issue.sh`
+**Purpose**: Comprehensive diagnostic for SolarTunes startup problems
+- Checks environment and project structure
+- Analyzes package.json and dependencies
+- Tests manual startup
+- Reviews service logs and system resources
+- Provides step-by-step troubleshooting recommendations
+
+#### `rebuild-project.sh`
+**Purpose**: Complete project rebuild from scratch
+- Cleans old build artifacts
+- Creates fresh configuration files
+- Reinstalls all dependencies
+- Rebuilds the project
+- Tests manual and service startup
+
+#### `simple-start-test.sh`
+**Purpose**: Simple manual startup test
+- Tests if SolarTunes can start without systemd
+- Kills conflicting processes
+- Sets proper environment variables
+- Uses available package manager
+
+#### `fix-systemd-service.sh`
+**Purpose**: Fixes systemd service configuration for proper daemon operation
+- Creates improved service configuration
+- Handles package manager detection
+- Sets up proper restart and logging
+- Creates monitoring and management tools
+
 ## 🔌 PIR Motion Sensor Wiring
 
 ### Hardware Requirements
@@ -437,6 +549,53 @@ nano ~/Music/autoplay.conf
 sudo systemctl restart solartunes
 \`\`\`
 
+## 🛡️ SD Card Protection
+
+SolarTunes includes advanced SD card protection features to extend the life of your SD card by reducing write operations.
+
+### Quick Commands
+
+\`\`\`bash
+# Check current status
+./scripts/check-readonly-status.sh
+
+# Quick fix for common issues
+./scripts/quick-sdcard-fix.sh
+
+# Force read-only mode
+./scripts/force-readonly.sh
+
+# Emergency protection (aggressive)
+./scripts/emergency-sdcard-lock.sh
+
+# Restore to normal mode
+sudo ./scripts/restore-readwrite.sh
+
+# Configure boot-time protection
+sudo ./scripts/reboot-to-readonly.sh
+\`\`\`
+
+### Protection Levels
+
+1. **Manual Protection**: Use `force-readonly.sh` for immediate protection
+2. **Emergency Protection**: Use `emergency-sdcard-lock.sh` when normal methods fail
+3. **Boot Protection**: Use `reboot-to-readonly.sh` for automatic protection on startup
+4. **RAM Disk Mode**: Automatically uses RAM for logs when SD card is protected
+
+### How It Works
+
+- **Read-Only Filesystem**: Prevents all writes to the SD card
+- **RAM Disk**: Stores logs and temporary files in memory
+- **Service Management**: Automatically restarts services with RAM disk configuration
+- **Hardware Detection**: Detects and respects hardware write protection switches
+
+### Important Notes
+
+- ⚠️ **Unlock before uploads**: File uploads require the SD card to be writable
+- ⚠️ **RAM limitations**: RAM disk is limited by available system memory
+- ⚠️ **Data loss**: RAM disk data is lost on reboot
+- ⚠️ **Emergency use**: Use emergency scripts only when normal methods fail
+
 ## 🌐 Access Your Sound Player
 
 After setup, your SolarTunes player will be available at:
@@ -465,6 +624,12 @@ sudo journalctl -u solartunes -n 50
 
 # Restart the service
 sudo systemctl restart solartunes
+
+# Run comprehensive diagnostics
+./scripts/diagnose-startup-issue.sh
+
+# Complete rebuild if needed
+./scripts/rebuild-project.sh
 \`\`\`
 
 ### No Audio Output
@@ -481,6 +646,12 @@ groups $USER
 
 # Test volume control
 amixer -c 0 sset 'Digital' 50%
+
+# Run audio diagnostics
+./scripts/test-audio.sh
+
+# Test HiFiBerry DAC+ (if applicable)
+./scripts/test-hifiberry.sh
 \`\`\`
 
 ### Motion Detection Issues
@@ -499,6 +670,12 @@ tail -f /tmp/motion-detector.log
 curl -X POST http://localhost:3000/api/motion \
      -H "Content-Type: application/json" \
      -d '{"action": "triggerMotion"}'
+
+# Run GPIO diagnostics
+python3 scripts/gpio-diagnostic.py
+
+# Install/update GPIO libraries
+./scripts/install-gpio-libraries.sh
 \`\`\`
 
 ### Web Interface Not Loading
@@ -512,6 +689,28 @@ sudo ufw status
 
 # Restart networking
 sudo systemctl restart networking
+\`\`\`
+
+### SD Card Protection Issues
+
+\`\`\`bash
+# Check current status
+./scripts/check-readonly-status.sh
+
+# Diagnose SD card issues
+./scripts/diagnose-sdcard-issues.sh
+
+# Try quick fix
+./scripts/quick-sdcard-fix.sh
+
+# Force protection if needed
+./scripts/force-readonly.sh
+
+# Emergency protection
+./scripts/emergency-sdcard-lock.sh
+
+# Restore normal operation
+sudo ./scripts/restore-readwrite.sh
 \`\`\`
 
 ## 🔄 Updating SolarTunes
@@ -558,9 +757,9 @@ For solar-powered setups:
 4. **To Dos**
    - ✅ upload wav files
    - ✅ install sensor (movement and illumination)
-   - ⏳ lock SD Card in read only-mode
-   - ⏳ unlock SD Card for uploading
-   - ⏳ move log files to RAM disk (as SD Card is locked)
+   - ✅ lock SD Card in read only-mode
+   - ✅ unlock SD Card for uploading
+   - ✅ move log files to RAM disk (as SD Card is locked)
 
 ## 🛠️ Setup Access Point
 
