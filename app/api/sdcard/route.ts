@@ -74,6 +74,19 @@ export async function GET() {
     // Check if wrapper script is available
     sdCardInfo.hasWrapper = await hasWrapperScript()
 
+    // Check for busy processes that might prevent locking
+    try {
+      const { stdout: busyProcesses } = await execAsync(
+        "lsof / 2>/dev/null | grep -v 'solartunes\\|bash\\|sh\\|sudo' | head -5 || echo ''",
+      )
+      sdCardInfo.busyProcesses = busyProcesses.trim().length > 0
+      if (sdCardInfo.busyProcesses) {
+        sdCardInfo.busyProcessCount = (busyProcesses.match(/\n/g) || []).length + 1
+      }
+    } catch (error) {
+      sdCardInfo.busyProcesses = false
+    }
+
     return NextResponse.json(sdCardInfo)
   } catch (error) {
     console.error("Error getting SD card info:", error)
@@ -93,29 +106,85 @@ export async function POST(request: Request) {
       console.log("Remounting filesystem as read-only...")
 
       try {
+        // First, sync all pending writes
+        await execAsync("sync")
+
+        // Try to stop processes that might be keeping the filesystem busy
+        try {
+          console.log("Stopping processes that might be keeping the filesystem busy...")
+          await execAsync(
+            "lsof / 2>/dev/null | grep -v 'node\\|solartunes\\|bash\\|sh\\|sudo' | awk '{print $2}' | sort -u | xargs -r kill -TERM",
+          )
+          // Wait a moment for processes to terminate
+          await new Promise((resolve) => setTimeout(resolve, 2000))
+        } catch (error) {
+          console.log("No processes to terminate or error terminating processes:", error)
+        }
+
         if (useWrapper) {
           // Use wrapper script
-          await execAsync("sudo /usr/local/bin/solartunes-mount lock")
+          const { stdout, stderr } = await execAsync("sudo /usr/local/bin/solartunes-mount lock")
+          console.log("Wrapper output:", stdout, stderr)
         } else {
-          // Use direct mount commands
-          await execAsync("sync")
+          // Use direct mount command
           await execAsync("sudo mount -o remount,ro /")
         }
 
-        return NextResponse.json({
-          success: true,
-          message: "Filesystem remounted as read-only",
-          readOnly: true,
-        })
+        // Verify the remount was successful
+        const { stdout: mountInfo } = await execAsync("mount | grep ' / ' | head -1")
+        const isReadOnly = mountInfo.includes("ro,") || mountInfo.includes("(ro)")
+
+        if (isReadOnly) {
+          return NextResponse.json({
+            success: true,
+            message: "Filesystem remounted as read-only",
+            readOnly: true,
+          })
+        } else {
+          throw new Error("Remount command completed but filesystem is still read-write")
+        }
       } catch (error) {
         console.error("Failed to remount as read-only:", error)
-        return NextResponse.json(
-          {
-            error: "Failed to remount as read-only",
-            details: error instanceof Error ? error.message : "Unknown error",
-          },
-          { status: 500 },
-        )
+
+        // Try alternative approach
+        try {
+          console.log("Trying alternative approach...")
+
+          // Force sync again
+          await execAsync("sync")
+
+          // Try direct mount with lazy option
+          await execAsync("sudo mount -o remount,ro,noatime /")
+
+          // Verify the remount was successful
+          const { stdout: mountInfo } = await execAsync("mount | grep ' / ' | head -1")
+          const isReadOnly = mountInfo.includes("ro,") || mountInfo.includes("(ro)")
+
+          if (isReadOnly) {
+            return NextResponse.json({
+              success: true,
+              message: "Filesystem remounted as read-only (alternative method)",
+              readOnly: true,
+            })
+          } else {
+            return NextResponse.json(
+              {
+                error: "Failed to remount as read-only",
+                details: "Filesystem is busy. Try stopping services or restarting the device.",
+              },
+              { status: 500 },
+            )
+          }
+        } catch (altError) {
+          console.error("Alternative approach also failed:", altError)
+          return NextResponse.json(
+            {
+              error: "Failed to remount as read-only",
+              details: error instanceof Error ? error.message : "Unknown error",
+            },
+            { status: 500 },
+          )
+        }
       }
     } else if (action === "remountReadWrite") {
       console.log("Remounting filesystem as read-write...")
@@ -129,11 +198,19 @@ export async function POST(request: Request) {
           await execAsync("sudo mount -o remount,rw /")
         }
 
-        return NextResponse.json({
-          success: true,
-          message: "Filesystem remounted as read-write",
-          readOnly: false,
-        })
+        // Verify the remount was successful
+        const { stdout: mountInfo } = await execAsync("mount | grep ' / ' | head -1")
+        const isReadOnly = mountInfo.includes("ro,") || mountInfo.includes("(ro)")
+
+        if (!isReadOnly) {
+          return NextResponse.json({
+            success: true,
+            message: "Filesystem remounted as read-write",
+            readOnly: false,
+          })
+        } else {
+          throw new Error("Remount command completed but filesystem is still read-only")
+        }
       } catch (error) {
         console.error("Failed to remount as read-write:", error)
         return NextResponse.json(
