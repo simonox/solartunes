@@ -1021,7 +1021,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 - **Discussions**: Join community discussions
 - **Documentation**: Check this `README`
 - **Community**: Connect with other SolarPunk makers at https://curious.bio
-- **Security**: This project is a local installation, only. It's NOT supposed to put in the internet. If you find anyhting, see `SECURITY.MD`! Use at your OWN RIST.
+- **Security**: This project is a local installation, only. It's NOT supposed to put in the internet. If you find anyhting, see `SECURITY`! USE THIS SOFTWARE ON YOUR OWN RISK. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY
 
 ---
 
