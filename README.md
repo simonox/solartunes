@@ -502,7 +502,9 @@ ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fi
 ```
 This conversion is already done if the wav file is uploaded with the web UI.
 
-## 🎯 Motion Detection Configuration
+## 🎯 Motion Detection Playback Configuration
+
+The idea behing motion detection is, that SolarTunes plays a *selected* track if a motion is detected. If there is already a track playing, it will not interrupt the playback, but create a log entry. Selectd tracks should survive a re-boot of the system.
 
 SolarTunes automatically saves your motion detection settings to `~/Music/autoplay.conf`. When the app starts, it will:
 
