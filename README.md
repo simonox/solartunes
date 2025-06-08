@@ -92,8 +92,6 @@ chmod +x scripts/setup-motion-sensor.sh
 
 # ⚒️Development Process 
 
-This document outlines the standard development workflow used for building and deploying UI features.
-
 ## 🪛Tools and Platforms
 
 - **Online IDE:** [v0.dev](https://v0.dev)
