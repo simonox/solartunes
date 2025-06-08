@@ -36,6 +36,7 @@ import {
   Database,
   FileText,
   Shield,
+  RefreshCw,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
@@ -111,12 +112,13 @@ export default function MusicPlayer() {
   })
   const [sdCard, setSDCard] = useState<SDCardData | null>(null)
   const [webhook, setWebhook] = useState<WebhookData>({
-    selectedScript: "defaultScript", // Updated default value
+    selectedScript: "defaultScript",
     lastSaved: null,
     availableScripts: [],
     timestamp: new Date().toISOString(),
   })
   const [webhookSaving, setWebhookSaving] = useState(false)
+  const [webhookLoading, setWebhookLoading] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<{
     uploading: boolean
     success: boolean | null
@@ -261,23 +263,105 @@ export default function MusicPlayer() {
   }
 
   const fetchWebhookConfig = async () => {
+    setWebhookLoading(true)
     try {
-      const response = await fetch("/api/webhook")
-      const data = await response.json()
+      console.log("Fetching webhook configuration...")
+      const response = await fetch("/api/webhook", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
 
-      if (response.ok) {
-        setWebhook(data)
+      console.log("Webhook fetch response status:", response.status)
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("Webhook fetch failed:", response.status, errorText)
+        toast({
+          title: "Failed to load webhook configuration",
+          description: `Server responded with status ${response.status}`,
+          variant: "destructive",
+        })
+        return
+      }
+
+      const data = await response.json()
+      console.log("Webhook configuration loaded:", data)
+
+      if (data.success) {
+        setWebhook({
+          selectedScript: data.selectedScript || "defaultScript",
+          lastSaved: data.lastSaved,
+          availableScripts: data.availableScripts || [],
+          timestamp: data.timestamp,
+        })
+        console.log(`Loaded ${data.availableScripts?.length || 0} available scripts`)
       } else {
         console.error("Webhook config error:", data.error)
+        toast({
+          title: "Failed to load webhook configuration",
+          description: data.error || "Unknown error",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       console.error("Failed to fetch webhook config:", error)
+      toast({
+        title: "Failed to fetch webhook configuration",
+        description: error instanceof Error ? error.message : "Network error",
+        variant: "destructive",
+      })
+    } finally {
+      setWebhookLoading(false)
     }
   }
 
   const saveWebhookConfig = async () => {
     setWebhookSaving(true)
     try {
+      // Handle "defaultScript" selection (no script)
+      if (webhook.selectedScript === "defaultScript") {
+        const response = await fetch("/api/webhook", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "save",
+            selectedScript: "defaultScript",
+          }),
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          setWebhook((prev) => ({
+            ...prev,
+            selectedScript: "defaultScript",
+            lastSaved: data.lastSaved,
+          }))
+          toast({
+            title: "Webhook disabled",
+            description: "No script will execute on motion detection",
+            variant: "default",
+          })
+          await fetchWebhookConfig()
+        } else {
+          toast({ title: `Failed to save webhook: ${data.error}`, variant: "destructive" })
+        }
+        return
+      }
+
+      // Validate script selection
+      if (!webhook.selectedScript || webhook.selectedScript.trim() === "") {
+        toast({
+          title: "Please select a script",
+          description: "Choose a script to execute or select 'No script' to disable webhook",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Save valid script selection
       const response = await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -295,8 +379,11 @@ export default function MusicPlayer() {
           selectedScript: data.selectedScript,
           lastSaved: data.lastSaved,
         }))
-        toast({ title: "Webhook configuration saved successfully", variant: "default" })
-        // Fetch updated config after successful save
+        toast({
+          title: "Webhook configuration saved",
+          description: `Script "${data.selectedScript}" will execute on motion detection`,
+          variant: "default",
+        })
         await fetchWebhookConfig()
       } else {
         toast({ title: `Failed to save webhook: ${data.error}`, variant: "destructive" })
@@ -797,17 +884,7 @@ export default function MusicPlayer() {
                   variant="outline"
                   className="w-full h-6 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
                 >
-                  {motion.enabled ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Select File
-                    </>
-                  )}
+                  Test Trigger Motion
                 </Button>
 
                 {motion.motionCount > 0 && (
@@ -960,9 +1037,15 @@ export default function MusicPlayer() {
                 <CardTitle className="flex items-center gap-2 text-purple-800">
                   <Shield className="h-5 w-5" />
                   Motion Hook
-                  {webhook.selectedScript && (
+                  {webhookLoading && <Loader2 className="h-4 w-4 animate-spin text-purple-600" />}
+                  {!webhookLoading && webhook.selectedScript && webhook.selectedScript !== "defaultScript" && (
                     <Badge variant="secondary" className="ml-auto bg-purple-100 text-purple-700 text-xs">
-                      Configured
+                      Active
+                    </Badge>
+                  )}
+                  {!webhookLoading && webhook.selectedScript === "defaultScript" && (
+                    <Badge variant="secondary" className="ml-auto bg-gray-100 text-gray-700 text-xs">
+                      Disabled
                     </Badge>
                   )}
                 </CardTitle>
@@ -970,16 +1053,31 @@ export default function MusicPlayer() {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="webhook-script" className="block text-sm font-medium text-gray-700 mb-2">
-                      Select script to execute on motion:
-                    </label>
+                    <div className="flex items-center justify-between mb-2">
+                      <label htmlFor="webhook-script" className="block text-sm font-medium text-gray-700">
+                        Select script to execute on motion:
+                      </label>
+                      <Button
+                        onClick={fetchWebhookConfig}
+                        variant="ghost"
+                        size="sm"
+                        disabled={webhookLoading}
+                        className="h-6 px-2 text-xs"
+                      >
+                        {webhookLoading ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <RefreshCw className="h-3 w-3" />
+                        )}
+                      </Button>
+                    </div>
                     <Select
                       value={webhook.selectedScript}
                       onValueChange={(value) => setWebhook((prev) => ({ ...prev, selectedScript: value }))}
-                      disabled={webhookSaving}
+                      disabled={webhookSaving || webhookLoading}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Choose a script..." />
+                        <SelectValue placeholder={webhookLoading ? "Loading scripts..." : "Choose a script..."} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="defaultScript">
@@ -1000,7 +1098,7 @@ export default function MusicPlayer() {
                     </Select>
                   </div>
 
-                  {webhook.availableScripts.length === 0 && (
+                  {!webhookLoading && webhook.availableScripts.length === 0 && (
                     <Alert className="border-yellow-200 bg-yellow-50">
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription className="text-yellow-800">
@@ -1010,15 +1108,34 @@ export default function MusicPlayer() {
                     </Alert>
                   )}
 
-                  {webhook.selectedScript && (
+                  {webhookLoading && (
+                    <div className="text-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto text-purple-600" />
+                      <p className="text-sm text-gray-600 mt-2">Loading available scripts...</p>
+                    </div>
+                  )}
+
+                  {!webhookLoading && webhook.selectedScript && webhook.selectedScript !== "defaultScript" && (
                     <div className="text-xs text-center text-purple-600 bg-purple-50 p-2 rounded">
-                      Selected: {webhook.selectedScript}
+                      <div className="flex items-center justify-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        <span>Selected: {webhook.selectedScript}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {!webhookLoading && webhook.selectedScript === "defaultScript" && (
+                    <div className="text-xs text-center text-gray-600 bg-gray-50 p-2 rounded">
+                      <div className="flex items-center justify-center gap-1">
+                        <XCircle className="h-3 w-3" />
+                        <span>No script selected - webhook disabled</span>
+                      </div>
                     </div>
                   )}
 
                   <Button
                     onClick={saveWebhookConfig}
-                    disabled={webhookSaving}
+                    disabled={webhookSaving || webhookLoading}
                     className="w-full bg-purple-600 hover:bg-purple-700"
                   >
                     {webhookSaving ? (
@@ -1027,7 +1144,7 @@ export default function MusicPlayer() {
                         Saving...
                       </>
                     ) : (
-                      "Save Hook"
+                      <>{webhook.selectedScript === "defaultScript" ? "Disable Hook" : "Save Hook"}</>
                     )}
                   </Button>
 
@@ -1042,6 +1159,7 @@ export default function MusicPlayer() {
                     <p>• Scripts execute with 30-second timeout</p>
                     <p>• Working directory is set to ~/Music</p>
                     <p>• Select "No script" to disable webhook</p>
+                    <p>• Found {webhook.availableScripts.length} available scripts</p>
                   </div>
                 </div>
               </CardContent>

@@ -16,7 +16,7 @@ async function loadWebhookConfig() {
   } catch (error) {
     // Config file doesn't exist or is invalid, return default
     return {
-      selectedScript: "",
+      selectedScript: "defaultScript",
       lastSaved: null,
     }
   }
@@ -26,7 +26,7 @@ async function loadWebhookConfig() {
 async function saveWebhookConfig(config: any) {
   try {
     const configToSave = {
-      selectedScript: config.selectedScript || "",
+      selectedScript: config.selectedScript || "defaultScript",
       lastSaved: new Date().toISOString(),
     }
 
@@ -71,14 +71,20 @@ async function getAvailableScripts() {
   }
 }
 
+// GET method - Fetch webhook configuration and available scripts
 export async function GET() {
   try {
+    console.log("GET /api/webhook - Fetching webhook configuration and available scripts")
+
     const config = await loadWebhookConfig()
     const availableScripts = await getAvailableScripts()
 
+    console.log(`Found ${availableScripts.length} available scripts`)
+    console.log("Current webhook config:", config)
+
     return NextResponse.json({
       success: true,
-      selectedScript: config.selectedScript || "",
+      selectedScript: config.selectedScript || "defaultScript",
       lastSaved: config.lastSaved,
       availableScripts,
       timestamp: new Date().toISOString(),
@@ -95,31 +101,65 @@ export async function GET() {
   }
 }
 
+// POST method - Save webhook configuration
 export async function POST(request: Request) {
   try {
+    console.log("POST /api/webhook - Saving webhook configuration")
+
     const body = await request.json()
+    console.log("Request body:", body)
 
     if (body.action === "save") {
-      // Validate that the selected script exists and is in the allowed directory
-      const availableScripts = await getAvailableScripts()
-      const selectedScript = body.selectedScript || ""
+      const selectedScript = body.selectedScript || "defaultScript"
 
-      if (selectedScript && !availableScripts.some((script) => script.name === selectedScript)) {
-        return NextResponse.json({ error: "Selected script is not available or not allowed" }, { status: 400 })
+      // Handle "defaultScript" or empty selection as disabled webhook
+      if (selectedScript === "defaultScript" || selectedScript === "") {
+        const savedConfig = await saveWebhookConfig({
+          selectedScript: "defaultScript",
+        })
+
+        console.log("Webhook disabled (no script selected)")
+
+        return NextResponse.json({
+          success: true,
+          selectedScript: "defaultScript",
+          lastSaved: savedConfig.lastSaved,
+          message: "Webhook disabled - no script will execute on motion",
+          timestamp: new Date().toISOString(),
+        })
       }
 
+      // Validate that the selected script exists and is in the allowed directory
+      const availableScripts = await getAvailableScripts()
+      const scriptExists = availableScripts.some((script) => script.name === selectedScript)
+
+      if (!scriptExists) {
+        console.error(`Script "${selectedScript}" not found in available scripts`)
+        return NextResponse.json(
+          {
+            error: "Selected script is not available or not allowed",
+            details: `Script "${selectedScript}" not found in ~/Music directory`,
+          },
+          { status: 400 },
+        )
+      }
+
+      // Save valid script selection
       const savedConfig = await saveWebhookConfig({
         selectedScript,
       })
 
+      console.log("Webhook configuration saved successfully:", savedConfig)
+
       return NextResponse.json({
         success: true,
-        message: "Webhook configuration saved successfully",
         selectedScript: savedConfig.selectedScript,
         lastSaved: savedConfig.lastSaved,
+        message: `Webhook configured to execute "${selectedScript}" on motion`,
         timestamp: new Date().toISOString(),
       })
     } else {
+      console.error("Invalid action:", body.action)
       return NextResponse.json({ error: "Invalid action. Use 'save'" }, { status: 400 })
     }
   } catch (error) {
@@ -132,4 +172,16 @@ export async function POST(request: Request) {
       { status: 500 },
     )
   }
+}
+
+// OPTIONS method - Handle CORS preflight requests
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type",
+    },
+  })
 }
