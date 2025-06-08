@@ -16,7 +16,7 @@ Please file an issue in GitHub.
 
 ## Known Issues
 
-This system MUST be used locally by trusted users, ONLY. Don't put in in/on the internet, as it has severe issues like:
+This system MUST be used locally by trusted users, ONLY. Don't put in in/on the internet, as it has severe issues.
 
 ## Security References
 
