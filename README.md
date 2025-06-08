@@ -1035,7 +1035,7 @@ void signalPiShutdown() {
    0:      GUID_partition_scheme                        +5.7 TB     disk2
    1:                        EFI EFI                     209.7 MB   disk2s1
    2:                 Apple_APFS Container disk3         5.7 TB     disk2s2
-um
+
 /dev/disk3 (synthesized):
    #:                       TYPE NAME                    SIZE       IDENTIFIER
    0:      APFS Container Scheme -                      +5.7 TB     disk3
