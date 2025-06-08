@@ -1004,6 +1004,55 @@ void signalPiShutdown() {
 * [ ] Add shutdown
 * [ ] Test it if it really works ;-)
 
+## Clone SD Card
+
+```➜  ~ diskutil list # find the SD Card
+
+/dev/disk0 (internal, physical):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                        *500.3 GB   disk0
+   1:                        EFI EFI                     314.6 MB   disk0s1
+   2:                 Apple_APFS Container disk1         500.0 GB   disk0s2
+
+/dev/disk1 (synthesized):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      APFS Container Scheme -                      +500.0 GB   disk1
+                                 Physical Store disk0s2
+   1:                APFS Volume Macintosh HD - Data     459.6 GB   disk1s1
+   2:                APFS Volume Preboot                 2.1 GB     disk1s2
+   3:                APFS Volume Recovery                1.2 GB     disk1s3
+   4:                APFS Volume VM                      4.3 GB     disk1s4
+   5:                APFS Volume Macintosh HD            9.3 GB     disk1s5
+   6:              APFS Snapshot com.apple.os.update-... 9.3 GB     disk1s5s1
+
+/dev/disk2 (disk image):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      GUID_partition_scheme                        +5.7 TB     disk2
+   1:                        EFI EFI                     209.7 MB   disk2s1
+   2:                 Apple_APFS Container disk3         5.7 TB     disk2s2
+um
+/dev/disk3 (synthesized):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:      APFS Container Scheme -                      +5.7 TB     disk3
+                                 Physical Store disk2s2
+   1:                APFS Volume Backups of ....... ... 475.8 GB   disk3s1
+
+/dev/disk4 (external, physical):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:     FDisk_partition_scheme                        *63.9 GB    disk4
+   1:             Windows_FAT_32 bootfs                  536.9 MB   disk4s1
+   2:                      Linux                         63.3 GB    disk4s2
+
+
+➜  ~ umount /dev/disk4 # make sure it is no longer mounted
+umount: /dev/disk4: not currently mounted # well, that was expected, but I want to be sure
+
+➜  ~ sudo dd if=/dev/rdisk4 of~/Desktop/pi-backup-new.img bs=4m status=progress # create a copy
+```
+
+Use *Raspberry Pi Imager* to copy it to a new SD Card: https://www.raspberrypi.com/software/
+
+
 
 ## 🌿 SolarPunk Philosophy
 
