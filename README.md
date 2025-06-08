@@ -1088,7 +1088,7 @@ You can also follow our development process documented below.
 - **Version Control:** Git, GitHub
 - **Deployment Preview:** Vercel
 - **Hardware Testing:** Raspberry Pi
-- **Documentation Tools:** ChatGPT, PlantUML
+- **Documentation Tools:** PlantUML
 - **Security & Code Quality:** Dependabot, CodeQL
 
 #### 🐝 Step-by-Step Workflow
@@ -1129,7 +1129,7 @@ You can also follow our development process documented below.
 
 9. **Write Documentation**
 
-   * Document the feature using tools like **ChatGPT** and **PlantUML** for diagrams and explanations.
+   * Document the feature using tools like **PlantUML** for diagrams and explanations.
 
 10. **Check Code Quality and Security**
 
