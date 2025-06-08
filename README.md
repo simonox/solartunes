@@ -76,7 +76,8 @@ chmod +x scripts/setup-motion-sensor.sh
 ./scripts/setup-motion-sensor.sh
 ```
 
-## 🔧 What the Setup Script Does
+
+# 🔧 What the Setup Script Does
 
 - ✅ **System Updates**: Updates all packages to latest versions
 - ✅ **Audio Setup**: Installs ALSA and audio tools (aplay, pulseaudio)
@@ -87,6 +88,71 @@ chmod +x scripts/setup-motion-sensor.sh
 - ✅ **Log Rotation**: Manages log files to prevent disk overflow
 - ✅ **Test Files**: Creates sample .wav files for testing
 - ✅ **Helper Scripts**: Management utilities for easy control
+
+
+# ⚒️Development Process 
+
+This document outlines the standard development workflow used for building and deploying UI features.
+
+## 🪛Tools and Platforms
+
+- **Online IDE:** [v0.dev](https://v0.dev)
+- **Version Control:** Git, GitHub
+- **Deployment Preview:** Vercel
+- **Hardware Testing:** Raspberry Pi
+- **Documentation Tools:** ChatGPT, PlantUML
+- **Security & Code Quality:** Dependabot, CodeQL
+
+## 🐝 Step-by-Step Workflow
+
+1. **Start Development**
+   - Use [v0.dev](https://v0.dev) as your online IDE to design and develop UI components.
+
+2. **Create a Feature Branch**
+   - Before any development, create a new feature branch from the `master` branch.
+
+3. **Develop UI**
+
+   * Build your UI components within the feature branch using v0.dev.
+
+4. **Auto Commit & Push**
+
+   * Ensure your development environment is configured to **automatically commit and push** changes to GitHub.
+
+5. **Preview on Vercel**
+
+   * Verify that your changes are deployed and previewable on Vercel.
+   * Use this preview to test UI behavior and styling.
+
+6. **Hardware Testing**
+
+   * If the UI functions correctly in the preview, check out the feature branch on a physical **Raspberry Pi**.
+
+7. **Iterate**
+
+   * Continue iterating and testing until the feature works reliably on the target hardware.
+
+8. **Create a Pull Request**
+
+   * Open a **Pull Request (PR)** against the `main` branch.
+   * Request reviews and merge once approved.
+
+9. **Write Documentation**
+
+   * Document the feature using tools like **ChatGPT** and **PlantUML** for diagrams and explanations.
+
+10. **Check Code Quality and Security**
+
+    * Run **Dependabot** to check for dependency vulnerabilities.
+    * Use **CodeQL** to analyze for coding errors and security issues.
+
+### Notes
+
+* Keep commits atomic and well-documented.
+* Tag PRs with appropriate labels for easier tracking.
+* Use GitHub Actions for CI/CD, including automated testing and code checks.
+* Maybe improve deployment on real hardware by automating it.
+
 
 ## 🎛️ Service Management
 
