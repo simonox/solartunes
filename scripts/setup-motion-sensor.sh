@@ -148,7 +148,7 @@ class MotionDetector:
         current_time = time.time()
         
         # Check cooldown period
-        if current_time - self.last_motion_time < COOLDOWN_PERIOD:
+        if current_time - self.last_motion_time &lt; COOLDOWN_PERIOD:
             logging.info("Motion detected but still in cooldown period")
             return
         
