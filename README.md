@@ -1095,7 +1095,7 @@ You can also follow our development process documented below.
 
 1. **Start Development**
    - Use [v0.dev](https://v0.dev) as your online IDE to design and develop UI components.
-   - Pro: It has some AI chatbot quickly create new features.
+   - Pro: It has some AI chatbot to quickly prototype new features.
    - Cons: It is very slow. The AI chatbot usually messes up your whole project and breaks already working features. It even deletes features. It is expensive. So handle with care and use on your own risk. 
 
 2. **Create a Feature Branch**
