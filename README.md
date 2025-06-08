@@ -1048,7 +1048,7 @@ um
 ➜  ~ umount /dev/disk4 # make sure it is no longer mounted
 umount: /dev/disk4: not currently mounted # well, that was expected, but I want to be sure
 
-➜  ~ sudo dd if=/dev/rdisk4 of~/Desktop/pi-backup-new.img bs=4m status=progress # create a copy
+➜  ~ sudo dd if=/dev/rdisk4 of=~/pi-backup-new.img bs=4m status=progress # create a copy
 ```
 
 Use *Raspberry Pi Imager* to copy it to a new SD Card: https://www.raspberrypi.com/software/
