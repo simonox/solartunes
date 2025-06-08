@@ -13,12 +13,6 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 - 🏎️ PIR Sensor
 - 💾 MicroSD Card (64 GB)
 
-## 🎨 UML
-
-![diagram](https://github.com/user-attachments/assets/79366939-6b02-4e4d-816a-509ed3e46fe2)
-
-> Source: [umldiagram.puml](umldiagram.puml)
-
 
 ## 🌱 Features
 
@@ -36,6 +30,11 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 
 <img width="764" alt="screenshot" src="https://github.com/user-attachments/assets/821008a9-afb6-4d05-82b9-2d741c8e4eab" />
 
+## 🎨 UML
+
+![diagram](https://github.com/user-attachments/assets/79366939-6b02-4e4d-816a-509ed3e46fe2)
+
+> Source: [umldiagram.puml](umldiagram.puml), created using [PlantUML](https://editor.plantuml.com/uml/RP8_Ry8m4CNtV8edTiOk7Ih-g5A7Leq0TK4PJ79rB4ni-OzGLFMxr-OK2XOJvEvtxxsplV11k11FkWegQCBMQE7cjJcJemxBs2c3bN9TRw9FtT47EbML5UrHICBi0eBBC_nK0B2_QA0M0-a6y_aBzXzrlSE6PDGY6DSmLXIPN8aGo8qDdh7kXPFa6PxgJB7jPmmsXenkexLQaOVDZUht9Y6lK2Qq98uqUJBojjnni9jlxc-4jmToRaIjcZlnjHc2CnfYwF1kf6edX_iPbjcQcB1QY_6Gvfc_o1Nh59dIUazVlE7u02sixkZ_eAz3gusFZgu1hvUQH-f-zAeL6hcY1baYR3ITMj5z5AD0YilDImyc49oIVO3vVdmuhC8TdGkmgUznIBBmkSoF8_JEHDcdNuBdZ3ZtD20aVPaVSaL98ZjMY_GldlGV)
 
 ## 🚀 Quick Setup
 
