@@ -11,6 +11,7 @@ import { Slider } from "@/components/ui/slider"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Play,
   CircleStopIcon as Stop,
@@ -33,6 +34,8 @@ import {
   Lock,
   Unlock,
   Database,
+  FileText,
+  Shield,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { Toaster } from "@/components/ui/toaster"
@@ -75,9 +78,17 @@ interface SDCardData {
   timestamp: string
 }
 
+interface WebhookScript {
+  name: string
+  path: string
+  size: number
+  modified: string
+}
+
 interface WebhookData {
-  command: string
+  selectedScript: string
   lastSaved: string | null
+  availableScripts: WebhookScript[]
   timestamp: string
 }
 
@@ -100,8 +111,9 @@ export default function MusicPlayer() {
   })
   const [sdCard, setSDCard] = useState<SDCardData | null>(null)
   const [webhook, setWebhook] = useState<WebhookData>({
-    command: "",
+    selectedScript: "defaultScript", // Updated default value
     lastSaved: null,
+    availableScripts: [],
     timestamp: new Date().toISOString(),
   })
   const [webhookSaving, setWebhookSaving] = useState(false)
@@ -271,14 +283,18 @@ export default function MusicPlayer() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "save",
-          command: webhook.command,
+          selectedScript: webhook.selectedScript,
         }),
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setWebhook(data)
+        setWebhook((prev) => ({
+          ...prev,
+          selectedScript: data.selectedScript,
+          lastSaved: data.lastSaved,
+        }))
         toast({ title: "Webhook configuration saved successfully", variant: "default" })
         // Fetch updated config after successful save
         await fetchWebhookConfig()
@@ -781,7 +797,17 @@ export default function MusicPlayer() {
                   variant="outline"
                   className="w-full h-6 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
                 >
-                  Test Motion
+                  {motion.enabled ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Select File
+                    </>
+                  )}
                 </Button>
 
                 {motion.motionCount > 0 && (
@@ -932,9 +958,9 @@ export default function MusicPlayer() {
             <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10">
                 <CardTitle className="flex items-center gap-2 text-purple-800">
-                  <Zap className="h-5 w-5" />
+                  <Shield className="h-5 w-5" />
                   Motion Hook
-                  {webhook.lastSaved && (
+                  {webhook.selectedScript && (
                     <Badge variant="secondary" className="ml-auto bg-purple-100 text-purple-700 text-xs">
                       Configured
                     </Badge>
@@ -944,19 +970,51 @@ export default function MusicPlayer() {
               <CardContent className="p-6">
                 <div className="space-y-4">
                   <div>
-                    <label htmlFor="webhook-command" className="block text-sm font-medium text-gray-700 mb-2">
-                      Command to execute on motion:
+                    <label htmlFor="webhook-script" className="block text-sm font-medium text-gray-700 mb-2">
+                      Select script to execute on motion:
                     </label>
-                    <Input
-                      id="webhook-command"
-                      type="text"
-                      value={webhook.command}
-                      onChange={(e) => setWebhook((prev) => ({ ...prev, command: e.target.value }))}
-                      placeholder="e.g., /home/pi/scripts/motion-action.sh"
-                      className="w-full"
+                    <Select
+                      value={webhook.selectedScript}
+                      onValueChange={(value) => setWebhook((prev) => ({ ...prev, selectedScript: value }))}
                       disabled={webhookSaving}
-                    />
+                    >
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Choose a script..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="defaultScript">
+                          <div className="flex items-center gap-2">
+                            <XCircle className="h-4 w-4 text-gray-400" />
+                            <span>No script (disabled)</span>
+                          </div>
+                        </SelectItem>
+                        {webhook.availableScripts.map((script) => (
+                          <SelectItem key={script.name} value={script.name}>
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-purple-600" />
+                              <span>{script.name}</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+
+                  {webhook.availableScripts.length === 0 && (
+                    <Alert className="border-yellow-200 bg-yellow-50">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertDescription className="text-yellow-800">
+                        No shell scripts (.sh files) found in ~/Music directory. Create scripts there to use this
+                        feature.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {webhook.selectedScript && (
+                    <div className="text-xs text-center text-purple-600 bg-purple-50 p-2 rounded">
+                      Selected: {webhook.selectedScript}
+                    </div>
+                  )}
 
                   <Button
                     onClick={saveWebhookConfig}
@@ -980,10 +1038,10 @@ export default function MusicPlayer() {
                   )}
 
                   <div className="text-sm text-gray-600 space-y-1">
-                    <p>• Command will execute when motion is detected</p>
-                    <p>• Use full paths for scripts and commands</p>
-                    <p>• Commands timeout after 30 seconds</p>
-                    <p>• Leave empty to disable webhook</p>
+                    <p>• Only scripts from ~/Music directory are available</p>
+                    <p>• Scripts execute with 30-second timeout</p>
+                    <p>• Working directory is set to ~/Music</p>
+                    <p>• Select "No script" to disable webhook</p>
                   </div>
                 </div>
               </CardContent>
