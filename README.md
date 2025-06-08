@@ -117,6 +117,185 @@ sudo systemctl disable solartunes
 └── README.md
 \`\`\`
 
+## 📜 Shell Scripts Reference
+
+### Setup Scripts
+
+#### `setup-raspberry-pi.sh`
+**Purpose**: Complete Raspberry Pi environment setup for SolarTunes
+- Updates system packages
+- Installs audio dependencies (ALSA, PulseAudio)
+- Installs Node.js 20 and pnpm
+- Configures audio permissions and ALSA
+- Creates systemd service
+- Sets up log rotation
+- Creates test audio files
+- Generates helper scripts
+
+#### `deploy-project.sh`
+**Purpose**: Deploys the Next.js project to Raspberry Pi
+- Creates package.json with dependencies
+- Configures Next.js and Tailwind
+- Installs npm dependencies
+- Builds the production application
+
+#### `setup-motion-sensor.sh`
+**Purpose**: Sets up PIR motion sensor integration
+- Installs Python GPIO libraries
+- Creates motion detection script
+- Sets up systemd service for motion detection
+- Provides hardware wiring guide
+- Creates test and management scripts
+
+### Service Management Scripts
+
+#### `start-solartunes.sh`
+**Purpose**: Starts the SolarTunes service
+- Uses systemd if available
+- Falls back to manual start in development
+- Displays service status and access URL
+
+#### `stop-solartunes.sh`
+**Purpose**: Stops the SolarTunes service
+- Gracefully stops systemd service
+- Kills Node.js processes if systemd unavailable
+- Stops any audio playback
+
+#### `restart-solartunes.sh`
+**Purpose**: Restarts the SolarTunes service
+- Stops and starts the service
+- Shows recent logs
+- Displays access information
+
+#### `status-solartunes.sh`
+**Purpose**: Shows comprehensive system status
+- Service status and logs
+- Network and port information
+- Audio device status
+- System resources (memory, disk, temperature)
+- Power status and throttling info
+
+#### `update-project.sh`
+**Purpose**: Updates SolarTunes to latest version
+- Pulls latest code from Git
+- Updates dependencies
+- Rebuilds the project
+- Restarts services
+
+### Motion Detection Scripts
+
+#### `start-motion-detector.sh`
+**Purpose**: Starts the motion detection service
+- Starts systemd service or manual process
+- Verifies successful startup
+
+#### `stop-motion-detector.sh`
+**Purpose**: Stops the motion detection service
+- Stops systemd service gracefully
+- Kills motion detector processes
+
+#### `status-motion-detector.sh`
+**Purpose**: Shows motion detection status
+- Service status and logs
+- Recent motion detection events
+- Process information
+
+#### `motion-detector.py`
+**Purpose**: Main motion detection daemon
+- Monitors PIR sensor on GPIO5
+- Calls SolarTunes API when motion detected
+- Includes cooldown period and logging
+- Handles GPIO cleanup
+
+### Testing Scripts
+
+#### `test-pir.py`
+**Purpose**: Simple PIR sensor test
+- Basic GPIO5 motion detection
+- Minimal script for hardware verification
+- Real-time motion status display
+
+#### `test-pir-updated.py`
+**Purpose**: Advanced PIR sensor test with error handling
+- Comprehensive GPIO testing
+- Version information display
+- Better error handling and diagnostics
+
+#### `test-pir-gpiozero.py`
+**Purpose**: PIR testing using gpiozero library
+- Alternative to RPi.GPIO
+- Better compatibility with newer Pi models
+- Simplified motion detection API
+
+#### `gpio-diagnostic.py`
+**Purpose**: Comprehensive GPIO system diagnostics
+- Tests multiple GPIO libraries
+- Checks Raspberry Pi model compatibility
+- Provides troubleshooting recommendations
+
+#### `test-motion-sensor.sh`
+**Purpose**: Motion sensor integration test
+- Tests Python script functionality
+- Checks API endpoints
+- Verifies service status
+- Shows recent logs
+
+#### `test-motion-integration.sh`
+**Purpose**: Full motion detection integration test
+- Verifies SolarTunes is running
+- Tests API connectivity
+- Runs motion detector for testing period
+
+#### `test-audio.sh`
+**Purpose**: Audio system testing and diagnostics
+- Lists audio devices and controls
+- Tests various aplay configurations
+- Provides audio troubleshooting recommendations
+
+#### `test-hifiberry.sh`
+**Purpose**: Specific testing for HiFiBerry DAC+ audio HAT
+- Tests HiFiBerry driver loading
+- Checks DAC-specific controls
+- Tests various audio formats
+- Provides HiFiBerry-specific recommendations
+
+### Utility Scripts
+
+#### `install-gpio-libraries.sh`
+**Purpose**: Installs and updates GPIO libraries
+- Installs RPi.GPIO, gpiozero, and pigpio
+- Verifies successful installation
+- Starts pigpio daemon
+
+#### `fix-motion-setup.sh`
+**Purpose**: Emergency motion detection fix
+- Creates simplified motion detector
+- Provides basic functionality when main setup fails
+
+#### `update-motion-gpio.sh`
+**Purpose**: Updates motion detection to use different GPIO pin
+- Changes GPIO pin configuration
+- Updates all related scripts
+- Provides new wiring instructions
+
+#### `test-gpio5.sh`
+**Purpose**: Specific testing for GPIO5 pin
+- Tests GPIO5 pin access and functionality
+- Checks for GPIO conflicts
+- Verifies motion detector script
+
+#### `setup-working-motion.sh`
+**Purpose**: Sets up production motion detection
+- Creates production motion detector based on working test
+- Configures systemd service
+- Provides integration testing
+
+#### `start-motion-production.sh`
+**Purpose**: Starts complete SolarTunes system with motion detection
+- Starts both SolarTunes and motion detection services
+- Verifies both services are running
+- Provides status and next steps
+
 ## 🔌 PIR Motion Sensor Wiring
 
 ### Hardware Requirements
