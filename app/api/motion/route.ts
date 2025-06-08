@@ -57,22 +57,29 @@ async function saveConfig() {
   }
 }
 
-// Execute webhook command if configured
+// Execute webhook script if configured
 async function executeWebhook() {
   try {
     const webhookData = await readFile(WEBHOOK_CONFIG_FILE, "utf-8")
     const webhookConfig = JSON.parse(webhookData)
 
-    if (webhookConfig.command && webhookConfig.command.trim()) {
-      console.log("Executing webhook command:", webhookConfig.command)
+    if (webhookConfig.selectedScript && webhookConfig.selectedScript.trim()) {
+      // Construct the full path to the script in ~/Music directory
+      const scriptPath = join(homedir(), "Music", webhookConfig.selectedScript)
 
-      // Execute the command with a timeout
-      const { stdout, stderr } = await execAsync(webhookConfig.command, { timeout: 30000 })
+      console.log("Executing webhook script:", scriptPath)
+
+      // Execute the script with bash and a timeout
+      const command = `bash "${scriptPath}"`
+      const { stdout, stderr } = await execAsync(command, {
+        timeout: 30000,
+        cwd: join(homedir(), "Music"), // Set working directory to ~/Music
+      })
 
       if (stdout) console.log("Webhook stdout:", stdout)
       if (stderr) console.log("Webhook stderr:", stderr)
 
-      console.log("Webhook command executed successfully")
+      console.log("Webhook script executed successfully")
     }
   } catch (error) {
     if (error.code === "ENOENT") {
