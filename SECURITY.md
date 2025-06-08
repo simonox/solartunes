@@ -18,14 +18,21 @@ Please file an issue in GitHub.
 
 This system MUST be used locally by trusted users, ONLY. Don't put in in/on the internet, as it has severe issues like:
 
-* OWASP: Command Injection.
-* OWASP: Path Traversal.
-* npm: shell-quote.
-* npm: sanitize-filename package.
-* Common Weakness Enumeration: CWE-78.
-* Common Weakness Enumeration: CWE-88.
-* Common Weakness Enumeration: CWE-22.
-* Common Weakness Enumeration: CWE-23.
-* Common Weakness Enumeration: CWE-36.
-* Common Weakness Enumeration: CWE-73.
-* Common Weakness Enumeration: CWE-99.
+## Security References
+
+### OWASP Findings
+- [OWASP: Command Injection](https://owasp.org/www-community/attacks/Command_Injection)
+- [OWASP: Path Traversal](https://owasp.org/www-community/attacks/Path_Traversal)
+
+### npm Packages
+- [npm: shell-quote](https://www.npmjs.com/package/shell-quote)
+- [npm: sanitize-filename](https://www.npmjs.com/package/sanitize-filename)
+
+### Common Weakness Enumeration (CWE)
+- [CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')](https://cwe.mitre.org/data/definitions/78.html)
+- [CWE-88: Argument Injection or Modification](https://cwe.mitre.org/data/definitions/88.html)
+- [CWE-22: Improper Limitation of a Pathname to a Restricted Directory ('Path Traversal')](https://cwe.mitre.org/data/definitions/22.html)
+- [CWE-23: Relative Path Traversal](https://cwe.mitre.org/data/definitions/23.html)
+- [CWE-36: Absolute Path Traversal](https://cwe.mitre.org/data/definitions/36.html)
+- [CWE-73: External Control of File Name or Path](https://cwe.mitre.org/data/definitions/73.html)
+- [CWE-99: Improper Control of Resource Identifiers ('Resource Injection')](https://cwe.mitre.org/data/definitions/99.html)
