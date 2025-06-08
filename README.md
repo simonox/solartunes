@@ -294,6 +294,38 @@ nano ~/Music/autoplay.conf
 sudo systemctl restart solartunes
 ```
 
+### Motion Hook
+
+ You can also execute a script on Motion Detection.
+
+ Key features are:
+ 1. **Persistent Storage**: Configuration saved to `webhook.conf` file
+ 2. **Motion Trigger**: Commands execute when motion detection is triggered
+ 4. **TimeOut**: Commands timeout after 30 seconds
+
+
+ #### Usage Examples
+
+• Only scripts from ~/Music directory are available
+• Scripts execute with 30-second timeout
+• Working directory is set to ~/Music
+• Select "No script" to disable webhook
+ 
+ The webhook executes alongside the existing motion detection functionality without affecting any other components.
+
+
+ #### Configuration File Format
+
+ The `~/Music/webhook.conf` file uses JSON format:
+
+ ```json
+ {
+   "command": "/home/pi/Music/blink.sh",
+   "lastSaved": "2025-06-08T21:04:43.871Z"
+ }
+ ```
+
+
 ## 🛡️ SD Card Protection
 
 SolarTunes includes advanced SD card protection features to extend the life of your SD card by reducing write operations.
