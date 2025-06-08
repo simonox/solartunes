@@ -1,0 +1,46 @@
+@startuml
+title Solar-Powered Audio Birdhouse System
+
+
+
+package "Power System" {
+    [Solar Panel] --> [MPPT Regulator]
+    [MPPT Regulator] --> [Battery] : Charges
+    [Battery] --> [Power Output] : Supplies power
+}
+
+
+package "System" {
+
+[PIR Sensor] --> [HifiBerry Audio HAT] : Motion Detection
+[HifiBerry Audio HAT] --> [PIR Sensor] : 5V Supply
+
+[HifiBerry Audio HAT] --> [Raspberry Pi] : 5V Supply
+}
+
+package "SolarTunes" {
+    [Raspberry Pi] --> [Sound Playback Logic]
+    [Sound Playback Logic] --> [Upload Files and Conversion]
+    [Sound Playback Logic] --> [Select Files]
+    [Sound Playback Logic] --> [Detect Motion]
+    [Sound Playback Logic] --> [Monitor Temperature]
+    [Sound Playback Logic] --> [Monitor SD Card State]
+    [Sound Playback Logic] --> [Display Log Files]
+    [Sound Playback Logic] --> [Shell Scripts for management]
+
+
+
+}
+
+[Power Output] --> [HifiBerry Audio HAT] : 12V Supply
+
+
+
+note right of [Sound Playback Logic]
+    Sound logic plays tracks  through the speaker when triggered
+end note
+
+note right of [Power Output]
+    Maybe add logic to turn Pi on and off using a ESP
+end note
+@enduml
