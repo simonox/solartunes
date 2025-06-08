@@ -976,7 +976,6 @@ This project uses an ESP8266 or ESP32 to monitor battery voltage and automatical
 4. **Reboot When Battery is Charged**
    Once battery voltage exceeds a `HIGH_THRESHOLD`, the ESP reconnects power to the Pi, which then auto-boots.
 
----
 
 ## 🧠 Logic Summary
 
@@ -990,15 +989,12 @@ ELSE IF battery voltage > HIGH_THRESHOLD:
     Restore power to Pi
 ```
 
----
 
 ## 🔌 Circuit Overview
 
 * **Voltage Divider:** Reduces battery voltage to ESP-safe levels (max 3.3V).
 * **MOSFET:** Controls power line between battery and Pi.
 * **ESP GPIO → Pi GPIO:** (Optional) For shutdown signaling.
-
----
 
 ## 🗅️ Pi Shutdown Script (GPIO Example)
 
@@ -1020,7 +1016,6 @@ while true; do
 done
 ```
 
----
 
 ## 🦪 ESP Sample Code (ESP8266/ESP32)
 
@@ -1056,7 +1051,6 @@ void signalPiShutdown() {
 }
 ```
 
----
 
 ## ⚠️ Notes
 
@@ -1064,13 +1058,12 @@ void signalPiShutdown() {
 * Use a MOSFET with sufficient current rating.
 * ESP can use **deep sleep** to conserve power when idle.
 
----
 
 ## 📦 To-Do
 
 * [ ] Add circuit diagrams
-* [ ] Add HTTP/MQTT shutdown example
-* [ ] Add support for multiple ESPs in mesh mode (optional)
+* [ ] Add shutdown
+* [ ] Test it if it really works ;-)
 
 
 ## 🌿 SolarPunk Philosophy
