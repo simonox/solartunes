@@ -1,18 +1,6 @@
 # SolarTunes
 
-A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can upload tracks and play them. It can even start a selected track on motion detection. Services are started on startup. Events are logged with logd. Aplay is used for playback. Node.js ist the runtime environment. Typescript, Bash and Python are the languages used to build it. PNPM ist used as a package manger. Tailwind.CSS ist used for layout, widgets and as a design system. Frontend and backend is built with Next.js and designed for eco-friendly, solar-powered setups.
-
-
-## 🚜 Hardware
-- 🍓 RaspberryPi 4
-- 🎸 HiFiBerry Amp2 (Class-D, 2×30 W RMS)
-- 🔉 JBL Control 1 speakers
-- 🔋 Pb accumulator AGWI Standard 12LS-7.2(F1)
-- ☀️ Solar Panel
-- ⚡️ MPPT charging regulator
-- 🏎️ PIR Sensor
-- 💾 MicroSD Card (64 GB)
-
+A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. Built with Next.js and designed for eco-friendly, solar-powered setups.
 
 ## 🌱 Features
 
@@ -20,64 +8,49 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 - **🎮 Simple Controls**: Click to play/stop with single-file playback protection
 - **🎯 Motion Detection**: PIR sensor integration for automatic sound triggering
 - **📊 System Monitoring**: Real-time system logs for debugging
-- **🌿 SolarPunk Design**: Beautiful green gradients and nature-inspired UI (not really, just green color)
+- **🌿 SolarPunk Design**: Beautiful green gradients and nature-inspired UI
 - **⚡ Low Power**: Optimized for solar-powered Raspberry Pi setups
 - **🔄 Auto-Start**: Systemd service for automatic startup on boot
 - **📱 File Upload**: Upload and process WAV files directly through the web interface
-- **🛡️ SD Card Protection**: Advanced read-only mode for SD card longevity [ ] untested
-
-## 🎬 Preview
-
-<img width="764" alt="screenshot" src="https://github.com/user-attachments/assets/821008a9-afb6-4d05-82b9-2d741c8e4eab" />
-
-## 🎨 Diagrams
-
-![diagram](https://github.com/user-attachments/assets/79366939-6b02-4e4d-816a-509ed3e46fe2)
-
-> Source: [umldiagram.puml](umldiagram.puml), created using [PlantUML](https://editor.plantuml.com/)
-
-![diagram](https://github.com/user-attachments/assets/c426fe72-6385-45e9-bca0-353293f425b7)
-
 
 ## 🚀 Quick Setup
 
 ### 1. Clone the Repository
 
-```bash
+\`\`\`bash
 mkdir ~/solartunes
 cd ~/solartunes
 git clone https://github.com/simonox/solartunes.git .
-```
+\`\`\`
 
 ### 2. Run the Setup Script
 
-```bash
+\`\`\`bash
 chmod +x scripts/setup-raspberry-pi.sh
 ./scripts/setup-raspberry-pi.sh
-```
+\`\`\`
 
 ### 3. Deploy the Project
 
-```bash
+\`\`\`bash
 chmod +x scripts/deploy-project.sh
 ./scripts/deploy-project.sh
-```
+\`\`\`
 
 ### 4. Start the Service
 
-```bash
+\`\`\`bash
 sudo systemctl start solartunes
-```
+\`\`\`
 
 ### 5. Setup Motion Detection (Optional)
 
-```bash
+\`\`\`bash
 chmod +x scripts/setup-motion-sensor.sh
 ./scripts/setup-motion-sensor.sh
-```
+\`\`\`
 
-
-# 🔧 What the Setup Script Does
+## 🔧 What the Setup Script Does
 
 - ✅ **System Updates**: Updates all packages to latest versions
 - ✅ **Audio Setup**: Installs ALSA and audio tools (aplay, pulseaudio)
@@ -89,74 +62,11 @@ chmod +x scripts/setup-motion-sensor.sh
 - ✅ **Test Files**: Creates sample .wav files for testing
 - ✅ **Helper Scripts**: Management utilities for easy control
 
-
-# ⚒️Development Process 
-
-## 🪛Tools and Platforms
-
-- **Online IDE:** [v0.dev](https://v0.dev)
-- **Version Control:** Git, GitHub
-- **Deployment Preview:** Vercel
-- **Hardware Testing:** Raspberry Pi
-- **Documentation Tools:** ChatGPT, PlantUML
-- **Security & Code Quality:** Dependabot, CodeQL
-
-## 🐝 Step-by-Step Workflow
-
-1. **Start Development**
-   - Use [v0.dev](https://v0.dev) as your online IDE to design and develop UI components.
-
-2. **Create a Feature Branch**
-   - Before any development, create a new feature branch from the `main` branch.
-
-3. **Develop UI**
-
-   * Build your UI components within the feature branch using v0.dev.
-
-4. **Auto Commit & Push**
-
-   * Ensure your development environment is configured to **automatically commit and push** changes to GitHub.
-
-5. **Preview on Vercel**
-
-   * Verify that your changes are deployed and previewable on Vercel.
-   * Use this preview to test UI behavior and styling.
-
-6. **Hardware Testing**
-
-   * If the UI functions correctly in the preview, check out the feature branch on a physical **Raspberry Pi**.
-
-7. **Iterate**
-
-   * Continue iterating and testing until the feature works reliably on the target hardware.
-
-8. **Create a Pull Request**
-
-   * Open a **Pull Request (PR)** against the `main` branch.
-   * Request reviews and merge once approved.
-
-9. **Write Documentation**
-
-   * Document the feature using tools like **ChatGPT** and **PlantUML** for diagrams and explanations.
-
-10. **Check Code Quality and Security**
-
-    * Run **Dependabot** to check for dependency vulnerabilities.
-    * Use **CodeQL** to analyze for coding errors and security issues.
-
-### Notes
-
-* Keep commits atomic and well-documented.
-* Tag PRs with appropriate labels for easier tracking.
-* Use GitHub Actions for CI/CD, including automated testing and code checks.
-* Maybe improve deployment on real hardware by automating it.
-
-
 ## 🎛️ Service Management
 
 Use these commands to control your SolarTunes service:
 
-```bash
+\`\`\`bash
 # Start the service
 sudo systemctl start solartunes
 
@@ -177,11 +87,11 @@ sudo systemctl enable solartunes
 
 # Disable auto-start
 sudo systemctl disable solartunes
-```
+\`\`\`
 
 ## 📁 Project Structure
 
-```
+\`\`\`
 ~/solartunes/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -194,8 +104,7 @@ sudo systemctl disable solartunes
 │   │   ├── upload/        # File upload handling
 │   │   ├── volume/        # Volume control
 │   │   ├── temperature/   # System temperature
-│   │   ├── cleanup/       # Audio cleanup utilities
-│   │   └── sdcard/        # SD card status and management
+│   │   └── cleanup/       # Audio cleanup utilities
 │   ├── layout.tsx         # App layout
 │   └── page.tsx           # Main sound player interface
 ├── scripts/               # Setup and management scripts
@@ -206,351 +115,7 @@ sudo systemctl disable solartunes
 │   ├── test-pir.py
 │   └── [management scripts]
 └── README.md
-```
-
-
-## 🔌 PIR Motion Sensor Wiring
-
-To auto-start a track when motion is detected, we have to add a PIR sensor to SolarTunes.
-
-### Photo
-
-![wiring](https://github.com/user-attachments/assets/3e9a0fef-aa41-4b92-96b0-9c75816b41b9)
-
-### Video
-
-
-
-https://github.com/user-attachments/assets/ed1aca57-9e36-4d69-b596-c51ba345ed4f
-
-
-
-### Hardware Requirements
-- PIR Motion Sensor (HC-SR501 recommended)
-- 3 Female-to-Female jumper wires
-- Raspberry Pi with GPIO pins
-
-### Wiring Diagram
-
-```
-PIR Sensor          Raspberry Pi
-┌─────────────┐    ┌────────────────-─┐
-│             │    │                  │
-│    VCC   ●──┼────┼──● Pin 2 (5V)    │ (or any other 5V output, see photo!)
-│             │    │   or Pin 1(3.3V) │
-│    OUT   ●──┼────┼──● Pin 29(GPIO5) │
-│             │    │                  │
-│    GND   ●──┼────┼──● Pin 6 (GND)   │ (or any other GND input, see photo!)
-│             │    │                  │
-└─────────────┘    └─────────────────-┘
-```
-
-### Pin Layout Reference
-
-```
-Connection Points:
-• Pin 2 (5V) or Pin 1 (3.3V) → PIR VCC
-• Pin 29 (GPIO5) → PIR OUT  ← Motion detection pin
-• Pin 6 (GND) → PIR GND
-```
-
-### PIR Sensor Adjustment
-
-Most PIR sensors have two potentiometers for adjustment:
-
-```
-PIR Sensor Top View
-┌─────────────────┐
-│  ┌───┐    ┌───┐ │
-│  │ S │    │ T │ │  S = Sensitivity (detection range)
-│  └───┘    └───┘ │  T = Time delay (output duration)
-│                 │
-│    [Dome]       │
-│                 │
-│ VCC  OUT   GND  │
-└─────────────────┘
-```
-
-**Adjustment Tips:**
-- **Sensitivity (S)**: Turn clockwise to increase detection range (3-7 meters)
-- **Time Delay (T)**: Turn clockwise to increase output duration (5 seconds - 5 minutes)
-- Use a small screwdriver for adjustments
-- Test after each adjustment
-
-## 🎵 Adding Your Own Sound Files
-
-1. Copy your .wav files to the Music directory:
-   ```bash
-   cp your-sounds/*.wav ~/Music/
-   ```
-
-2. Or use the web interface upload feature:
-   - Click "Upload WAV File" in the web interface (or use drag'n' drop on most modern web browsers)
-   - Select your .wav file (already done when using drag'n'drop)
-   - Files are automatically processed for compatibility
-
-3. Your new files will appear in the Sound Library!
-
-### 💩 WAV Files That Don't Work
-
-Not all wav formats are supported, you can convert them using ffmpeg:
-
-```bash
-ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fixed.wav
-```
-This conversion is already done if the wav file is uploaded with the web UI.
-
-## 🎯 Motion Detection Playback Configuration
-
-SolarTunes plays a *selected* track if a motion is detected. If there is already a track playing, it will not interrupt the playback, but create a log entry. The selected track should survive a re-boot of the system. So a configuration file is stored next to your Tracks in the `~/Music` directory.
-
-SolarTunes automatically saves your motion detection settings to `~/Music/autoplay.conf`. When the app starts, it will:
-
-- ✅ **Restore Selected File**: Automatically select the previously configured motion trigger file
-- ✅ **Auto-Enable Motion**: Activate motion detection if a file was previously selected
-- ✅ **Persist Settings**: Save any changes to motion settings automatically
-
-### Configuration File Format
-
-The `~/Music/autoplay.conf` file uses JSON format:
-
-```json
-{
-  "enabled": true,
-  "selectedFile": "your-sound-file.wav",
-  "lastSaved": "2025-01-07T15:30:00.000Z"
-}
-```
-
-### Managing Configuration
-
-SolarTunes takes care of the configuration if you are using the UI. If you want to do it on the command line: Use the configuration management script for advanced control:
-
-```bash
-# Show current configuration
-./scripts/manage-autoplay-config.sh show
-
-# Set a specific file for motion triggering
-./scripts/manage-autoplay-config.sh set your-file.wav
-
-# Enable/disable motion detection
-./scripts/manage-autoplay-config.sh toggle
-
-# Backup current configuration
-./scripts/manage-autoplay-config.sh backup
-
-# Interactive menu
-./scripts/manage-autoplay-config.sh
-```
-
-### Manual Configuration
-
-You can also manually edit the configuration file:
-
-```bash
-# Edit configuration directly
-nano ~/Music/autoplay.conf
-
-# Restart SolarTunes to apply changes
-sudo systemctl restart solartunes
-```
-
-## 🛡️ SD Card Protection
-
-SolarTunes includes advanced SD card protection features to extend the life of your SD card by reducing write operations.
-
-### Quick Commands
-
-```bash
-# Check current status
-./scripts/check-readonly-status.sh
-
-# Quick fix for common issues
-./scripts/quick-sdcard-fix.sh
-
-# Force read-only mode
-./scripts/force-readonly.sh
-
-# Emergency protection (aggressive)
-./scripts/emergency-sdcard-lock.sh
-
-# Restore to normal mode
-sudo ./scripts/restore-readwrite.sh
-
-# Configure boot-time protection
-sudo ./scripts/reboot-to-readonly.sh
-```
-
-### Protection Levels
-
-1. **Manual Protection**: Use `force-readonly.sh` for immediate protection
-2. **Emergency Protection**: Use `emergency-sdcard-lock.sh` when normal methods fail
-3. **Boot Protection**: Use `reboot-to-readonly.sh` for automatic protection on startup
-4. **RAM Disk Mode**: Automatically uses RAM for logs when SD card is protected
-
-### How It Works
-
-- **Read-Only Filesystem**: Prevents all writes to the SD card
-- **RAM Disk**: Stores logs and temporary files in memory
-- **Service Management**: Automatically restarts services with RAM disk configuration
-- **Hardware Detection**: Detects and respects hardware write protection switches
-
-### Important Notes
-
-- ⚠️ **Unlock before uploads**: File uploads require the SD card to be writable
-- ⚠️ **RAM limitations**: RAM disk is limited by available system memory
-- ⚠️ **Data loss**: RAM disk data is lost on reboot
-- ⚠️ **Emergency use**: Use emergency scripts only when normal methods fail
-
-## 🌐 Access Your Sound Player
-
-After setup, your SolarTunes player will be available at:
-
-**Local Access:** `http://localhost:3000`
-
-**Network Access:** `http://[your-pi-ip]:3000`
-
-**Custom Domain:** `http://solartunes.local:3000` (if mDNS configured)
-
-To find your Pi's IP address:
-```bash
-hostname -I
-```
-
-## 🔧 Troubleshooting
-
-### Service Won't Start
-
-```bash
-# Check service status
-sudo systemctl status solartunes
-
-# Check logs for errors
-sudo journalctl -u solartunes -n 50
-
-# Restart the service
-sudo systemctl restart solartunes
-
-# Run comprehensive diagnostics
-./scripts/diagnose-startup-issue.sh
-
-# Complete rebuild if needed
-./scripts/rebuild-project.sh
-```
-
-### No Audio Output
-
-```bash
-# List audio devices
-aplay -l
-
-# Test audio with a file
-aplay ~/Music/test-tone.wav
-
-# Check audio groups
-groups $USER
-
-# Test volume control
-amixer -c 0 sset 'Digital' 50%
-
-# Run audio diagnostics
-./scripts/test-audio.sh
-
-# Test HiFiBerry DAC+ (if applicable)
-./scripts/test-hifiberry.sh
-```
-
-### Motion Detection Issues
-
-```bash
-# Test PIR sensor hardware
-python3 scripts/test-pir.py
-
-# Check motion detector service
-sudo systemctl status motion-detector
-
-# View motion logs
-tail -f /tmp/motion-detector.log
-
-# Test API endpoint
-curl -X POST http://localhost:3000/api/motion \
-     -H "Content-Type: application/json" \
-     -d '{"action": "triggerMotion"}'
-
-# Run GPIO diagnostics
-python3 scripts/gpio-diagnostic.py
-
-# Install/update GPIO libraries
-./scripts/install-gpio-libraries.sh
-```
-
-### Web Interface Not Loading
-
-```bash
-# Check if port 3000 is in use
-sudo netstat -tlnp | grep :3000
-
-# Check firewall settings
-sudo ufw status
-
-# Restart networking
-sudo systemctl restart networking
-```
-
-### SD Card Protection Issues
-
-```bash
-# Check current status
-./scripts/check-readonly-status.sh
-
-# Diagnose SD card issues
-./scripts/diagnose-sdcard-issues.sh
-
-# Try quick fix
-./scripts/quick-sdcard-fix.sh
-
-# Force protection if needed
-./scripts/force-readonly.sh
-
-# Emergency protection
-./scripts/emergency-sdcard-lock.sh
-
-# Restore normal operation
-sudo ./scripts/restore-readwrite.sh
-```
-
-## 🔄 Updating SolarTunes
-
-To update your installation:
-
-```bash
-cd ~/solartunes/
-./scripts/update-project.sh
-```
-
-## ⚡ Solar Power Optimization
-
-For solar-powered setups:
-
-1. **Monitor Power Usage:**
-   ```bash
-   # Check system load
-   htop
-   
-   # Monitor power consumption
-   vcgencmd measure_temp
-   vcgencmd get_throttled
-   ```
-
-2. **Optimize Performance:**
-   - Use efficient .wav files (lower bitrates for longer playback)
-   - Enable auto-shutdown during low battery
-   - Schedule playback during peak solar hours
-
-3. **Battery Management:**
-   - [ ] Monitor battery voltage in system logs → I have no idea how to do this, as we just have a usual battery.
-   - [ ] Set up low-power mode triggers → Same, we don't know how much power is in the battery.
-   - [ ] Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode. Also, the PIR does not deliver illumnation, just movement, so we have to add also an illumination sensor for that. 🤷‍♂️
+\`\`\`
 
 ## 📜 Shell Scripts Reference
 
@@ -731,164 +296,319 @@ For solar-powered setups:
 - Verifies both services are running
 - Provides status and next steps
 
-#### `make-scripts-executable.sh`
-**Purpose**: Makes all scripts executable
-- Sets execute permissions on all shell and Python scripts
-- Lists all available scripts
+## 🔌 PIR Motion Sensor Wiring
 
-#### `manage-autoplay-config.sh`
-**Purpose**: Manages motion detection configuration
-- Shows current autoplay configuration
-- Sets motion trigger files
-- Enables/disables motion detection
-- Backs up and restores configuration
+### Hardware Requirements
+- PIR Motion Sensor (HC-SR501 recommended)
+- 3 Female-to-Female jumper wires
+- Raspberry Pi with GPIO pins
 
-### SD Card Protection Scripts
+### Wiring Diagram
 
-#### `setup-sdcard-protection.sh`
-**Purpose**: Sets up SD card write protection system
-- Creates mount wrapper scripts
-- Sets up sudoers rules for mount operations
-- Creates SD card management utilities
-- Configures automatic protection on shutdown
+\`\`\`
+PIR Sensor          Raspberry Pi
+┌─────────────┐    ┌─────────────────┐
+│             │    │                 │
+│    VCC   ●──┼────┼──● Pin 2 (5V)   │
+│             │    │   or Pin 1(3.3V)│
+│    OUT   ●──┼────┼──● Pin 29(GPIO5) │
+│             │    │                 │
+│    GND   ●──┼────┼──● Pin 6 (GND)  │
+│             │    │                 │
+└─────────────┘    └─────────────────┘
+\`\`\`
 
-#### `setup-ramdisk.sh`
-**Purpose**: Sets up RAM disk for logs when SD card is locked
-- Creates RAM disk directories
-- Configures systemd tmpfiles
-- Sets up log rotation for RAM disk
-- Updates services to use RAM disk when needed
+### Pin Layout Reference
 
-#### `restore-readwrite.sh`
-**Purpose**: Restores system to normal read-write mode
-- Undoes changes made by read-only boot configuration
-- Disables read-only boot service
-- Restores normal SolarTunes operation
-- Re-enables system logging services
+\`\`\`
+Raspberry Pi GPIO Header (40 pins)
+┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
+│  1  │  2  │  3  │  4  │  5  │  6  │  7  │  8  │  9  │ 10  │
+│3.3V │ 5V  │GPIO2│ 5V  │GPIO3│ GND │GPIO4│GPIO14│ GND │GPIO15│
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+│ 11  │ 12  │ 13  │ 14  │ 15  │ 16  │ 17  │ 18  │ 19  │ 20  │
+│GPIO17│GPIO18│GPIO27│ GND │GPIO22│GPIO23│3.3V │GPIO24│GPIO10│ GND │
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+│ 21  │ 22  │ 23  │ 24  │ 25  │ 26  │ 27  │ 28  │ 29  │ 30  │
+│GPIO9│GPIO25│GPIO11│GPIO8│ GND │GPIO7│GPIO0│GPIO1│GPIO5│ GND │
+├─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
+│ 31  │ 32  │ 33  │ 34  │ 35  │ 36  │ 37  │ 38  │ 39  │ 40  │
+│GPIO6│GPIO12│GPIO13│ GND │GPIO19│GPIO16│GPIO26│GPIO20│ GND │GPIO21│
+└─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
 
-#### `reboot-to-readonly.sh`
-**Purpose**: Configures system to boot directly into read-only mode
-- Creates systemd service for read-only boot
-- Updates SolarTunes service for RAM disk operation
-- Disables disk-writing services
-- Provides automatic read-only protection
+Connection Points:
+• Pin 2 (5V) or Pin 1 (3.3V) → PIR VCC
+• Pin 29 (GPIO5) → PIR OUT  ← Motion detection pin
+• Pin 6 (GND) → PIR GND
+\`\`\`
 
-#### `check-readonly-status.sh`
-**Purpose**: Checks current filesystem status and read-only configuration
-- Shows current mount status (read-only vs read-write)
-- Checks read-only boot service configuration
-- Displays SolarTunes service status
-- Shows RAM disk usage
-- Provides quick action commands
+### PIR Sensor Adjustment
 
-#### `quick-sdcard-fix.sh`
-**Purpose**: Simple approach to fix common SD card locking issues
-- Tries basic fixes for filesystem locking
-- Stops interfering services
-- Provides quick diagnosis of busy processes
-- Offers next steps if simple fixes fail
+Most PIR sensors have two potentiometers for adjustment:
 
-#### `force-readonly.sh`
-**Purpose**: Aggressively forces SD card into read-only mode
-- Stops all user services and processes
-- Kills processes that might prevent locking
-- Uses multiple sync and cache clearing attempts
-- Last resort before emergency methods
+\`\`\`
+PIR Sensor Top View
+┌─────────────────┐
+│  ┌───┐    ┌───┐ │
+│  │ S │    │ T │ │  S = Sensitivity (detection range)
+│  └───┘    └───┘ │  T = Time delay (output duration)
+│                 │
+│    [Dome]       │
+│                 │
+│ VCC  OUT   GND  │
+└─────────────────┘
+\`\`\`
 
-#### `emergency-sdcard-lock.sh`
-**Purpose**: Emergency SD card protection using extreme measures
-- Identifies processes keeping filesystem busy
-- Aggressively stops services and processes
-- Uses multiple remount strategies
-- Provides comprehensive status and diagnostics
+**Adjustment Tips:**
+- **Sensitivity (S)**: Turn clockwise to increase detection range (3-7 meters)
+- **Time Delay (T)**: Turn clockwise to increase output duration (5 seconds - 5 minutes)
+- Use a small screwdriver for adjustments
+- Test after each adjustment
 
-#### `diagnose-sdcard-issues.sh`
-**Purpose**: Comprehensive SD card diagnostics
-- Analyzes filesystem activity and open files
-- Checks for hardware write protection
-- Identifies services that might interfere
-- Provides detailed recommendations
+## 🎵 Adding Your Own Sound Files
 
-### System Diagnostics and Repair Scripts
+1. Copy your .wav files to the Music directory:
+   \`\`\`bash
+   cp your-sounds/*.wav ~/Music/
+   \`\`\`
 
-#### `diagnose-startup-issue.sh`
-**Purpose**: Comprehensive diagnostic for SolarTunes startup problems
-- Checks environment and project structure
-- Analyzes package.json and dependencies
-- Tests manual startup
-- Reviews service logs and system resources
-- Provides step-by-step troubleshooting recommendations
+2. Or use the web interface upload feature:
+   - Click "Upload WAV File" in the web interface
+   - Select your .wav file
+   - Files are automatically processed for compatibility
 
-#### `rebuild-project.sh`
-**Purpose**: Complete project rebuild from scratch
-- Cleans old build artifacts
-- Creates fresh configuration files
-- Reinstalls all dependencies
-- Rebuilds the project
-- Tests manual and service startup
+3. Refresh the web interface or restart the service:
+   \`\`\`bash
+   sudo systemctl restart solartunes
+   \`\`\`
 
-#### `simple-start-test.sh`
-**Purpose**: Simple manual startup test
-- Tests if SolarTunes can start without systemd
-- Kills conflicting processes
-- Sets proper environment variables
-- Uses available package manager
+4. Your new files will appear in the Sound Library!
 
-#### `fix-systemd-service.sh`
-**Purpose**: Fixes systemd service configuration for proper daemon operation
-- Creates improved service configuration
-- Handles package manager detection
-- Sets up proper restart and logging
-- Creates monitoring and management tools
+## 🎯 Motion Detection Configuration
 
+SolarTunes automatically saves your motion detection settings to `~/Music/autoplay.conf`. When the app starts, it will:
+
+- ✅ **Restore Selected File**: Automatically select the previously configured motion trigger file
+- ✅ **Auto-Enable Motion**: Activate motion detection if a file was previously selected
+- ✅ **Persist Settings**: Save any changes to motion settings automatically
+
+### Configuration File Format
+
+The `~/Music/autoplay.conf` file uses JSON format:
+
+\`\`\`json
+{
+  "enabled": true,
+  "selectedFile": "your-sound-file.wav",
+  "lastSaved": "2025-01-07T15:30:00.000Z"
+}
+\`\`\`
+
+### Managing Configuration
+
+Use the configuration management script for advanced control:
+
+\`\`\`bash
+# Show current configuration
+./scripts/manage-autoplay-config.sh show
+
+# Set a specific file for motion triggering
+./scripts/manage-autoplay-config.sh set your-file.wav
+
+# Enable/disable motion detection
+./scripts/manage-autoplay-config.sh toggle
+
+# Backup current configuration
+./scripts/manage-autoplay-config.sh backup
+
+# Interactive menu
+./scripts/manage-autoplay-config.sh
+\`\`\`
+
+### Manual Configuration
+
+You can also manually edit the configuration file:
+
+\`\`\`bash
+# Edit configuration directly
+nano ~/Music/autoplay.conf
+
+# Restart SolarTunes to apply changes
+sudo systemctl restart solartunes
+\`\`\`
+
+## 🌐 Access Your Sound Player
+
+After setup, your SolarTunes player will be available at:
+
+**Local Access:** `http://localhost:3000`
+
+**Network Access:** `http://[your-pi-ip]:3000`
+
+**Custom Domain:** `http://solartunes.local:3000` (if mDNS configured)
+
+To find your Pi's IP address:
+\`\`\`bash
+hostname -I
+\`\`\`
+
+## 🔧 Troubleshooting
+
+### Service Won't Start
+
+\`\`\`bash
+# Check service status
+sudo systemctl status solartunes
+
+# Check logs for errors
+sudo journalctl -u solartunes -n 50
+
+# Restart the service
+sudo systemctl restart solartunes
+\`\`\`
+
+### No Audio Output
+
+\`\`\`bash
+# List audio devices
+aplay -l
+
+# Test audio with a file
+aplay ~/Music/test-tone.wav
+
+# Check audio groups
+groups $USER
+
+# Test volume control
+amixer -c 0 sset 'Digital' 50%
+\`\`\`
+
+### Motion Detection Issues
+
+\`\`\`bash
+# Test PIR sensor hardware
+python3 scripts/test-pir.py
+
+# Check motion detector service
+sudo systemctl status motion-detector
+
+# View motion logs
+tail -f /tmp/motion-detector.log
+
+# Test API endpoint
+curl -X POST http://localhost:3000/api/motion \
+     -H "Content-Type: application/json" \
+     -d '{"action": "triggerMotion"}'
+\`\`\`
+
+### Web Interface Not Loading
+
+\`\`\`bash
+# Check if port 3000 is in use
+sudo netstat -tlnp | grep :3000
+
+# Check firewall settings
+sudo ufw status
+
+# Restart networking
+sudo systemctl restart networking
+\`\`\`
+
+## 🔄 Updating SolarTunes
+
+To update your installation:
+
+\`\`\`bash
+cd ~/solartunes/
+./scripts/update-project.sh
+\`\`\`
+
+## WAV Files That Don't Work
+
+Not all wav formats are supported, you can convert them using ffmpeg:
+
+\`\`\`bash
+ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fixed.wav
+\`\`\`
+
+## ⚡ Solar Power Optimization
+
+For solar-powered setups:
+
+1. **Monitor Power Usage:**
+   \`\`\`bash
+   # Check system load
+   htop
+   
+   # Monitor power consumption
+   vcgencmd measure_temp
+   vcgencmd get_throttled
+   \`\`\`
+
+2. **Optimize Performance:**
+   - Use efficient .wav files (lower bitrates for longer playback)
+   - Enable auto-shutdown during low battery
+   - Schedule playback during peak solar hours
+
+3. **Battery Management:**
+   - Monitor battery voltage in system logs → I have no idea how to do this, as we just have a usual battery.
+   - Set up low-power mode triggers → Same, we don't know how much power is in the battery.
+   - Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode.
+
+4. **To Dos**
+   - ✅ upload wav files
+   - ✅ install sensor (movement and illumination)
+   - ⏳ lock SD Card in read only-mode
+   - ⏳ unlock SD Card for uploading
+   - ⏳ move log files to RAM disk (as SD Card is locked)
 
 ## 🛠️ Setup Access Point
 
 ### Step-by-Step Setup (No Internet Hotspot)
 
 1. **Update Raspberry Pi**
-   ```bash
+   \`\`\`bash
    sudo apt update && sudo apt upgrade -y
-   ```
+   \`\`\`
 
 2. **Install Access Point and DHCP Tools**
-   ```bash
+   \`\`\`bash
    sudo apt install hostapd dnsmasq
    sudo systemctl unmask hostapd
    sudo systemctl enable hostapd
-   ```
+   \`\`\`
 
 3. **Assign Static IP to wlan0**
-   ```bash
+   \`\`\`bash
    sudo nano /etc/dhcpcd.conf
-   ```
+   \`\`\`
    Append:
-   ```
+   \`\`\`
    interface wlan0
        static ip_address=192.168.4.1/24
        nohook wpa_supplicant
-   ```
-   ```bash
+   \`\`\`
+   \`\`\`bash
    sudo service dhcpcd restart
-   ```
+   \`\`\`
 
 4. **Configure dnsmasq (DHCP Server)**
-   ```bash
+   \`\`\`bash
    sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
    sudo nano /etc/dnsmasq.conf
-   ```
+   \`\`\`
    Add:
-   ```
+   \`\`\`
    interface=wlan0
    dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
-   ```
+   \`\`\`
 
 5. **Configure hostapd (Wi-Fi Hotspot)**
-   ```bash
+   \`\`\`bash
    sudo nano /etc/hostapd/hostapd.conf
-   ```
+   \`\`\`
    Example:
-   ```
+   \`\`\`
    interface=wlan0
    driver=nl80211
    ssid=MyPiAP
@@ -902,22 +622,22 @@ For solar-powered setups:
    wpa_passphrase=raspberry123
    wpa_key_mgmt=WPA-PSK
    rsn_pairwise=CCMP
-   ```
-   ```bash
+   \`\`\`
+   \`\`\`bash
    sudo nano /etc/default/hostapd
-   ```
+   \`\`\`
    Add or update:
-   ```
+   \`\`\`
    DAEMON_CONF="/etc/hostapd/hostapd.conf"
-   ```
+   \`\`\`
 
 6. **Start Services**
-   ```bash
+   \`\`\`bash
    sudo systemctl start hostapd
    sudo systemctl start dnsmasq
    sudo systemctl enable hostapd
    sudo systemctl enable dnsmasq
-   ```
+   \`\`\`
 
 ### Final Result
 - The Pi creates a Wi-Fi network called MyPiAP
@@ -927,144 +647,24 @@ For solar-powered setups:
 ### Enable solartunes.local Using avahi-daemon
 
 1. **Install avahi-daemon**
-   ```bash
+   \`\`\`bash
    sudo apt install avahi-daemon
-   ```
+   \`\`\`
 
 2. **Set the Hostname**
-   ```bash
+   \`\`\`bash
    sudo raspi-config
-   ```
+   \`\`\`
    Choose: System Options → Hostname → Enter: solartunes
    
    Or manually:
-   ```bash
+   \`\`\`bash
    echo "solartunes" | sudo tee /etc/hostname
    sudo sed -i 's/127.0.1.1.*/127.0.1.1 solartunes/' /etc/hosts
    sudo reboot
-   ```
+   \`\`\`
 
 Now access via: `http://solartunes.local:3000`
-
-# 🔋 Smart Battery-Powered Raspberry Pi with ESP-based Power Management
-
-This project uses an ESP8266 or ESP32 to monitor battery voltage and automatically control the power state of a Raspberry Pi. It enables clean shutdowns when the battery is low and reboots the Pi when the battery is recharged.
-
-## 🧹 Components
-
-* Raspberry Pi (any model)
-* ESP8266 or ESP32
-* Lithium battery (with protection circuit or BMS)
-* Voltage divider (resistors)
-* P-Channel MOSFET or relay
-* Optional: RTC or deep sleep logic for ESP
-
-## ⚙️ How It Works
-
-1. **Monitor Battery Voltage**
-   The ESP reads battery voltage via an analog input and a voltage divider. Thresholds are set to determine when to shut down or power on the Pi.
-
-2. **Shutdown Signal to Raspberry Pi**
-   If battery voltage drops below a `LOW_THRESHOLD`, the ESP sends a shutdown signal to the Pi:
-
-   * **Option A (GPIO):** Pull an ESP GPIO pin connected to a Pi GPIO. A daemon on the Pi listens and runs `sudo shutdown now`.
-   * **Option B (Wi-Fi):** ESP sends a shutdown command via HTTP or MQTT to the Pi.
-
-3. **Power Off the Pi**
-   After confirming shutdown (e.g., 30-second delay), the ESP cuts power to the Pi using a **P-Channel MOSFET** or **relay**.
-
-4. **Reboot When Battery is Charged**
-   Once battery voltage exceeds a `HIGH_THRESHOLD`, the ESP reconnects power to the Pi, which then auto-boots.
-
-
-## 🧠 Logic Summary
-
-```text
-IF battery voltage < LOW_THRESHOLD:
-    Signal Pi to shutdown
-    Wait 30s
-    Cut power to Pi
-
-ELSE IF battery voltage > HIGH_THRESHOLD:
-    Restore power to Pi
-```
-
-
-## 🔌 Circuit Overview
-
-* **Voltage Divider:** Reduces battery voltage to ESP-safe levels (max 3.3V).
-* **MOSFET:** Controls power line between battery and Pi.
-* **ESP GPIO → Pi GPIO:** (Optional) For shutdown signaling.
-
-## 🗅️ Pi Shutdown Script (GPIO Example)
-
-Create a script on the Pi to listen for shutdown signal:
-
-```bash
-#!/bin/bash
-
-GPIO=17
-echo "$GPIO" > /sys/class/gpio/export
-echo "in" > /sys/class/gpio/gpio$GPIO/direction
-
-while true; do
-  if [ "$(cat /sys/class/gpio/gpio$GPIO/value)" -eq 0 ]; then
-    sudo shutdown now
-    break
-  fi
-  sleep 1
-done
-```
-
-
-## 🦪 ESP Sample Code (ESP8266/ESP32)
-
-```cpp
-const int analogPin = A0; // Or GPIO 34 for ESP32
-const float R1 = 10000.0; // Voltage divider resistor 1 (top)
-const float R2 = 10000.0; // Resistor 2 (bottom)
-const float LOW_THRESHOLD = 11;
-const float HIGH_THRESHOLD = 12;
-const int powerControlPin = 5; // Controls MOSFET
-
-void setup() {
-  pinMode(powerControlPin, OUTPUT);
-  digitalWrite(powerControlPin, HIGH); // Assume HIGH = Pi ON
-}
-
-void loop() {
-  float voltage = analogRead(analogPin) / 1023.0 * 3.3 * (R1 + R2) / R2;
-
-  if (voltage < LOW_THRESHOLD) {
-    signalPiShutdown();
-    delay(30000); // Wait for Pi to shut down
-    digitalWrite(powerControlPin, LOW); // Cut power
-  } else if (voltage > HIGH_THRESHOLD) {
-    digitalWrite(powerControlPin, HIGH); // Power on
-  }
-
-  delay(10000); // Check every 10 seconds
-}
-
-void signalPiShutdown() {
-  // Optionally use GPIO or send HTTP/MQTT command
-}
-```
-
-
-## ⚠️ Notes
-
-* Ensure the Raspberry Pi is configured to **boot on power restore**.
-* Use a MOSFET with sufficient current rating.
-* ESP can use **deep sleep** to conserve power when idle.
-
-
-## 📦 To-Do
-
-* [ ] Add circuit diagrams
-* [ ] Add shutdown
-* [ ] Test it if it really works ;-)
-
 
 ## 🌿 SolarPunk Philosophy
 
@@ -1100,11 +700,10 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ## 🆘 Support
 
 - **Issues**: Report bugs on GitHub Issues
-- **Discussions**: Join community discussions every Tuesday https://curious.bio/veranstaltungen/ or file an issue here in GitHub
-- **Documentation**: Check this `README.md`
-- **Community**: Connect with other SolarPunk makers at https://curious.bio
-- **Security**: This project is a local installation, only. It's NOT supposed to put in/on the world wide web. If you find anything, see [SECURITY](SECURITY.md). USE THIS SOFTWARE ON YOUR OWN RISK. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY.
+- **Discussions**: Join community discussions
+- **Documentation**: Check the wiki for detailed guides
+- **Community**: Connect with other SolarPunk makers
 
 ---
 
-**Made with 🌱 for a sustainable future in the CCL https://curious.bio**
+**Made with 🌱 for a sustainable future**
