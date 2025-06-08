@@ -29,13 +29,13 @@ import {
   CheckCircle,
   XCircle,
   Loader2,
-  X,
   HardDrive,
   Lock,
   Unlock,
   Database,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 
 interface MusicFile {
   name: string
@@ -75,6 +75,12 @@ interface SDCardData {
   timestamp: string
 }
 
+interface WebhookData {
+  command: string
+  lastSaved: string | null
+  timestamp: string
+}
+
 export default function MusicPlayer() {
   const [files, setFiles] = useState<MusicFile[]>([])
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null)
@@ -93,6 +99,12 @@ export default function MusicPlayer() {
     currentlyPlaying: null,
   })
   const [sdCard, setSDCard] = useState<SDCardData | null>(null)
+  const [webhook, setWebhook] = useState<WebhookData>({
+    command: "",
+    lastSaved: null,
+    timestamp: new Date().toISOString(),
+  })
+  const [webhookSaving, setWebhookSaving] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<{
     uploading: boolean
     success: boolean | null
@@ -104,13 +116,14 @@ export default function MusicPlayer() {
   })
 
   // Toast notifications
-  const { toasts, addToast, removeToast } = useToast()
+  const { toast } = useToast()
 
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // Fetch music files
   useEffect(() => {
     fetchFiles()
+    fetchWebhookConfig()
   }, [])
 
   // Poll for logs, temperature, and motion status
@@ -235,6 +248,51 @@ export default function MusicPlayer() {
     }
   }
 
+  const fetchWebhookConfig = async () => {
+    try {
+      const response = await fetch("/api/webhook")
+      const data = await response.json()
+
+      if (response.ok) {
+        setWebhook(data)
+      } else {
+        console.error("Webhook config error:", data.error)
+      }
+    } catch (error) {
+      console.error("Failed to fetch webhook config:", error)
+    }
+  }
+
+  const saveWebhookConfig = async () => {
+    setWebhookSaving(true)
+    try {
+      const response = await fetch("/api/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "save",
+          command: webhook.command,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setWebhook(data)
+        toast({ title: "Webhook configuration saved successfully", variant: "default" })
+        // Fetch updated config after successful save
+        await fetchWebhookConfig()
+      } else {
+        toast({ title: `Failed to save webhook: ${data.error}`, variant: "destructive" })
+      }
+    } catch (error) {
+      console.error("Failed to save webhook config:", error)
+      toast({ title: "Failed to save webhook configuration", variant: "destructive" })
+    } finally {
+      setWebhookSaving(false)
+    }
+  }
+
   const fetchVolume = async () => {
     try {
       const response = await fetch("/api/volume")
@@ -312,14 +370,14 @@ export default function MusicPlayer() {
         setMotion(data)
 
         if (fileName) {
-          addToast(`Motion trigger set to "${fileName}"`, "success")
+          toast({ title: `Motion trigger set to "${fileName}"`, variant: "default" })
         } else {
-          addToast("Motion trigger removed", "info")
+          toast({ title: "Motion trigger removed", variant: "default" })
         }
       }
     } catch (error) {
       console.error("Failed to set motion file:", error)
-      addToast("Failed to update motion settings", "error")
+      toast({ title: "Failed to update motion settings", variant: "destructive" })
     }
   }
 
@@ -434,13 +492,13 @@ export default function MusicPlayer() {
         if (response.ok) {
           setCurrentlyPlaying(fileName)
           setIsMotionTriggered(false) // Mark as manually triggered
-          addToast(`Playing "${fileName}"`, "success")
+          toast({ title: `Playing "${fileName}"`, variant: "default" })
         } else {
-          addToast("Failed to play file", "error")
+          toast({ title: "Failed to play file", variant: "destructive" })
         }
       } catch (error) {
         console.error("Failed to play file:", error)
-        addToast("Failed to play file", "error")
+        toast({ title: "Failed to play file", variant: "destructive" })
       }
       return
     }
@@ -448,7 +506,7 @@ export default function MusicPlayer() {
     // If a track is playing, check blocking conditions
     // Only block if motion detection is active AND current track was motion-triggered
     if (motion.enabled && isMotionTriggered) {
-      addToast(`Motion detection is active.`, "warning")
+      toast({ title: `Motion detection is active.`, variant: "default" })
       return
     }
 
@@ -471,16 +529,16 @@ export default function MusicPlayer() {
       if (response.ok) {
         setCurrentlyPlaying(fileName)
         setIsMotionTriggered(false) // Mark as manually triggered
-        addToast(`Now playing "${fileName}"`, "success")
+        toast({ title: `Now playing "${fileName}"`, variant: "default" })
       } else {
-        addToast("Failed to play file", "error")
+        toast({ title: "Failed to play file", variant: "destructive" })
         // Reset state if play failed
         setCurrentlyPlaying(null)
         setIsMotionTriggered(false)
       }
     } catch (error) {
       console.error("Failed to switch tracks:", error)
-      addToast("Failed to switch tracks", "error")
+      toast({ title: "Failed to switch tracks", variant: "destructive" })
       // Reset state on error
       setCurrentlyPlaying(null)
       setIsMotionTriggered(false)
@@ -492,10 +550,10 @@ export default function MusicPlayer() {
       await fetch("/api/stop", { method: "POST" })
       setCurrentlyPlaying(null)
       setIsMotionTriggered(false)
-      addToast("Playback stopped", "info")
+      toast({ title: "Playback stopped", variant: "default" })
     } catch (error) {
       console.error("Failed to stop playback:", error)
-      addToast("Failed to stop playback", "error")
+      toast({ title: "Failed to stop playback", variant: "destructive" })
     }
   }
 
@@ -525,7 +583,7 @@ export default function MusicPlayer() {
         console.error("Cleanup failed but continuing with reset:", error)
       }
 
-      addToast("App state reset successfully", "success")
+      toast({ title: "App state reset successfully", variant: "default" })
     } catch (error) {
       console.error("Reset failed:", error)
 
@@ -537,7 +595,7 @@ export default function MusicPlayer() {
         currentlyPlaying: null,
       }))
 
-      addToast("Reset partially completed", "warning")
+      toast({ title: "Reset partially completed", variant: "default" })
     }
   }
 
@@ -576,29 +634,6 @@ export default function MusicPlayer() {
       </div>
 
       <div className="container mx-auto px-6 py-8">
-        {/* Toast Notifications */}
-        <div className="fixed top-4 right-4 z-50 flex flex-col gap-2">
-          {toasts.map((toast) => (
-            <div
-              key={toast.id}
-              className={`p-3 rounded-md shadow-lg flex items-center justify-between min-w-[300px] ${
-                toast.type === "success"
-                  ? "bg-green-100 text-green-800 border border-green-200"
-                  : toast.type === "error"
-                    ? "bg-red-100 text-red-800 border border-red-200"
-                    : toast.type === "warning"
-                      ? "bg-yellow-100 text-yellow-800 border border-yellow-200"
-                      : "bg-blue-100 text-blue-800 border border-blue-200"
-              }`}
-            >
-              <span>{toast.message}</span>
-              <button onClick={() => removeToast(toast.id)} className="ml-2 text-gray-500 hover:text-gray-700">
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-
         {/* Volume Error Alert */}
         {volumeError && (
           <Alert className="mb-6 border-yellow-200 bg-yellow-50">
@@ -893,6 +928,67 @@ export default function MusicPlayer() {
 
           {/* Right Column - Widgets and Logs */}
           <div className="lg:col-span-1 space-y-6">
+            {/* Motion Hook Widget */}
+            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10">
+                <CardTitle className="flex items-center gap-2 text-purple-800">
+                  <Zap className="h-5 w-5" />
+                  Motion Hook
+                  {webhook.lastSaved && (
+                    <Badge variant="secondary" className="ml-auto bg-purple-100 text-purple-700 text-xs">
+                      Configured
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="webhook-command" className="block text-sm font-medium text-gray-700 mb-2">
+                      Command to execute on motion:
+                    </label>
+                    <Input
+                      id="webhook-command"
+                      type="text"
+                      value={webhook.command}
+                      onChange={(e) => setWebhook((prev) => ({ ...prev, command: e.target.value }))}
+                      placeholder="e.g., /home/pi/scripts/motion-action.sh"
+                      className="w-full"
+                      disabled={webhookSaving}
+                    />
+                  </div>
+
+                  <Button
+                    onClick={saveWebhookConfig}
+                    disabled={webhookSaving}
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                  >
+                    {webhookSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Hook"
+                    )}
+                  </Button>
+
+                  {webhook.lastSaved && (
+                    <div className="text-xs text-gray-600 text-center">
+                      Last saved: {new Date(webhook.lastSaved).toLocaleString()}
+                    </div>
+                  )}
+
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p>• Command will execute when motion is detected</p>
+                    <p>• Use full paths for scripts and commands</p>
+                    <p>• Commands timeout after 30 seconds</p>
+                    <p>• Leave empty to disable webhook</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* System Logs */}
             <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10">
@@ -1045,6 +1141,7 @@ export default function MusicPlayer() {
             </CardContent>
           </Card>
         )}
+        <Toaster />
       </div>
     </div>
   )
