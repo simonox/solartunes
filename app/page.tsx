@@ -133,7 +133,6 @@ export default function MusicPlayer() {
       fetchTemperature()
       fetchMotionStatus()
       fetchSDCardStatus()
-      fetchWebhookConfig()
     }, 2000)
     return () => clearInterval(interval)
   }, [])
@@ -281,6 +280,8 @@ export default function MusicPlayer() {
       if (response.ok) {
         setWebhook(data)
         addToast("Webhook configuration saved successfully", "success")
+        // Fetch updated config after successful save
+        await fetchWebhookConfig()
       } else {
         addToast(`Failed to save webhook: ${data.error}`, "error")
       }
