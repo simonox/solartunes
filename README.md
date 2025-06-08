@@ -13,6 +13,44 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 - 🏎️ PIR Sensor
 - 💾 MicroSD Card (64 GB)
 
+## UML
+
+@startuml
+title Solar-Powered Audio Birdhouse System
+
+package "Power System" {
+    [Solar Panel] --> [MPPT Regulator]
+    [MPPT Regulator] --> [Battery] : Charges
+    [Battery] --> [Power Output] : Supplies power
+}
+
+package "Audio System" {
+    [Speaker] --> [Audio HAT]
+    [Audio HAT] --> [Raspberry Pi]
+}
+
+package "Control and Logic" {
+    [Raspberry Pi] --> [Sound Playback Logic]
+}
+
+[Power Output] --> [Audio HAT] : 5V Supply
+[Power Output] --> [Raspberry Pi] : 5V Supply
+
+package "Enclosure" {
+    [Birdhouse] : Physical housing
+    [Birdhouse] --> [Speaker]
+    [Birdhouse] --> [Raspberry Pi]
+    [Birdhouse] --> [Battery]
+}
+
+note right of [Sound Playback Logic]
+    Sound logic plays bird sounds
+    through the speaker when triggered
+end note
+
+@enduml
+
+
 
 ## 🌱 Features
 
