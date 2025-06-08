@@ -797,17 +797,7 @@ export default function MusicPlayer() {
                   variant="outline"
                   className="w-full h-6 text-xs border-purple-300 text-purple-700 hover:bg-purple-50"
                 >
-                  {motion.enabled ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="h-4 w-4 mr-2" />
-                      Select File
-                    </>
-                  )}
+                  Test Trigger Motion
                 </Button>
 
                 {motion.motionCount > 0 && (
