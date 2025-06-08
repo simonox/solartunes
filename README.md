@@ -467,29 +467,6 @@ cd ~/solartunes/
 ./scripts/update-project.sh
 ```
 
-## ⚡ Solar Power Optimization
-
-For solar-powered setups:
-
-1. **Monitor Power Usage:**
-   ```bash
-   # Check system load
-   htop
-   
-   # Monitor power consumption
-   vcgencmd measure_temp
-   vcgencmd get_throttled
-   ```
-
-2. **Optimize Performance:**
-   - Use efficient .wav files (lower bitrates for longer playback)
-   - Enable auto-shutdown during low battery
-   - Schedule playback during peak solar hours
-
-3. **Battery Management:**
-   - [ ] Monitor battery voltage in system logs → I have no idea how to do this, as we just have a usual battery.
-   - [ ] Set up low-power mode triggers → Same, we don't know how much power is in the battery.
-   - [ ] Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode. Also, the PIR does not deliver illumnation, just movement, so we have to add also an illumination sensor for that. 🤷‍♂️
 
 ## 📜 Shell Scripts Reference
 
@@ -885,7 +862,34 @@ For solar-powered setups:
 
 Now access via: `http://solartunes.local:3000`
 
-# 🔋 Smart Battery-Powered Raspberry Pi with ESP-based Power Management
+## ⚡ Solar Power Optimization
+
+For solar-powered setups:
+
+1. **Monitor Power Usage:**
+   ```bash
+   # Check system load
+   htop
+   
+   # Monitor power consumption
+   vcgencmd measure_temp
+   vcgencmd get_throttled
+   ```
+
+2. **Optimize Performance:**
+   - Use efficient .wav files (lower bitrates for longer playback)
+   - Enable auto-shutdown during low battery
+   - Schedule playback during peak solar hours
+
+3. **Battery Management:**
+   - [ ] Monitor battery voltage in system logs → I have no idea how to do this, as we just have a usual battery.
+   - [ ] Set up low-power mode triggers → Same, we don't know how much power is in the battery.
+   - [ ] Use the sensor (movement and illumination) to detect night and day, when there is no light, put the Pi in power safe mode. Also, the PIR does not deliver illumnation, just movement, so we have to add also an illumination sensor for that. 🤷‍♂️
+
+
+See section below for an *idea* how to do this.
+     
+## 🔋 TODO: Smart Battery-Powered Raspberry Pi with ESP-based Power Management
 
 This project uses an ESP8266 or ESP32 to monitor battery voltage and automatically control the power state of a Raspberry Pi. It enables clean shutdowns when the battery is low and reboots the Pi when the battery is recharged.
 
