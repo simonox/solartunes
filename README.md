@@ -1028,8 +1028,8 @@ done
 const int analogPin = A0; // Or GPIO 34 for ESP32
 const float R1 = 10000.0; // Voltage divider resistor 1 (top)
 const float R2 = 10000.0; // Resistor 2 (bottom)
-const float LOW_THRESHOLD = 3.3;
-const float HIGH_THRESHOLD = 3.7;
+const float LOW_THRESHOLD = 11;
+const float HIGH_THRESHOLD = 12;
 const int powerControlPin = 5; // Controls MOSFET
 
 void setup() {
