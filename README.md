@@ -109,7 +109,7 @@ This document outlines the standard development workflow used for building and d
    - Use [v0.dev](https://v0.dev) as your online IDE to design and develop UI components.
 
 2. **Create a Feature Branch**
-   - Before any development, create a new feature branch from the `master` branch.
+   - Before any development, create a new feature branch from the `main` branch.
 
 3. **Develop UI**
 
