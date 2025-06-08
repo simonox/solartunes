@@ -75,6 +75,12 @@ interface SDCardData {
   timestamp: string
 }
 
+interface WebhookData {
+  command: string
+  lastSaved: string | null
+  timestamp: string
+}
+
 export default function MusicPlayer() {
   const [files, setFiles] = useState<MusicFile[]>([])
   const [currentlyPlaying, setCurrentlyPlaying] = useState<string | null>(null)
@@ -93,6 +99,12 @@ export default function MusicPlayer() {
     currentlyPlaying: null,
   })
   const [sdCard, setSDCard] = useState<SDCardData | null>(null)
+  const [webhook, setWebhook] = useState<WebhookData>({
+    command: "",
+    lastSaved: null,
+    timestamp: new Date().toISOString(),
+  })
+  const [webhookSaving, setWebhookSaving] = useState(false)
   const [uploadStatus, setUploadStatus] = useState<{
     uploading: boolean
     success: boolean | null
@@ -111,6 +123,7 @@ export default function MusicPlayer() {
   // Fetch music files
   useEffect(() => {
     fetchFiles()
+    fetchWebhookConfig()
   }, [])
 
   // Poll for logs, temperature, and motion status
@@ -120,6 +133,7 @@ export default function MusicPlayer() {
       fetchTemperature()
       fetchMotionStatus()
       fetchSDCardStatus()
+      fetchWebhookConfig()
     }, 2000)
     return () => clearInterval(interval)
   }, [])
@@ -232,6 +246,49 @@ export default function MusicPlayer() {
       }
     } catch (error) {
       console.error("Failed to fetch SD card status:", error)
+    }
+  }
+
+  const fetchWebhookConfig = async () => {
+    try {
+      const response = await fetch("/api/webhook")
+      const data = await response.json()
+
+      if (response.ok) {
+        setWebhook(data)
+      } else {
+        console.error("Webhook config error:", data.error)
+      }
+    } catch (error) {
+      console.error("Failed to fetch webhook config:", error)
+    }
+  }
+
+  const saveWebhookConfig = async () => {
+    setWebhookSaving(true)
+    try {
+      const response = await fetch("/api/webhook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "save",
+          command: webhook.command,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setWebhook(data)
+        addToast("Webhook configuration saved successfully", "success")
+      } else {
+        addToast(`Failed to save webhook: ${data.error}`, "error")
+      }
+    } catch (error) {
+      console.error("Failed to save webhook config:", error)
+      addToast("Failed to save webhook configuration", "error")
+    } finally {
+      setWebhookSaving(false)
     }
   }
 
@@ -893,6 +950,67 @@ export default function MusicPlayer() {
 
           {/* Right Column - Widgets and Logs */}
           <div className="lg:col-span-1 space-y-6">
+            {/* Motion Hook Widget */}
+            <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-purple-500/10 to-pink-500/10">
+                <CardTitle className="flex items-center gap-2 text-purple-800">
+                  <Zap className="h-5 w-5" />
+                  Motion Hook
+                  {webhook.lastSaved && (
+                    <Badge variant="secondary" className="ml-auto bg-purple-100 text-purple-700 text-xs">
+                      Configured
+                    </Badge>
+                  )}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6">
+                <div className="space-y-4">
+                  <div>
+                    <label htmlFor="webhook-command" className="block text-sm font-medium text-gray-700 mb-2">
+                      Command to execute on motion:
+                    </label>
+                    <Input
+                      id="webhook-command"
+                      type="text"
+                      value={webhook.command}
+                      onChange={(e) => setWebhook((prev) => ({ ...prev, command: e.target.value }))}
+                      placeholder="e.g., /home/pi/scripts/motion-action.sh"
+                      className="w-full"
+                      disabled={webhookSaving}
+                    />
+                  </div>
+
+                  <Button
+                    onClick={saveWebhookConfig}
+                    disabled={webhookSaving}
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                  >
+                    {webhookSaving ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      "Save Hook"
+                    )}
+                  </Button>
+
+                  {webhook.lastSaved && (
+                    <div className="text-xs text-gray-600 text-center">
+                      Last saved: {new Date(webhook.lastSaved).toLocaleString()}
+                    </div>
+                  )}
+
+                  <div className="text-sm text-gray-600 space-y-1">
+                    <p>• Command will execute when motion is detected</p>
+                    <p>• Use full paths for scripts and commands</p>
+                    <p>• Commands timeout after 30 seconds</p>
+                    <p>• Leave empty to disable webhook</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
             {/* System Logs */}
             <Card className="bg-white/70 backdrop-blur-sm border-green-200 shadow-xl">
               <CardHeader className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10">

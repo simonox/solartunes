@@ -2,9 +2,14 @@ import { NextResponse } from "next/server"
 import { readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { homedir } from "os"
+import { exec } from "child_process"
+import { promisify } from "util"
+
+const execAsync = promisify(exec)
 
 // Configuration file path
 const CONFIG_FILE = join(homedir(), "Music", "autoplay.conf")
+const WEBHOOK_CONFIG_FILE = join(homedir(), "Music", "webhook.conf")
 
 // In-memory storage for motion detection settings
 const motionSettings = {
@@ -52,6 +57,33 @@ async function saveConfig() {
   }
 }
 
+// Execute webhook command if configured
+async function executeWebhook() {
+  try {
+    const webhookData = await readFile(WEBHOOK_CONFIG_FILE, "utf-8")
+    const webhookConfig = JSON.parse(webhookData)
+
+    if (webhookConfig.command && webhookConfig.command.trim()) {
+      console.log("Executing webhook command:", webhookConfig.command)
+
+      // Execute the command with a timeout
+      const { stdout, stderr } = await execAsync(webhookConfig.command, { timeout: 30000 })
+
+      if (stdout) console.log("Webhook stdout:", stdout)
+      if (stderr) console.log("Webhook stderr:", stderr)
+
+      console.log("Webhook command executed successfully")
+    }
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      // Webhook config file doesn't exist, which is fine
+      console.log("No webhook configuration found")
+    } else {
+      console.error("Failed to execute webhook:", error)
+    }
+  }
+}
+
 // Initialize configuration on module load
 loadConfig()
 
@@ -93,6 +125,13 @@ export async function POST(request: Request) {
       motionSettings.lastMotionTime = new Date().toISOString()
       motionSettings.motionCount++
       console.log(`Motion detected! Count: ${motionSettings.motionCount}`)
+
+      // Execute webhook if configured
+      try {
+        await executeWebhook()
+      } catch (error) {
+        console.error("Webhook execution failed:", error)
+      }
 
       // If motion detection is enabled and a file is selected, trigger playback
       if (motionSettings.enabled && motionSettings.selectedFile) {
