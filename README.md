@@ -34,7 +34,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 
 ![diagram](https://github.com/user-attachments/assets/79366939-6b02-4e4d-816a-509ed3e46fe2)
 
-> Source: [umldiagram.puml](umldiagram.puml), created using [PlantUML]([https://editor.plantuml.com/)
+> Source: [umldiagram.puml](umldiagram.puml), created using [PlantUML](https://editor.plantuml.com/)
 
 ## 🚀 Quick Setup
 
