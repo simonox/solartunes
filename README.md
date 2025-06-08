@@ -261,40 +261,6 @@ The `~/Music/autoplay.conf` file uses JSON format:
 }
 ```
 
-### Motion Hook
-
-You can also execute a script on Motion Detection.
-
-Key features are:
-1. **Persistent Storage**: Configuration saved to `webhook.conf` file
-2. **Motion Trigger**: Commands execute when motion detection is triggered
-3. **Hint**: Use full paths for scripts and commands
-4. **TimeOut**: Commands timeout after 30 seconds
-5. **Delete Hook**: Leave empty to disable webhook
-
-
-#### Usage Examples
-
-Users can configure commands like:
-
-- `/home/pi/scripts/motion-action.sh` - Custom script
-- `curl -X POST https://api.example.com/motion` - HTTP(S) webhook
-- `echo "Motion detected" >> /tmp/motion.log` - Simple logging
-
-The webhook executes alongside the existing motion detection functionality without affecting any other components.
-
-
-#### Configuration File Format
-
-The `~/Music/webhook.conf` file uses JSON format:
-
-```json
-{
-  "command": "/home/pi/Music/blink.sh",
-  "lastSaved": "2025-06-08T21:04:43.871Z"
-}
-```
-
 ### Managing Configuration
 
 SolarTunes takes care of the configuration if you are using the UI. If you want to do it on the command line: Use the configuration management script for advanced control:
@@ -327,6 +293,44 @@ nano ~/Music/autoplay.conf
 # Restart SolarTunes to apply changes
 sudo systemctl restart solartunes
 ```
+
+### Motion Hook
+
+You can also execute a script on Motion Detection.
+
+Key features are:
+1. **Persistent Storage**: Configuration saved to `webhook.conf` file
+2. **Motion Trigger**: Commands execute when motion detection is triggered
+3. **Hint**: Use full paths for scripts and commands
+4. **TimeOut**: Commands timeout after 30 seconds
+5. **Delete Hook**: Leave empty to disable webhook
+
+
+#### Usage Examples
+
+Users can configure commands like:
+
+- `/home/pi/scripts/motion-action.sh` - Custom script
+- `curl -X POST https://api.example.com/motion` - HTTP(S) webhook
+- `echo "Motion detected" >> /tmp/motion.log` - Simple logging
+
+The webhook executes alongside the existing motion detection functionality without affecting any other components.
+
+⚠️ Handle with care. Executing command line inputs on the Rasperry Pi comes with great responsiblity. 
+
+
+#### Configuration File Format
+
+The `~/Music/webhook.conf` file uses JSON format:
+
+```json
+{
+  "command": "/home/pi/Music/blink.sh",
+  "lastSaved": "2025-06-08T21:04:43.871Z"
+}
+```
+
+
 
 ## 🛡️ SD Card Protection
 
