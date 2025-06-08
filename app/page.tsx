@@ -278,6 +278,48 @@ export default function MusicPlayer() {
   const saveWebhookConfig = async () => {
     setWebhookSaving(true)
     try {
+      // Handle "defaultScript" selection (no script)
+      if (webhook.selectedScript === "defaultScript") {
+        const response = await fetch("/api/webhook", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "save",
+            selectedScript: "defaultScript",
+          }),
+        })
+
+        const data = await response.json()
+
+        if (response.ok) {
+          setWebhook((prev) => ({
+            ...prev,
+            selectedScript: "defaultScript",
+            lastSaved: data.lastSaved,
+          }))
+          toast({
+            title: "Webhook disabled",
+            description: "No script will execute on motion detection",
+            variant: "default",
+          })
+          await fetchWebhookConfig()
+        } else {
+          toast({ title: `Failed to save webhook: ${data.error}`, variant: "destructive" })
+        }
+        return
+      }
+
+      // Validate script selection
+      if (!webhook.selectedScript || webhook.selectedScript.trim() === "") {
+        toast({
+          title: "Please select a script",
+          description: "Choose a script to execute or select 'No script' to disable webhook",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Save valid script selection
       const response = await fetch("/api/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -295,8 +337,11 @@ export default function MusicPlayer() {
           selectedScript: data.selectedScript,
           lastSaved: data.lastSaved,
         }))
-        toast({ title: "Webhook configuration saved successfully", variant: "default" })
-        // Fetch updated config after successful save
+        toast({
+          title: "Webhook configuration saved",
+          description: `Script "${data.selectedScript}" will execute on motion detection`,
+          variant: "default",
+        })
         await fetchWebhookConfig()
       } else {
         toast({ title: `Failed to save webhook: ${data.error}`, variant: "destructive" })
@@ -950,9 +995,14 @@ export default function MusicPlayer() {
                 <CardTitle className="flex items-center gap-2 text-purple-800">
                   <Shield className="h-5 w-5" />
                   Motion Hook
-                  {webhook.selectedScript && (
+                  {webhook.selectedScript && webhook.selectedScript !== "defaultScript" && (
                     <Badge variant="secondary" className="ml-auto bg-purple-100 text-purple-700 text-xs">
-                      Configured
+                      Active
+                    </Badge>
+                  )}
+                  {webhook.selectedScript === "defaultScript" && (
+                    <Badge variant="secondary" className="ml-auto bg-gray-100 text-gray-700 text-xs">
+                      Disabled
                     </Badge>
                   )}
                 </CardTitle>
@@ -1000,9 +1050,21 @@ export default function MusicPlayer() {
                     </Alert>
                   )}
 
-                  {webhook.selectedScript && (
+                  {webhook.selectedScript && webhook.selectedScript !== "defaultScript" && (
                     <div className="text-xs text-center text-purple-600 bg-purple-50 p-2 rounded">
-                      Selected: {webhook.selectedScript}
+                      <div className="flex items-center justify-center gap-1">
+                        <CheckCircle className="h-3 w-3" />
+                        <span>Selected: {webhook.selectedScript}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {webhook.selectedScript === "defaultScript" && (
+                    <div className="text-xs text-center text-gray-600 bg-gray-50 p-2 rounded">
+                      <div className="flex items-center justify-center gap-1">
+                        <XCircle className="h-3 w-3" />
+                        <span>No script selected - webhook disabled</span>
+                      </div>
                     </div>
                   )}
 
@@ -1017,7 +1079,7 @@ export default function MusicPlayer() {
                         Saving...
                       </>
                     ) : (
-                      "Save Hook"
+                      <>{webhook.selectedScript === "defaultScript" ? "Disable Hook" : "Save Hook"}</>
                     )}
                   </Button>
 
