@@ -1006,7 +1006,8 @@ void signalPiShutdown() {
 
 ## Clone SD Card
 
-```➜  ~ diskutil list # find the SD Card
+```
+➜  ~ diskutil list # find the SD Card
 
 /dev/disk0 (internal, physical):
    #:                       TYPE NAME                    SIZE       IDENTIFIER
