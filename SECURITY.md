@@ -14,11 +14,11 @@ currently being supported with security updates.
 
 Please file an issue in GitHub.
 
-## Known Issues
+## Usage
 
 This system MUST be used locally by trusted users, ONLY. Don't put in in/on the internet, as it has severe issues.
 
-## Security References
+## Security References for Known Issues
 
 ### OWASP Findings
 - [OWASP: Command Injection](https://owasp.org/www-community/attacks/Command_Injection)
