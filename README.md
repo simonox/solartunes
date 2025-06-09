@@ -18,7 +18,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 
 - **🎵 Sound Library**: Browse and play .wav files from your Music directory
 - **🎮 Simple Controls**: Click to play/stop with single-file playback protection
-- **🎯 Motion Detection**: PIR sensor integration for automatic sound triggering
+- **🎯 Motion Detection**: PIR sensor integration for automatic sound triggering and executing self-hackable scripts
 - **📊 System Monitoring**: Real-time system logs for debugging
 - **🌿 SolarPunk Design**: Beautiful green gradients and nature-inspired UI (not really, just green color)
 - **⚡ Low Power**: Optimized for solar-powered Raspberry Pi setups
