@@ -324,7 +324,11 @@ sudo systemctl restart solartunes
    "lastSaved": "2025-06-08T21:04:43.871Z"
  }
  ```
+#### Diagram for Motion Detection
 
+![image](https://github.com/user-attachments/assets/e2fd2b45-e08d-4412-a30b-f8c538e0e648)
+
+> Quelle: motion-detection.puml created with 🌱 PlantUML
 
 ## 🛡️ TODO / UNTESTED: SD Card Protection
 
