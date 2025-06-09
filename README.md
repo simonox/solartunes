@@ -328,7 +328,7 @@ sudo systemctl restart solartunes
 
 ![image](https://github.com/user-attachments/assets/e2fd2b45-e08d-4412-a30b-f8c538e0e648)
 
-> Quelle: motion-detection.puml created with 🌱 PlantUML
+> Quelle: [motion.hook.puml](motion.hook.puml) created using 🌱 PlantUML
 
 ## 🛡️ TODO / UNTESTED: SD Card Protection
 
