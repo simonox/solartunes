@@ -1,0 +1,22 @@
+@startuml
+title Motion Detection
+
+
+package "Another Pi" {
+     [Other REST Endpoint]
+}
+
+
+package "Solartunes App" {
+    [Motion REST Endpoint] --> [Motion Hook] : calls a configured Motion Hook
+    [Motion REST Endpoint] --> [Sound Playback] : plays selected sound file
+    [Motion Hook] --> [Shell Script] : executes code, e.g. calling another Pi
+    [Shell Script]--> [Other REST Endpoint] : remote controll a secondary system
+}
+
+package "Motion Detection Demon" {
+    [motion-detect.py] --> [Motion REST Endpoint] : sends an HTTP Request
+}
+
+
+@enduml
