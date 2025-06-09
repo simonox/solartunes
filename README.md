@@ -306,10 +306,10 @@ sudo systemctl restart solartunes
 
  #### Usage Examples
 
-• Only scripts from ~/Music directory are available
-• Scripts execute with 30-second timeout
-• Working directory is set to ~/Music
-• Select "No script" to disable webhook
+* 🛡️ Only scripts from ~/Music directory are available
+* ⏰ Scripts execute with 30-second timeout
+* 🎵 Working directory is set to ~/Music
+* 🛑 Select "No script" to disable webhook
  
  The webhook executes alongside the existing motion detection functionality without affecting any other components.
 
