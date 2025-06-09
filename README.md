@@ -326,7 +326,7 @@ sudo systemctl restart solartunes
  ```
 
 
-## 🛡️ SD Card Protection
+## 🛡️ TODO / UNTESTED: SD Card Protection
 
 SolarTunes includes advanced SD card protection features to extend the life of your SD card by reducing write operations.
 
@@ -790,7 +790,7 @@ cd ~/solartunes/
 - Creates monitoring and management tools
 
 
-## 🛠️ Setup Access Point
+## 🛠️ TODO Setup Access Point
 
 ### Step-by-Step Setup (No Internet Hotspot)
 
