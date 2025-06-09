@@ -409,10 +409,6 @@ sudo systemctl restart solartunes
 # Run comprehensive diagnostics
 ./scripts/diagnose-startup-issue.sh
 
-# Complete rebuild if needed
-./scripts/rebuild-project.sh
-```
-
 ### No Audio Output
 
 ```bash
