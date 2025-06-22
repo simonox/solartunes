@@ -921,12 +921,10 @@ Check hostname:
 hostname
 ```
 
-
 If it’s not parlament, set it:
 ``
 sudo hostnamectl set-hostname parlament
 ```
-
 
 Then reboot or restart hostname services.
 
@@ -949,6 +947,11 @@ If your clients don’t support mDNS or .local resolution:
 Access the Node.js app directly via IP: http://192.168.4.1:3000
 
 Or add a manual hosts file entry on each client mapping parlament.local to 192.168.4.1
+
+
+## Notes
+
+* If you are on a Mac or on an iPad / iPhone, make sure *Private Relay* is disabled, otherwise your machine cannot connect to *Private Relay* and gives you no access to `http://parlament.local:3000`.
 
 
 # ⚡ Solar Power Optimization
