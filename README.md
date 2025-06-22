@@ -810,12 +810,13 @@ Create a Wi-Fi Access Point named **`parlament`** with password **`********`** t
 
 Verify remaining connections:
 
-```
+```bash
 nmcli connection show
 ```
 
 should give you
-```
+
+```bash
 Wired connection 1  c61e9bfe-c634-3354-95bd-d257f7800b6c  ethernet  eth0
 MyPrivateWLAN       edaf8d6e-29cd-4c51-83eb-806e50547623  wifi      wlan0
 lo                  0a78e945-7563-4f93-a852-6fde5fa167d6  loopback  lo
@@ -826,7 +827,7 @@ preconfigured       72a7caee-a05e-4145-9560-6768ab9da58d  wifi      --
 
 Create a new Wi-Fi AP connection with SSID parlament and password ********:
 
-```
+```bash
 sudo nmcli connection add type wifi ifname wlan0 con-name parlament ssid parlament
 sudo nmcli connection modify parlament mode ap
 sudo nmcli connection modify parlament 802-11-wireless.band bg
@@ -846,7 +847,7 @@ The Pi’s AP IP is 192.168.4.1.
 
 Create or ensure Ethernet connection exists and uses DHCP:
 
-```
+```bash
 sudo nmcli connection add type ethernet ifname eth0 con-name ethernet
 sudo nmcli connection modify ethernet ipv4.method auto
 sudo nmcli connection up ethernet
@@ -857,7 +858,7 @@ sudo nmcli connection up ethernet
 
 Bring the AP connection up:
 
-```
+```bash
 sudo nmcli connection up parlament
 ```
 
@@ -865,13 +866,14 @@ sudo nmcli connection up parlament
 
 Check that wlan0 is in AP mode:
 
-```
+```bash
 iw dev
 ```
 
 
 Expected output snippet:
-```
+
+```bash
 Interface wlan0
 		ifindex 3
 		wdev 0x1
@@ -884,12 +886,13 @@ Interface wlan0
 
 Check device status:
 
-```
+```bash
 nmcli device status
 ```
 
 Expected output:
-```
+
+```bash
 DEVICE         TYPE      STATE                   CONNECTION
 wlan0          wifi      connected               parlament
 eth0           ethernet  connected               ethernet
@@ -908,7 +911,7 @@ lo             loopback  connected (externally)  lo
 
 Make sure connections start on boot:
 
-```
+```bash
 sudo nmcli connection modify parlament connection.autoconnect yes
 sudo nmcli connection modify ethernet connection.autoconnect yes
 ```
@@ -917,12 +920,12 @@ sudo nmcli connection modify ethernet connection.autoconnect yes
 
 Check hostname:
 
-```
+```bash
 hostname
 ```
 
 If it’s not parlament, set it:
-``
+```bash
 sudo hostnamectl set-hostname parlament
 ```
 
@@ -934,7 +937,7 @@ avahi-daemon provides .local hostname resolution on the local network, even with
 
 Install and start:
 
-```
+```bash
 sudo apt install avahi-daemon
 sudo systemctl enable avahi-daemon
 sudo systemctl start avahi-daemon
