@@ -912,6 +912,43 @@ sudo nmcli connection modify parlament connection.autoconnect yes
 sudo nmcli connection modify ethernet connection.autoconnect yes
 ```
 
+## Step 7: Make sure your Pi’s hostname is parlament
+
+Check hostname:
+
+```
+hostname
+```
+
+
+If it’s not parlament, set it:
+``
+sudo hostnamectl set-hostname parlament
+```
+
+
+Then reboot or restart hostname services.
+
+## Step 8:  Ensure avahi-daemon (mDNS) is installed and running
+
+avahi-daemon provides .local hostname resolution on the local network, even without internet.
+
+Install and start:
+
+```
+sudo apt install avahi-daemon
+sudo systemctl enable avahi-daemon
+sudo systemctl start avahi-daemon
+```
+
+## Step 9: Add a fallback static IP entry for parlament.local on clients (optional)
+
+If your clients don’t support mDNS or .local resolution:
+
+Access the Node.js app directly via IP: http://192.168.4.1:3000
+
+Or add a manual hosts file entry on each client mapping parlament.local to 192.168.4.1
+
 
 # ⚡ Solar Power Optimization
 
