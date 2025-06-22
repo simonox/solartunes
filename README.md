@@ -502,7 +502,7 @@ cd ~/solartunes/
 
 ## 📜 Shell Scripts Reference
 
-> Note: Most scripts where written during development. As during development a lot did change (and not everything worked out as planned) some scripts are outdate and may not even work. Sure... a clean up should be on the TODO list.
+> Note: Most scripts were written during development. As during development a lot did change (and not everything worked out as planned, the usual way software development works) some scripts are outdate and may not even work. Sure... a clean up should be on the TODO list.
 
 ### Setup Scripts
 
