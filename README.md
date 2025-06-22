@@ -792,7 +792,7 @@ cd ~/solartunes/
 
 # 🛠️ Step-by-Step Setup to create a Wifi HotSpot
 
-Create a Wi-Fi Access Point named **`parlament`** with password **`********`** that:
+Create a Wi-Fi Access Point named **`solartunes`** with password **`********`** that:
 
 - Shares internet from Ethernet if connected
 - Serves local apps (like Node.js on port 3000) if no Ethernet
@@ -825,18 +825,18 @@ preconfigured       72a7caee-a05e-4145-9560-6768ab9da58d  wifi      --
 
 ## Step 1: Create the Wi-Fi Access Point
 
-Create a new Wi-Fi AP connection with SSID parlament and password ********:
+Create a new Wi-Fi AP connection with SSID solartunes and password ********:
 
 ```bash
-sudo nmcli connection add type wifi ifname wlan0 con-name parlament ssid parlament
-sudo nmcli connection modify parlament mode ap
-sudo nmcli connection modify parlament 802-11-wireless.band bg
-sudo nmcli connection modify parlament 802-11-wireless.channel 6
-sudo nmcli connection modify parlament wifi-sec.key-mgmt wpa-psk
-sudo nmcli connection modify parlament wifi-sec.psk "**********"
-sudo nmcli connection modify parlament ipv4.addresses 192.168.4.1/24
-sudo nmcli connection modify parlament ipv4.method shared
-sudo nmcli connection modify parlament connection.autoconnect yes
+sudo nmcli connection add type wifi ifname wlan0 con-name solartunes ssid solartunes
+sudo nmcli connection modify solartunes mode ap
+sudo nmcli connection modify solartunes 802-11-wireless.band bg
+sudo nmcli connection modify solartunes 802-11-wireless.channel 6
+sudo nmcli connection modify solartunes wifi-sec.key-mgmt wpa-psk
+sudo nmcli connection modify solartunes wifi-sec.psk "**********"
+sudo nmcli connection modify solartunes ipv4.addresses 192.168.4.1/24
+sudo nmcli connection modify solartunes ipv4.method shared
+sudo nmcli connection modify solartunes connection.autoconnect yes
 ```
 
 The ipv4.method shared enables DHCP and NAT for the Wi-Fi clients.
@@ -859,7 +859,7 @@ sudo nmcli connection up ethernet
 Bring the AP connection up:
 
 ```bash
-sudo nmcli connection up parlament
+sudo nmcli connection up solartunes
 ```
 
 ## Step 4: Verify the Setup
@@ -878,7 +878,7 @@ Interface wlan0
 		ifindex 3
 		wdev 0x1
 		addr 2c:cf:67:f9:25:e2
-		ssid parlament
+		ssid solartunes
 		type AP
 		channel 6 (2437 MHz), width: 20 MHz, center1: 2437 MHz
 		txpower 31.00 dBm
@@ -894,17 +894,17 @@ Expected output:
 
 ```bash
 DEVICE         TYPE      STATE                   CONNECTION
-wlan0          wifi      connected               parlament
+wlan0          wifi      connected               solartunes
 eth0           ethernet  connected               ethernet
 lo             loopback  connected (externally)  lo
 ```
 
 ## Step 5: Connect and Test
 
-* Connect any Wi-Fi device to SSID: parlament
+* Connect any Wi-Fi device to SSID: solartunes
 * Use password: **********
 * Check that the device gets IP like 192.168.4.x
-* Access your Node.js app at: http://192.168.4.1:3000 or http://parlament.local:3000
+* Access your Node.js app at: http://192.168.4.1:3000 or http://solartunes.local:3000
 * If Ethernet is plugged in, internet access is shared automatically
 
 ## Step 6: Enable Autoconnect on Boot
@@ -912,11 +912,11 @@ lo             loopback  connected (externally)  lo
 Make sure connections start on boot:
 
 ```bash
-sudo nmcli connection modify parlament connection.autoconnect yes
+sudo nmcli connection modify solartunes connection.autoconnect yes
 sudo nmcli connection modify ethernet connection.autoconnect yes
 ```
 
-## Step 7: Make sure your Pi’s hostname is parlament
+## Step 7: Make sure your Pi’s hostname is solartunes
 
 Check hostname:
 
@@ -924,9 +924,9 @@ Check hostname:
 hostname
 ```
 
-If it’s not parlament, set it:
+If it’s not solartunes, set it:
 ```bash
-sudo hostnamectl set-hostname parlament
+sudo hostnamectl set-hostname solartunes
 ```
 
 Then reboot or restart hostname services.
@@ -943,18 +943,18 @@ sudo systemctl enable avahi-daemon
 sudo systemctl start avahi-daemon
 ```
 
-## Step 9: Add a fallback static IP entry for parlament.local on clients (optional)
+## Step 9: Add a fallback static IP entry for solartunes.local on clients (optional)
 
 If your clients don’t support mDNS or .local resolution:
 
 Access the Node.js app directly via IP: http://192.168.4.1:3000
 
-Or add a manual hosts file entry on each client mapping parlament.local to 192.168.4.1
+Or add a manual hosts file entry on each client mapping solartunes.local to 192.168.4.1
 
 
 ## Notes
 
-* If you are on a Mac or on an iPad / iPhone, make sure *Private Relay* is disabled, otherwise your machine cannot connect to *Private Relay* and gives you no access to `http://parlament.local:3000`.
+* If you are on a Mac or on an iPad / iPhone, make sure *Private Relay* is disabled, otherwise your machine cannot connect to *Private Relay* and gives you no access to `http://solartunes.local:3000`.
 
 
 # ⚡ Solar Power Optimization
