@@ -24,7 +24,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 - **⚡ Low Power**: Optimized for solar-powered Raspberry Pi setups
 - **🔄 Auto-Start**: Systemd service for automatic startup on boot
 - **📱 File Upload**: Upload and process WAV files directly through the web interface
-- **🛡️ SD Card Protection**: Advanced read-only mode for SD card longevity [ ] untested
+- **🛡️ TODO: SD Card Protection**: Advanced read-only mode for SD card longevity [not working very stable]
 
 ## 🎬 Preview
 
@@ -790,111 +790,130 @@ cd ~/solartunes/
 - Creates monitoring and management tools
 
 
-## 🛠️ TODO Setup Access Point
+# 🛠️ Step-by-Step Setup to create a Wifi HotSpot
 
-### Step-by-Step Setup (No Internet Hotspot)
+Create a Wi-Fi Access Point named **`parlament`** with password **`********`** that:
 
-1. **Update Raspberry Pi**
-   ```bash
-   sudo apt update && sudo apt upgrade -y
-   ```
+- Shares internet from Ethernet if connected
+- Serves local apps (like Node.js on port 3000) if no Ethernet
+- Uses NetworkManager and nmcli only (no hostapd/dnsmasq/dhcpcd)
 
-2. **Install Access Point and DHCP Tools**
-   ```bash
-   sudo apt install hostapd dnsmasq
-   sudo systemctl unmask hostapd
-   sudo systemctl enable hostapd
-   ```
 
-3. **Assign Static IP to wlan0**
-   ```bash
-   sudo nano /etc/dhcpcd.conf
-   ```
-   Append:
-   ```
-   interface wlan0
-       static ip_address=192.168.4.1/24
-       nohook wpa_supplicant
-   ```
-   ```bash
-   sudo service dhcpcd restart
-   ```
+## Prerequisites
 
-4. **Configure dnsmasq (DHCP Server)**
-   ```bash
-   sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
-   sudo nano /etc/dnsmasq.conf
-   ```
-   Add:
-   ```
-   interface=wlan0
-   dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
-   ```
+- Raspberry Pi OS with NetworkManager installed and running
+- `nmcli` CLI tool available
+- Node.js app or other local services listening on `0.0.0.0:3000`
 
-5. **Configure hostapd (Wi-Fi Hotspot)**
-   ```bash
-   sudo nano /etc/hostapd/hostapd.conf
-   ```
-   Example:
-   ```
-   interface=wlan0
-   driver=nl80211
-   ssid=MyPiAP
-   hw_mode=g
-   channel=7
-   wmm_enabled=0
-   macaddr_acl=0
-   auth_algs=1
-   ignore_broadcast_ssid=0
-   wpa=2
-   wpa_passphrase=raspberry123
-   wpa_key_mgmt=WPA-PSK
-   rsn_pairwise=CCMP
-   ```
-   ```bash
-   sudo nano /etc/default/hostapd
-   ```
-   Add or update:
-   ```
-   DAEMON_CONF="/etc/hostapd/hostapd.conf"
-   ```
 
-6. **Start Services**
-   ```bash
-   sudo systemctl start hostapd
-   sudo systemctl start dnsmasq
-   sudo systemctl enable hostapd
-   sudo systemctl enable dnsmasq
-   ```
+## Step 0: Verify connections
 
-### Final Result
-- The Pi creates a Wi-Fi network called MyPiAP
-- Devices connecting get an IP (e.g., 192.168.4.2)
-- Your Node.js app is available at: `http://192.168.4.1:3000`
+Verify remaining connections:
 
-### Enable solartunes.local Using avahi-daemon
+```
+nmcli connection show
+```
 
-1. **Install avahi-daemon**
-   ```bash
-   sudo apt install avahi-daemon
-   ```
+should give you
+```
+Wired connection 1  c61e9bfe-c634-3354-95bd-d257f7800b6c  ethernet  eth0
+MyPrivateWLAN       edaf8d6e-29cd-4c51-83eb-806e50547623  wifi      wlan0
+lo                  0a78e945-7563-4f93-a852-6fde5fa167d6  loopback  lo
+preconfigured       72a7caee-a05e-4145-9560-6768ab9da58d  wifi      --
+```
 
-2. **Set the Hostname**
-   ```bash
-   sudo raspi-config
-   ```
-   Choose: System Options → Hostname → Enter: solartunes
-   
-   Or manually:
-   ```bash
-   echo "solartunes" | sudo tee /etc/hostname
-   sudo sed -i 's/127.0.1.1.*/127.0.1.1 solartunes/' /etc/hosts
-   sudo reboot
-   ```
+## Step 1: Create the Wi-Fi Access Point
 
-Now access via: `http://solartunes.local:3000`
+Create a new Wi-Fi AP connection with SSID parlament and password ********:
 
-## ⚡ Solar Power Optimization
+```
+sudo nmcli connection add type wifi ifname wlan0 con-name parlament ssid parlament
+sudo nmcli connection modify parlament mode ap
+sudo nmcli connection modify parlament 802-11-wireless.band bg
+sudo nmcli connection modify parlament 802-11-wireless.channel 6
+sudo nmcli connection modify parlament wifi-sec.key-mgmt wpa-psk
+sudo nmcli connection modify parlament wifi-sec.psk "**********"
+sudo nmcli connection modify parlament ipv4.addresses 192.168.4.1/24
+sudo nmcli connection modify parlament ipv4.method shared
+```
+
+The ipv4.method shared enables DHCP and NAT for the Wi-Fi clients.
+Clients connecting to the AP get IPs in the 192.168.4.x range.
+The Pi’s AP IP is 192.168.4.1.
+
+## Step 2: Configure Ethernet (if needed)
+
+Create or ensure Ethernet connection exists and uses DHCP:
+
+```
+sudo nmcli connection add type ethernet ifname eth0 con-name ethernet
+sudo nmcli connection modify ethernet ipv4.method auto
+sudo nmcli connection up ethernet
+```
+
+
+## Step 3: Start the Access Point
+
+Bring the AP connection up:
+
+```
+sudo nmcli connection up parlament
+```
+
+## Step 4: Verify the Setup
+
+Check that wlan0 is in AP mode:
+
+```
+iw dev
+```
+
+
+Expected output snippet:
+```
+Interface wlan0
+		ifindex 3
+		wdev 0x1
+		addr 2c:cf:67:f9:25:e2
+		ssid parlament
+		type AP
+		channel 6 (2437 MHz), width: 20 MHz, center1: 2437 MHz
+		txpower 31.00 dBm
+```
+
+Check device status:
+
+```
+nmcli device status
+```
+
+Expected output:
+```
+DEVICE         TYPE      STATE                   CONNECTION
+wlan0          wifi      connected               parlament
+eth0           ethernet  connected               ethernet
+lo             loopback  connected (externally)  lo
+```
+
+## Step 5: Connect and Test
+
+Connect any Wi-Fi device to SSID: parlament
+Use password: **********
+Check that the device gets IP like 192.168.4.x
+Access your Node.js app at: http://192.168.4.1:3000 or http://parlament.local:3000
+If Ethernet is plugged in, internet access is shared automatically
+
+## Step 6: Enable Autoconnect on Boot
+
+Make sure connections start on boot:
+
+```
+sudo nmcli connection modify parlament connection.autoconnect yes
+sudo nmcli connection modify ethernet connection.autoconnect yes
+```
+
+
+# ⚡ Solar Power Optimization
 
 For solar-powered setups:
 
