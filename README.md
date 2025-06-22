@@ -154,7 +154,7 @@ To auto-start a track when motion is detected, we have to add a PIR sensor to So
 
 ### Photo
 
-![wiring](https://github.com/user-attachments/assets/3e9a0fef-aa41-4b92-96b0-9c75816b41b9)
+![wiring](https://github.com/user-attachments/assets/73bb33f6-f3f4-491c-9e59-97fa4ed3fdc3)
 
 ### Video
 
@@ -501,6 +501,8 @@ cd ~/solartunes/
 
 
 ## 📜 Shell Scripts Reference
+
+> Note: Most scripts where written during development. As during development a lot did change (and not everything worked out as planned) some scripts are outdate and may not even work. Sure... a clean up should be on the TODO list.
 
 ### Setup Scripts
 
