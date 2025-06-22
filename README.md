@@ -898,11 +898,11 @@ lo             loopback  connected (externally)  lo
 
 ## Step 5: Connect and Test
 
-Connect any Wi-Fi device to SSID: parlament
-Use password: **********
-Check that the device gets IP like 192.168.4.x
-Access your Node.js app at: http://192.168.4.1:3000 or http://parlament.local:3000
-If Ethernet is plugged in, internet access is shared automatically
+* Connect any Wi-Fi device to SSID: parlament
+* Use password: **********
+* Check that the device gets IP like 192.168.4.x
+* Access your Node.js app at: http://192.168.4.1:3000 or http://parlament.local:3000
+* If Ethernet is plugged in, internet access is shared automatically
 
 ## Step 6: Enable Autoconnect on Boot
 
