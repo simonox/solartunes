@@ -835,6 +835,7 @@ sudo nmcli connection modify parlament wifi-sec.key-mgmt wpa-psk
 sudo nmcli connection modify parlament wifi-sec.psk "**********"
 sudo nmcli connection modify parlament ipv4.addresses 192.168.4.1/24
 sudo nmcli connection modify parlament ipv4.method shared
+sudo nmcli connection modify parlament connection.autoconnect yes
 ```
 
 The ipv4.method shared enables DHCP and NAT for the Wi-Fi clients.
