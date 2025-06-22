@@ -845,7 +845,7 @@ The ipv4.method shared enables DHCP and NAT for the Wi-Fi clients.
 Clients connecting to the AP get IPs in the 192.168.4.x range.
 The Pi’s AP IP is 192.168.4.1.
 
-## Step 2: Configure Ethernet (if needed)
+## Step 2: Configure Ethernet (if needed, specially if you cannot access the Pi with a monitor and a keyboard)
 
 Create or ensure Ethernet connection exists and uses DHCP:
 
