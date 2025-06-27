@@ -229,6 +229,7 @@ PIR Sensor Top View
    - Click "Upload WAV File" in the web interface (or use drag'n' drop on most modern web browsers)
    - Select your .wav file (already done when using drag'n'drop)
    - Files are automatically processed for compatibility
+   - ⚠️ There is a 30 seconds timeout. Large files (like 300 MB) may not be processed in that time. Use an SFTP (FTP over SSH) Client (like Cypberduck) to upload big files. Make sure that they are 16bit PCM WAV files.
 
 3. Your new files will appear in the Sound Library!
 
