@@ -381,20 +381,7 @@ sudo ./scripts/reboot-to-readonly.sh
 - ⚠️ **Data loss**: RAM disk data is lost on reboot
 - ⚠️ **Emergency use**: Use emergency scripts only when normal methods fail
 
-## 🌐 Access Your Sound Player
-
-After setup, your SolarTunes player will be available at:
-
-**Local Access:** `http://localhost:3000`
-
-**Network Access:** `http://[your-pi-ip]:3000`
-
-**Custom Domain:** `http://solartunes.local:3000` (if mDNS configured)
-
-To find your Pi's IP address:
-```bash
-hostname -I
-```
+> Note: This worked somehow. But the Pi usually crashed after a few hours. Looks like it's not working well. Let's say it's "untested" properly, but in reality it's simply not working.
 
 ## 🔧 Troubleshooting
 
