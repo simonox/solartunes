@@ -997,7 +997,7 @@ This project uses an ESP8266 or ESP32 to monitor battery voltage and automatical
 
 * Raspberry Pi (any model)
 * ESP8266 or ESP32
-* Lithium battery (with protection circuit or BMS)
+* Lithium battery (with protection circuit or BMS) -> We use a usual Pb based battery, without any protection 🤷‍♀️
 * Voltage divider (resistors)
 * P-Channel MOSFET or relay
 * Optional: RTC or deep sleep logic for ESP
