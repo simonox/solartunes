@@ -1186,7 +1186,7 @@ You can also follow our development process documented below.
    - Use [v0.dev](https://v0.dev) as your online IDE to design and develop UI components.
    - Pro: It has some AI chatbot to quickly prototype new features.
    - Cons: It is very slow. The AI chatbot usually messes up your whole project and breaks already working features. It even deletes features. It is expensive. So handle with care and use on your own risk.
-   - Mitigation: I know that I have to create a _common context_ file, so the LLM keeps the context (I was to lazy for that). If that is set-up properly, it's easier to _isolate_ features. This was a learning step I took. So - for now - I told the LLM what to do, but aftwerwards I created a PR and refactored every file until it looked like it was acceptable (just like I did create the code). Then I accepted the PR and merged it into `main?. 
+   - Mitigation: I know that I have to create a _common context_ file, so the LLM keeps the context (I was to lazy for that). If that is set-up properly, it's easier to _isolate_ features. This was a learning step I took. So - for now - I told the LLM what to do, but aftwerwards I created a PR and refactored every file until it looked like it was acceptable (just like I did create the code). Then I accepted the PR and merged it into `main`. 
 
 2. **Create a Feature Branch**
    - Before any development, create a new feature branch from the `main` branch.
