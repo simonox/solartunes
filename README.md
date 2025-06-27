@@ -24,7 +24,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 - **⚡ Low Power**: Optimized for solar-powered Raspberry Pi setups
 - **🔄 Auto-Start**: Systemd service for automatic startup on boot
 - **📱 File Upload**: Upload and process WAV files directly through the web interface
-- ** 🪢 Offline:** Creates a hotspot to connect without internet connection, but serves as a router if internet is provided via ethernet
+- **🪢 Offline:** Creates a hotspot to connect without internet connection, but serves as a router if internet is provided via ethernet
 - **🛡️ TODO: SD Card Protection**: Advanced read-only mode for SD card longevity [not working very stable]
 - **🪫 TODO: Battery Management**: Shut down and restart the Raspberry Pi if the solar powered battery runs low on energy and reboot if energy is available 
 ## 🎬 Preview
