@@ -25,7 +25,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 - **🔄 Auto-Start**: Systemd service for automatic startup on boot
 - **📱 File Upload**: Upload and process WAV files directly through the web interface
 - **🛡️ TODO: SD Card Protection**: Advanced read-only mode for SD card longevity [not working very stable]
-
+- **🪫 TODO: Battery Management**: Shut down and restart the Raspberry Pi if the solar powered battery runs low on energy and reboot if energy is available 
 ## 🎬 Preview
 
 <img width="764" alt="screenshot" src="https://github.com/user-attachments/assets/821008a9-afb6-4d05-82b9-2d741c8e4eab" />
