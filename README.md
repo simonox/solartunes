@@ -44,38 +44,38 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 
 ### 1. Clone the Repository
 
-```bash
+\`\`\`bash
 mkdir ~/solartunes
 cd ~/solartunes
 git clone https://github.com/simonox/solartunes.git .
-```
+\`\`\`
 
 ### 2. Run the Setup Script
 
-```bash
+\`\`\`bash
 chmod +x scripts/setup-raspberry-pi.sh
 ./scripts/setup-raspberry-pi.sh
-```
+\`\`\`
 
 ### 3. Deploy the Project
 
-```bash
+\`\`\`bash
 chmod +x scripts/deploy-project.sh
 ./scripts/deploy-project.sh
-```
+\`\`\`
 
 ### 4. Start the Service
 
-```bash
+\`\`\`bash
 sudo systemctl start solartunes
-```
+\`\`\`
 
 ### 5. Setup Motion Detection (Optional)
 
-```bash
+\`\`\`bash
 chmod +x scripts/setup-motion-sensor.sh
 ./scripts/setup-motion-sensor.sh
-```
+\`\`\`
 
 
 # 🔧 What the Setup Script Does
@@ -96,7 +96,7 @@ chmod +x scripts/setup-motion-sensor.sh
 
 Use these commands to control your SolarTunes service:
 
-```bash
+\`\`\`bash
 # Start the service
 sudo systemctl start solartunes
 
@@ -117,11 +117,11 @@ sudo systemctl enable solartunes
 
 # Disable auto-start
 sudo systemctl disable solartunes
-```
+\`\`\`
 
 ## 📁 Project Structure
 
-```
+\`\`\`
 ~/solartunes/
 ├── app/                    # Next.js app directory
 │   ├── api/               # API routes
@@ -146,7 +146,7 @@ sudo systemctl disable solartunes
 │   ├── test-pir.py
 │   └── [management scripts]
 └── README.md
-```
+\`\`\`
 
 
 ## 🔌 PIR Motion Sensor Wiring
@@ -174,7 +174,7 @@ https://github.com/user-attachments/assets/ed1aca57-9e36-4d69-b596-c51ba345ed4f
 
 ### Wiring Diagram
 
-```
+\`\`\`
 PIR Sensor          Raspberry Pi
 ┌─────────────┐    ┌────────────────-─┐
 │             │    │                  │
@@ -185,22 +185,22 @@ PIR Sensor          Raspberry Pi
 │    GND   ●──┼────┼──● Pin 6 (GND)   │ (or any other GND input, see photo!)
 │             │    │                  │
 └─────────────┘    └─────────────────-┘
-```
+\`\`\`
 
 ### Pin Layout Reference
 
-```
+\`\`\`
 Connection Points:
 • Pin 2 (5V) or Pin 1 (3.3V) → PIR VCC
 • Pin 29 (GPIO5) → PIR OUT  ← Motion detection pin
 • Pin 6 (GND) → PIR GND
-```
+\`\`\`
 
 ### PIR Sensor Adjustment
 
 Most PIR sensors have two potentiometers for adjustment:
 
-```
+\`\`\`
 PIR Sensor Top View
 ┌─────────────────┐
 │  ┌───┐    ┌───┐ │
@@ -211,7 +211,7 @@ PIR Sensor Top View
 │                 │
 │ VCC  OUT   GND  │
 └─────────────────┘
-```
+\`\`\`
 
 **Adjustment Tips:**
 - **Sensitivity (S)**: Turn clockwise to increase detection range (3-7 meters)
@@ -222,9 +222,9 @@ PIR Sensor Top View
 ## 🎵 Adding Your Own Sound Files
 
 1. Copy your .wav files to the Music directory:
-   ```bash
+   \`\`\`bash
    cp your-sounds/*.wav ~/Music/
-   ```
+   \`\`\`
 
 2. Or use the web interface upload feature:
    - Click "Upload WAV File" in the web interface (or use drag'n' drop on most modern web browsers)
@@ -238,9 +238,9 @@ PIR Sensor Top View
 
 Not all wav formats are supported, you can convert them using ffmpeg:
 
-```bash
+\`\`\`bash
 ffmpeg -i ~/Music/Testaudio_LR_getrennt.wav -acodec pcm_s16le -ac 2 -ar 44100 fixed.wav
-```
+\`\`\`
 This conversion is already done if the wav file is uploaded with the web UI.
 
 ## 🎯 Motion Detection Playback Configuration
@@ -259,19 +259,19 @@ SolarTunes automatically saves your motion detection settings to `~/Music/autopl
 
 The `~/Music/autoplay.conf` file uses JSON format:
 
-```json
+\`\`\`json
 {
   "enabled": true,
   "selectedFile": "your-sound-file.wav",
   "lastSaved": "2025-01-07T15:30:00.000Z"
 }
-```
+\`\`\`
 
 ### Managing Configuration
 
 SolarTunes takes care of the configuration if you are using the UI. If you want to do it on the command line: Use the configuration management script for advanced control:
 
-```bash
+\`\`\`bash
 # Show current configuration
 ./scripts/manage-autoplay-config.sh show
 
@@ -286,19 +286,19 @@ SolarTunes takes care of the configuration if you are using the UI. If you want 
 
 # Interactive menu
 ./scripts/manage-autoplay-config.sh
-```
+\`\`\`
 
 ### Manual Configuration
 
 You can also manually edit the configuration file:
 
-```bash
+\`\`\`bash
 # Edit configuration directly
 nano ~/Music/autoplay.conf
 
 # Restart SolarTunes to apply changes
 sudo systemctl restart solartunes
-```
+\`\`\`
 
 ### Motion Hook
 
@@ -326,12 +326,12 @@ sudo systemctl restart solartunes
 
  The `~/Music/webhook.conf` file uses JSON format:
 
- ```json
+ \`\`\`json
  {
    "command": "/home/pi/Music/blink.sh",
    "lastSaved": "2025-06-08T21:04:43.871Z"
  }
- ```
+ \`\`\`
 #### Diagram for Motion Detection
 
 ![image](https://github.com/user-attachments/assets/e2fd2b45-e08d-4412-a30b-f8c538e0e648)
@@ -344,7 +344,7 @@ SolarTunes includes advanced SD card protection features to extend the life of y
 
 ### Quick Commands
 
-```bash
+\`\`\`bash
 # Check current status
 ./scripts/check-readonly-status.sh
 
@@ -362,7 +362,7 @@ sudo ./scripts/restore-readwrite.sh
 
 # Configure boot-time protection
 sudo ./scripts/reboot-to-readonly.sh
-```
+\`\`\`
 
 ### Protection Levels
 
@@ -391,7 +391,7 @@ sudo ./scripts/reboot-to-readonly.sh
 
 ### Service Won't Start
 
-```bash
+\`\`\`bash
 # Check service status
 sudo systemctl status solartunes
 
@@ -406,7 +406,7 @@ sudo systemctl restart solartunes
 
 ### No Audio Output
 
-```bash
+\`\`\`bash
 # List audio devices
 aplay -l
 
@@ -424,11 +424,11 @@ amixer -c 0 sset 'Digital' 50%
 
 # Test HiFiBerry DAC+ (if applicable)
 ./scripts/test-hifiberry.sh
-```
+\`\`\`
 
 ### Motion Detection Issues
 
-```bash
+\`\`\`bash
 # Test PIR sensor hardware
 python3 scripts/test-pir.py
 
@@ -448,11 +448,11 @@ python3 scripts/gpio-diagnostic.py
 
 # Install/update GPIO libraries
 ./scripts/install-gpio-libraries.sh
-```
+\`\`\`
 
 ### Web Interface Not Loading
 
-```bash
+\`\`\`bash
 # Check if port 3000 is in use
 sudo netstat -tlnp | grep :3000
 
@@ -461,11 +461,11 @@ sudo ufw status
 
 # Restart networking
 sudo systemctl restart networking
-```
+\`\`\`
 
 ### SD Card Protection Issues
 
-```bash
+\`\`\`bash
 # Check current status
 ./scripts/check-readonly-status.sh
 
@@ -483,16 +483,16 @@ sudo systemctl restart networking
 
 # Restore normal operation
 sudo ./scripts/restore-readwrite.sh
-```
+\`\`\`
 
 ## 🔄 Updating SolarTunes
 
 To update your installation:
 
-```bash
+\`\`\`bash
 cd ~/solartunes/
 ./scripts/update-project.sh
-```
+\`\`\`
 
 
 ## 📜 Shell Scripts Reference
@@ -807,24 +807,24 @@ Create a Wi-Fi Access Point named **`solartunes`** with password **`********`** 
 
 Verify remaining connections:
 
-```bash
+\`\`\`bash
 nmcli connection show
-```
+\`\`\`
 
 should give you
 
-```bash
+\`\`\`bash
 Wired connection 1  c61e9bfe-c634-3354-95bd-d257f7800b6c  ethernet  eth0
 MyPrivateWLAN       edaf8d6e-29cd-4c51-83eb-806e50547623  wifi      wlan0
 lo                  0a78e945-7563-4f93-a852-6fde5fa167d6  loopback  lo
 preconfigured       72a7caee-a05e-4145-9560-6768ab9da58d  wifi      --
-```
+\`\`\`
 
 ## Step 1: Create the Wi-Fi Access Point
 
 Create a new Wi-Fi AP connection with SSID solartunes and password ********:
 
-```bash
+\`\`\`bash
 sudo nmcli connection add type wifi ifname wlan0 con-name solartunes ssid solartunes
 sudo nmcli connection modify solartunes mode ap
 sudo nmcli connection modify solartunes 802-11-wireless.band bg
@@ -834,7 +834,7 @@ sudo nmcli connection modify solartunes wifi-sec.psk "**********"
 sudo nmcli connection modify solartunes ipv4.addresses 192.168.4.1/24
 sudo nmcli connection modify solartunes ipv4.method shared
 sudo nmcli connection modify solartunes connection.autoconnect yes
-```
+\`\`\`
 
 The ipv4.method shared enables DHCP and NAT for the Wi-Fi clients.
 Clients connecting to the AP get IPs in the 192.168.4.x range.
@@ -844,33 +844,33 @@ The Pi’s AP IP is 192.168.4.1.
 
 Create or ensure Ethernet connection exists and uses DHCP:
 
-```bash
+\`\`\`bash
 sudo nmcli connection add type ethernet ifname eth0 con-name ethernet
 sudo nmcli connection modify ethernet ipv4.method auto
 sudo nmcli connection up ethernet
-```
+\`\`\`
 
 
 ## Step 3: Start the Access Point
 
 Bring the AP connection up:
 
-```bash
+\`\`\`bash
 sudo nmcli connection up solartunes
-```
+\`\`\`
 
 ## Step 4: Verify the Setup
 
 Check that wlan0 is in AP mode:
 
-```bash
+\`\`\`bash
 iw dev
-```
+\`\`\`
 
 
 Expected output snippet:
 
-```bash
+\`\`\`bash
 Interface wlan0
 		ifindex 3
 		wdev 0x1
@@ -879,22 +879,22 @@ Interface wlan0
 		type AP
 		channel 6 (2437 MHz), width: 20 MHz, center1: 2437 MHz
 		txpower 31.00 dBm
-```
+\`\`\`
 
 Check device status:
 
-```bash
+\`\`\`bash
 nmcli device status
-```
+\`\`\`
 
 Expected output:
 
-```bash
+\`\`\`bash
 DEVICE         TYPE      STATE                   CONNECTION
 wlan0          wifi      connected               solartunes
 eth0           ethernet  connected               ethernet
 lo             loopback  connected (externally)  lo
-```
+\`\`\`
 
 ## Step 5: Connect and Test
 
@@ -908,23 +908,23 @@ lo             loopback  connected (externally)  lo
 
 Make sure connections start on boot:
 
-```bash
+\`\`\`bash
 sudo nmcli connection modify solartunes connection.autoconnect yes
 sudo nmcli connection modify ethernet connection.autoconnect yes
-```
+\`\`\`
 
 ## Step 7: Make sure your Pi’s hostname is solartunes
 
 Check hostname:
 
-```bash
+\`\`\`bash
 hostname
-```
+\`\`\`
 
 If it’s not solartunes, set it:
-```bash
+\`\`\`bash
 sudo hostnamectl set-hostname solartunes
-```
+\`\`\`
 
 Then reboot or restart hostname services.
 
@@ -934,11 +934,11 @@ avahi-daemon provides .local hostname resolution on the local network, even with
 
 Install and start:
 
-```bash
+\`\`\`bash
 sudo apt install avahi-daemon
 sudo systemctl enable avahi-daemon
 sudo systemctl start avahi-daemon
-```
+\`\`\`
 
 ## Step 9: Add a fallback static IP entry for solartunes.local on clients (optional)
 
@@ -959,14 +959,14 @@ Or add a manual hosts file entry on each client mapping solartunes.local to 192.
 For solar-powered setups:
 
 1. **Monitor Power Usage:**
-   ```bash
+   \`\`\`bash
    # Check system load
    htop
    
    # Monitor power consumption
    vcgencmd measure_temp
    vcgencmd get_throttled
-   ```
+   \`\`\`
 
 2. **Optimize Performance:**
    - Use efficient .wav files (lower bitrates for longer playback)
@@ -1014,7 +1014,7 @@ This project uses an ESP8266 or ESP32 to monitor battery voltage and automatical
 
 ## 🧠 Logic Summary
 
-```text
+\`\`\`text
 IF battery voltage < LOW_THRESHOLD:
     Signal Pi to shutdown
     Wait 30s
@@ -1022,7 +1022,7 @@ IF battery voltage < LOW_THRESHOLD:
 
 ELSE IF battery voltage > HIGH_THRESHOLD:
     Restore power to Pi
-```
+\`\`\`
 
 
 ## 🔌 Circuit Overview
@@ -1035,7 +1035,7 @@ ELSE IF battery voltage > HIGH_THRESHOLD:
 
 Create a script on the Pi to listen for shutdown signal:
 
-```bash
+\`\`\`bash
 #!/bin/bash
 
 GPIO=17
@@ -1049,12 +1049,12 @@ while true; do
   fi
   sleep 1
 done
-```
+\`\`\`
 
 
 ## 🦪 ESP Sample Code (ESP8266/ESP32)
 
-```cpp
+\`\`\`cpp
 const int analogPin = A0; // Or GPIO 34 for ESP32
 const float R1 = 10000.0; // Voltage divider resistor 1 (top)
 const float R2 = 10000.0; // Resistor 2 (bottom)
@@ -1084,7 +1084,7 @@ void loop() {
 void signalPiShutdown() {
   // Optionally use GPIO or send HTTP/MQTT command
 }
-```
+\`\`\`
 
 
 ## ⚠️ Notes
@@ -1102,7 +1102,7 @@ void signalPiShutdown() {
 
 ## Clone SD Card
 
-```
+\`\`\`
 ➜  ~ diskutil list # find the SD Card
 
 /dev/disk0 (internal, physical):
@@ -1146,7 +1146,7 @@ void signalPiShutdown() {
 umount: /dev/disk4: not currently mounted # well, that was expected, but I want to be sure
 
 ➜  ~ sudo dd if=/dev/disk4 of=~/pi-backup-new.img bs=4m status=progress # create a copy
-```
+\`\`\`
 
 Use *Raspberry Pi Imager* to copy it to a new SD Card: https://www.raspberrypi.com/software/
 

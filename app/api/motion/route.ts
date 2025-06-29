@@ -81,13 +81,14 @@ async function executeWebhook() {
 
       console.log("Webhook script executed successfully")
     }
-  } catch (error) {
-     if (error && error.code === "ENOENT") {
+  } catch (error: any) {
+    if (error && error.code === "ENOENT") {
       // Webhook config file doesn't exist, which is fine
       console.log("No webhook configuration found")
     } else {
       console.error("Failed to execute webhook:", error)
     }
+  }
 }
 
 // Initialize configuration on module load
