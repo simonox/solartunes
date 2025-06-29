@@ -82,12 +82,11 @@ async function executeWebhook() {
       console.log("Webhook script executed successfully")
     }
   } catch (error) {
-    if (error.code === "ENOENT") {
-      // Webhook config file doesn't exist, which is fine
-      console.log("No webhook configuration found")
-    } else {
-      console.error("Failed to execute webhook:", error)
-    }
+    if (error && typeof error === "object" && "code" in error && (error as { code?: string }).code === "ENOENT") {
+    // Webhook config file doesn't exist, which is fine
+    console.log("No webhook configuration found")
+  } else {
+    console.error("Failed to execute webhook:", error)
   }
 }
 
