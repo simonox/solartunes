@@ -255,6 +255,8 @@ SolarTunes automatically saves your motion detection settings to `~/Music/autopl
 
 ### Configuration File Format
 
+> ⚠️ At the moment, there must be a file in the directory to start the app.
+
 The `~/Music/autoplay.conf` file uses JSON format:
 
 ```json
@@ -319,6 +321,8 @@ sudo systemctl restart solartunes
 
 
  #### Configuration File Format
+
+> ⚠️ At the moment, there must be a file in the directory to start the app.
 
  The `~/Music/webhook.conf` file uses JSON format:
 
