@@ -9,6 +9,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  experimental: {
+    serverComponentsExternalPackages: ['child_process', 'fs', 'path', 'os', 'util']
+  }
 }
 
 export default nextConfig
