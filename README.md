@@ -338,6 +338,26 @@ sudo systemctl restart solartunes
 
 > Source: [motion.hook.puml](motion.hook.puml) created using 🌱 PlantUML
 
+### Example on how to remote control a secondary SolarTunes
+
+Simply `curl` a secondary installation, e.g. by calling the `play` endpoint or the `motion` endpoint:
+
+```
+curl 'http://second-solartunes.local:3000/api/play' \
+-X 'POST' \
+-H 'Content-Type: application/json' \
+-H 'Origin: http://solartunes.local:3000' \
+--data-raw '{"fileName":"chord.wav"}'
+```
+
+```
+curl 'http://second-solartunes.local:3000/api/motion' \
+-X 'POST' \
+-H 'Content-Type: application/json' \
+-H 'Origin: http://solartunes.local:3000' \
+--data-raw '{"action":"triggerMotion"}'
+```
+
 ## 🛡️ TODO / UNTESTED: SD Card Protection
 
 SolarTunes includes advanced SD card protection features to extend the life of your SD card by reducing write operations.
