@@ -358,6 +358,8 @@ curl 'http://second-solartunes.local:3000/api/motion' \
 --data-raw '{"action":"triggerMotion"}'
 ```
 
+As you can see, all actions SolarTunes performs are triggered by a REST API call. So it should be easy to hack / alter the system. E.g. you could also use a commercial off the shelf PIR sensor like a [Shelly Motion 2](https://www.shelly.com/de/products/shelly-motion-2) that simply triggers a REST call on motion detection without the need to be wired directly to the Raspberry Pi.
+
 ## 🛡️ TODO / UNTESTED: SD Card Protection
 
 SolarTunes includes advanced SD card protection features to extend the life of your SD card by reducing write operations.
