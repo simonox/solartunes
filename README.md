@@ -1284,3 +1284,9 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 ---
 
 **Made with 🌱 and 🍄 for a sustainable future in the CCL https://curious.bio**
+
+## 📑 API Documentation
+
+You can view and edit the OpenAPI specification for SolarTunes online:
+
+[OpenAPI Editor (Swagger Editor, edit online)](https://editor.swagger.io/?url=https://raw.githubusercontent.com/simonox/solartunes/main/openapi.yaml)
