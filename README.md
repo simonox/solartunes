@@ -360,6 +360,12 @@ curl 'http://second-solartunes.local:3000/api/motion' \
 
 As you can see, all actions SolarTunes performs are triggered by a REST API call. So it should be easy to hack / alter the system. E.g. you could also use a commercial off the shelf PIR sensor like a [Shelly Motion 2](https://www.shelly.com/de/products/shelly-motion-2) or an other [Tasmota based motion detector](https://cloudfree.shop/product/cloudfree-motion-light-switch/) that simply triggers a REST call on motion detection without the need to be wired directly to the Raspberry Pi.
 
+### 📑 API Documentation
+
+You can view and edit the OpenAPI specification for SolarTunes online:
+
+[OpenAPI Editor (Swagger Editor, edit online)](https://editor.swagger.io/?url=[https://raw.githubusercontent.com/simonox/solartunes/main/openapi.yaml](https://editor.swagger.io/?url=https://raw.githubusercontent.com/simonox/solartunes/4ab9469cfaa2dafd0108d8c5e5dc20ddcd6d976c/openapi.yaml)
+
 ## 🛡️ TODO / UNTESTED: SD Card Protection
 
 SolarTunes includes advanced SD card protection features to extend the life of your SD card by reducing write operations.
@@ -1281,12 +1287,6 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 - **Community**: Connect with other SolarPunk makers at https://curious.bio
 - **Security**: This project is a local installation, only. It's NOT supposed to put in/on the world wide web. If you find anything, see [SECURITY](SECURITY.md). USE THIS SOFTWARE ON YOUR OWN RISK. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY.
 
----
 
 **Made with 🌱 and 🍄 for a sustainable future in the CCL https://curious.bio**
 
-## 📑 API Documentation
-
-You can view and edit the OpenAPI specification for SolarTunes online:
-
-[OpenAPI Editor (Swagger Editor, edit online)](https://editor.swagger.io/?url=https://raw.githubusercontent.com/simonox/solartunes/main/openapi.yaml)
