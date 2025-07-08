@@ -203,6 +203,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+    post:
+      summary: Trigger motion event
+      description: |
+        Triggers a motion event manually. **Warning:** This may execute scripts or change hardware state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [triggerMotion]
+                  description: Action to trigger motion event
+                  example: triggerMotion
+      responses:
+        '200':
+          description: Motion event triggered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error triggering motion event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /upload:
     post:
       summary: Upload audio file
