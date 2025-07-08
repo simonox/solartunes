@@ -360,6 +360,16 @@ curl 'http://second-solartunes.local:3000/api/motion' \
 
 As you can see, all actions SolarTunes performs are triggered by a REST API call. So it should be easy to hack / alter the system. E.g. you could also use a commercial off the shelf PIR sensor like a [Shelly Motion 2](https://www.shelly.com/de/products/shelly-motion-2) or an other [Tasmota based motion detector](https://cloudfree.shop/product/cloudfree-motion-light-switch/) that simply triggers a REST call on motion detection without the need to be wired directly to the Raspberry Pi.
 
+### 🔉 Volume control
+
+The selected volume will be persisted in `~/Music/volume.json` file:
+
+```
+{
+  "volume": 90
+}
+```
+
 ### 📑 API Documentation
 
 You can view and edit the OpenAPI specification for SolarTunes online:
