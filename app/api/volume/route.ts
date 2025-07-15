@@ -8,7 +8,7 @@ import os from "os";
 const execAsync = promisify(exec);
 
 // Path to volume.json in ~/Music
-const volumeFile = path.join(os.homedir(), "Music", "volume.json");
+const volumeFile = path.join(os.homedir(), "Music", "volume.conf");
 
 // Helper to ensure volume.json exists and read its value
 async function getPersistedVolume(): Promise<number> {
