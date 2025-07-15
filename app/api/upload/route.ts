@@ -49,10 +49,12 @@ export async function POST(request: NextRequest) {
 
     // Process the file with ffmpeg to ensure correct format
     try {
+
       const ffmpegCommand = `ffmpeg -i "${tempFilePath}" -acodec pcm_s16le -ac 2 -ar 44100 -y "${finalFilePath}"`
       console.log(`Running ffmpeg command: ${ffmpegCommand}`)
 
-      const { stdout, stderr } = await execAsync(ffmpegCommand)
+      // Set timeout to 5 minutes (300000 ms)
+      const { stdout, stderr } = await execAsync(ffmpegCommand, { timeout: 300000 })
 
       if (stderr) {
         console.log("FFmpeg stderr:", stderr)
@@ -63,7 +65,7 @@ export async function POST(request: NextRequest) {
 
       // Remove temporary file
       try {
-        await execAsync(`rm "${tempFilePath}"`)
+        await execAsync(`rm "${tempFilePath}"`, { timeout: 300000 })
       } catch (cleanupError) {
         console.warn("Failed to cleanup temp file:", cleanupError)
       }
@@ -81,7 +83,7 @@ export async function POST(request: NextRequest) {
 
       // Clean up temp file on error
       try {
-        await execAsync(`rm "${tempFilePath}"`)
+        await execAsync(`rm "${tempFilePath}"`, { timeout: 300000 })
       } catch (cleanupError) {
         console.warn("Failed to cleanup temp file after error:", cleanupError)
       }
