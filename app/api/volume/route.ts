@@ -1,80 +1,68 @@
-import { NextResponse } from "next/server"
-import { exec } from "child_process"
-import { promisify } from "util"
+import { NextResponse } from "next/server";
+import { exec } from "child_process";
+import { promisify } from "util";
+import { promises as fs } from "fs";
+import path from "path";
+import os from "os";
 
-const execAsync = promisify(exec)
+const execAsync = promisify(exec);
+
+// Path to volume.json in ~/Music
+const volumeFile = path.join(os.homedir(), "Music", "volume.conf");
+
+// Helper to ensure volume.json exists and read its value
+async function getPersistedVolume(): Promise<number> {
+  try {
+    await fs.access(volumeFile);
+    const content = await fs.readFile(volumeFile, "utf-8");
+    const obj = JSON.parse(content);
+    if (typeof obj.volume === "number") {
+      return obj.volume;
+    }
+  } catch {
+    // File missing/corrupt, initialize
+    await savePersistedVolume(90);
+    return 90;
+  }
+  // Default fallback
+  return 90;
+}
+
+// Helper to write volume
+async function savePersistedVolume(volume: number) {
+  await fs.mkdir(path.dirname(volumeFile), { recursive: true });
+  await fs.writeFile(volumeFile, JSON.stringify({ volume }), "utf-8");
+}
 
 export async function POST(request: Request) {
   try {
-    const { volume } = await request.json()
+    const { volume } = await request.json();
 
     if (volume === undefined || volume < 0 || volume > 100) {
-      return NextResponse.json({ error: "Invalid volume level. Must be between 0 and 100." }, { status: 400 })
+      return NextResponse.json({ error: "Invalid volume level. Must be between 0 and 100." }, { status: 400 });
     }
 
-    console.log(`Setting volume to ${volume}%`)
-
-    // Use the working command format you discovered
-    const command = `amixer -c 0 sset 'Digital' ${volume}%`
-
+    // Set system volume
+    const command = `amixer -c 0 sset 'Digital' ${volume}%`;
     try {
-      console.log(`Executing command: ${command}`)
-      await execAsync(command)
-      console.log(`Successfully set volume to ${volume}%`)
-      return NextResponse.json({ success: true, volume })
+      await execAsync(command);
+      // Save to file
+      await savePersistedVolume(volume);
+      return NextResponse.json({ success: true, volume });
     } catch (error) {
-      console.error("Error setting volume:", error)
-      return NextResponse.json(
-        {
-          error: "Failed to set volume",
-          details: error instanceof Error ? error.message : "Unknown error",
-          command: command,
-        },
-        { status: 500 },
-      )
+      return NextResponse.json({ error: "Failed to set volume", details: error instanceof Error ? error.message : "Unknown error", command }, { status: 500 });
     }
   } catch (error) {
-    console.error("Error processing volume request:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to process volume request",
-        details: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: "Failed to process volume request", details: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
   }
 }
 
 export async function GET() {
   try {
-    // Get current volume level using the working command format
-    const command = "amixer -c 0 sget 'Digital'"
-
-    console.log(`Getting volume with: ${command}`)
-    const { stdout } = await execAsync(command)
-
-    // Parse the output to extract volume percentage
-    const volumeMatch = stdout.match(/\[(\d+)%\]/)
-    if (volumeMatch) {
-      const volume = Number.parseInt(volumeMatch[1])
-      console.log(`Got volume ${volume}% from Digital control`)
-      return NextResponse.json({ volume })
-    }
-
-    // Try to parse absolute values if percentage not found
-    const absoluteMatch = stdout.match(/\[(\d+)\/(\d+)\]/)
-    if (absoluteMatch) {
-      const current = Number.parseInt(absoluteMatch[1])
-      const max = Number.parseInt(absoluteMatch[2])
-      const volume = Math.round((current / max) * 100)
-      console.log(`Got volume ${volume}% (${current}/${max}) from Digital control`)
-      return NextResponse.json({ volume })
-    }
-
-    console.log("Could not parse volume from amixer output:", stdout)
-    return NextResponse.json({ volume: 50 }) // Default volume
+    // Try to get persisted volume (always)
+    const persisted = await getPersistedVolume();
+    return NextResponse.json({ volume: persisted });
   } catch (error) {
-    console.error("Error getting volume:", error)
-    return NextResponse.json({ volume: 50 }) // Default volume
+    return NextResponse.json({ volume: 90 }); // Fallback
   }
 }

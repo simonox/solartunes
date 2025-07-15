@@ -1,0 +1,296 @@
+openapi: 3.0.3
+info:
+  title: SolarTunes API
+  version: 1.0.0
+  description: |
+    REST API for SolarTunes, a sustainable sound player for Raspberry Pi. Endpoints may change hardware state or execute scripts on the device. All responses are JSON.
+    
+    **Warning:** Some endpoints trigger hardware actions or system-level changes.
+servers:
+  - url: /api
+paths:
+  /volume:
+    get:
+      summary: Get current system volume
+      description: Returns the current audio output volume as a percentage.
+      responses:
+        '200':
+          description: Current volume
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  volume:
+                    type: integer
+                    description: Volume percentage (0-100)
+                    example: 75
+        '500':
+          description: Error retrieving volume
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Set system volume
+      description: |
+        Sets the audio output volume. **Warning:** This changes hardware state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                volume:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                  description: Desired volume percentage
+                  example: 50
+      responses:
+        '200':
+          description: Volume set successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  volume:
+                    type: integer
+                    example: 50
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error setting volume
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /play:
+    post:
+      summary: Start audio playback
+      description: |
+        Starts playback of the current or specified audio file. **Warning:** This triggers hardware playback.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  description: Optional filename to play
+                  example: song.mp3
+      responses:
+        '200':
+          description: Playback started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  file:
+                    type: string
+                    example: song.mp3
+        '500':
+          description: Error starting playback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /stop:
+    post:
+      summary: Stop audio playback
+      description: Stops current audio playback. **Warning:** This triggers hardware action.
+      responses:
+        '200':
+          description: Playback stopped
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '500':
+          description: Error stopping playback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /status:
+    get:
+      summary: Get system status
+      description: Returns current system status, including playback and hardware info.
+      responses:
+        '200':
+          description: System status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  playing:
+                    type: boolean
+                    example: false
+                  volume:
+                    type: integer
+                    example: 75
+                  temperature:
+                    type: number
+                    example: 45.2
+                  diskUsage:
+                    type: string
+                    example: "40%"
+        '500':
+          description: Error retrieving status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /temperature:
+    get:
+      summary: Get device temperature
+      description: Returns the current CPU temperature in Celsius.
+      responses:
+        '200':
+          description: Temperature info
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  temperature:
+                    type: number
+                    example: 45.2
+        '500':
+          description: Error retrieving temperature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /motion:
+    get:
+      summary: Get motion sensor status
+      description: Returns the current state of the motion sensor (if available).
+      responses:
+        '200':
+          description: Motion sensor status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  motion:
+                    type: boolean
+                    example: false
+        '500':
+          description: Error retrieving motion status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Trigger motion event
+      description: |
+        Triggers a motion event manually. **Warning:** This may execute scripts or change hardware state.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [triggerMotion]
+                  description: Action to trigger motion event
+                  example: triggerMotion
+      responses:
+        '200':
+          description: Motion event triggered
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error triggering motion event
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /upload:
+    post:
+      summary: Upload audio file
+      description: Uploads an audio file to the device. **Warning:** This writes to the device filesystem.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                filename:
+                  type: string
+                  example: song.mp3
+                data:
+                  type: string
+                  format: byte
+                  description: Base64-encoded file data
+      responses:
+        '200':
+          description: File uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  filename:
+                    type: string
+                    example: song.mp3
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error uploading file
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "An error occurred."
