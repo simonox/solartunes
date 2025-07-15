@@ -33,8 +33,10 @@ export async function POST(request: NextRequest) {
     // Create unique filename to avoid conflicts
     const timestamp = Date.now()
     const originalName = file.name.replace(/\.wav$/i, "")
-    const tempFileName = `${originalName}_temp_${timestamp}.wav`
-    const finalFileName = `${originalName}_${timestamp}.wav`
+    // Replace whitespace with dash for filenames
+    const safeOriginalName = originalName.replace(/\s+/g, "-")
+    const tempFileName = `${safeOriginalName}_temp_${timestamp}.wav`
+    const finalFileName = `${safeOriginalName}_${timestamp}.wav`
     const tempFilePath = join(musicDir, tempFileName)
     const finalFilePath = join(musicDir, finalFileName)
 
