@@ -374,7 +374,7 @@ The selected volume will be persisted in `~/Music/volume.json` file:
 
 You can view and edit the OpenAPI specification for SolarTunes online:
 
-[OpenAPI Editor (Swagger Editor, edit online)](https://editor.swagger.io/?url=[https://raw.githubusercontent.com/simonox/solartunes/main/openapi.yaml](https://editor.swagger.io/?url=https://raw.githubusercontent.com/simonox/solartunes/4ab9469cfaa2dafd0108d8c5e5dc20ddcd6d976c/openapi.yaml)
+[OpenAPI](https://editor.swagger.io/?url=https://raw.githubusercontent.com/simonox/solartunes/main/openapi.yaml)
 
 ## 🛡️ TODO / UNTESTED: SD Card Protection
 
