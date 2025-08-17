@@ -4,7 +4,7 @@ A sustainable sound player for Raspberry Pi with SolarPunk aesthetics. You can u
 
 
 ## 🚜 Hardware
-- 🍓 RaspberryPi 4
+- 🍓 RaspberryPi 4 (3-6 Watt)
 - 🎸 HiFiBerry Amp2 (Class-D, 2×30 W RMS)
 - 🔉 JBL Control 1 speakers
 - 🔋 Pb accumulator AGWI Standard 12LS-7.2(F1)
