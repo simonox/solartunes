@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
-import { exec } from "child_process";
-import { promisify } from "util";
+import { spawn } from "child_process";
 import { promises as fs } from "fs";
 import path from "path";
 import os from "os";
 
-const execAsync = promisify(exec);
-
-// Path to volume.json in ~/Music
+// Path to volume.conf in ~/Music
 const volumeFile = path.join(os.homedir(), "Music", "volume.conf");
 
-// Helper to ensure volume.json exists and read its value
+// Helper to ensure volume.conf exists and read its value
 async function getPersistedVolume(): Promise<number> {
   try {
     await fs.access(volumeFile);
@@ -34,6 +31,33 @@ async function savePersistedVolume(volume: number) {
   await fs.writeFile(volumeFile, JSON.stringify({ volume }), "utf-8");
 }
 
+/**
+ * Execute amixer safely using spawn (prevents command injection)
+ * @param volume Volume level 0-100
+ */
+function executeAmixer(volume: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const process = spawn("amixer", ["-c", "0", "sset", "Digital", `${volume}%`]);
+    
+    let stderr = "";
+    process.stderr?.on("data", (data) => {
+      stderr += data.toString();
+    });
+    
+    process.on("close", (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`amixer failed with code ${code}: ${stderr}`));
+      }
+    });
+    
+    process.on("error", (error) => {
+      reject(error);
+    });
+  });
+}
+
 export async function POST(request: Request) {
   try {
     const { volume } = await request.json();
@@ -42,15 +66,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid volume level. Must be between 0 and 100." }, { status: 400 });
     }
 
-    // Set system volume
-    const command = `amixer -c 0 sset 'Digital' ${volume}%`;
+    // Set system volume using spawn (safe from command injection)
     try {
-      await execAsync(command);
+      await executeAmixer(volume);
       // Save to file
       await savePersistedVolume(volume);
       return NextResponse.json({ success: true, volume });
     } catch (error) {
-      return NextResponse.json({ error: "Failed to set volume", details: error instanceof Error ? error.message : "Unknown error", command }, { status: 500 });
+      return NextResponse.json({ error: "Failed to set volume", details: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });
     }
   } catch (error) {
     return NextResponse.json({ error: "Failed to process volume request", details: error instanceof Error ? error.message : "Unknown error" }, { status: 500 });

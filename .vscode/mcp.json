@@ -1,0 +1,9 @@
+{
+	"servers": {
+		"oplane": {
+      		"url": "https://gravity.oplane.io/mcp/",
+			"type": "http"
+		}
+	},
+	"inputs": []
+}

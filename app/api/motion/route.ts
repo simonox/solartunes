@@ -2,10 +2,7 @@ import { NextResponse } from "next/server"
 import { readFile, writeFile } from "fs/promises"
 import { join } from "path"
 import { homedir } from "os"
-import { exec } from "child_process"
-import { promisify } from "util"
-
-const execAsync = promisify(exec)
+import { spawn } from "child_process"
 
 // Configuration file path
 const CONFIG_FILE = join(homedir(), "Music", "autoplay.conf")
@@ -57,6 +54,50 @@ async function saveConfig() {
   }
 }
 
+/**
+ * Execute webhook script safely using spawn (prevents command injection)
+ * @param scriptPath Path to the bash script
+ * @param timeoutMs Timeout in milliseconds
+ */
+function executeScript(scriptPath: string, timeoutMs: number = 30000): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const process = spawn("bash", [scriptPath], {
+      cwd: join(homedir(), "Music"),
+      timeout: timeoutMs
+    })
+    
+    let stdout = ""
+    let stderr = ""
+    
+    process.stdout?.on("data", (data) => {
+      stdout += data.toString()
+    })
+    
+    process.stderr?.on("data", (data) => {
+      stderr += data.toString()
+    })
+    
+    const timer = setTimeout(() => {
+      process.kill()
+      reject(new Error("Webhook script timeout"))
+    }, timeoutMs)
+    
+    process.on("close", (code) => {
+      clearTimeout(timer)
+      if (code === 0) {
+        resolve({ stdout, stderr })
+      } else {
+        reject(new Error(`Webhook script failed with code ${code}: ${stderr}`))
+      }
+    })
+    
+    process.on("error", (error) => {
+      clearTimeout(timer)
+      reject(error)
+    })
+  })
+}
+
 // Execute webhook script if configured
 async function executeWebhook() {
   try {
@@ -69,12 +110,8 @@ async function executeWebhook() {
 
       console.log("Executing webhook script:", scriptPath)
 
-      // Execute the script with bash and a timeout
-      const command = `bash "${scriptPath}"`
-      const { stdout, stderr } = await execAsync(command, {
-        timeout: 30000,
-        cwd: join(homedir(), "Music"), // Set working directory to ~/Music
-      })
+      // Execute the script with bash using spawn (safe from command injection)
+      const { stdout, stderr } = await executeScript(scriptPath, 30000)
 
       if (stdout) console.log("Webhook stdout:", stdout)
       if (stderr) console.log("Webhook stderr:", stderr)

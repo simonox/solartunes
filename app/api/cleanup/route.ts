@@ -1,8 +1,36 @@
 import { NextResponse } from "next/server"
-import { exec } from "child_process"
-import { promisify } from "util"
+import { spawn } from "child_process"
 
-const execAsync = promisify(exec)
+/**
+ * Execute a command safely using spawn
+ * @param command Command to execute
+ * @param args Arguments for the command
+ */
+function executeCommand(command: string, args: string[]): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const process = spawn(command, args);
+    
+    let stdout = "";
+    let stderr = "";
+    
+    process.stdout?.on("data", (data) => {
+      stdout += data.toString();
+    });
+    
+    process.stderr?.on("data", (data) => {
+      stderr += data.toString();
+    });
+    
+    process.on("close", (code) => {
+      // Don't reject on non-zero exit codes, just pass the output
+      resolve({ stdout, stderr });
+    });
+    
+    process.on("error", (error) => {
+      reject(error);
+    });
+  });
+}
 
 export async function POST() {
   try {
@@ -12,7 +40,7 @@ export async function POST() {
 
     // 1. Kill all audio processes
     try {
-      await execAsync("pkill -KILL -f 'aplay|mpg123|vlc|mplayer'")
+      await executeCommand("pkill", ["-KILL", "-f", "aplay|mpg123|vlc|mplayer"])
       cleanupResults.push("Killed all audio processes")
     } catch (error) {
       cleanupResults.push("No audio processes to kill")
@@ -20,7 +48,7 @@ export async function POST() {
 
     // 2. Reset ALSA
     try {
-      await execAsync("alsactl restore")
+      await executeCommand("alsactl", ["restore"])
       cleanupResults.push("ALSA configuration restored")
     } catch (error) {
       cleanupResults.push("ALSA restore failed (may not be available)")
@@ -28,7 +56,8 @@ export async function POST() {
 
     // 3. Reload audio modules (if possible)
     try {
-      await execAsync("sudo modprobe -r snd_pcm && sudo modprobe snd_pcm")
+      await executeCommand("sudo", ["modprobe", "-r", "snd_pcm"])
+      await executeCommand("sudo", ["modprobe", "snd_pcm"])
       cleanupResults.push("Audio modules reloaded")
     } catch (error) {
       cleanupResults.push("Module reload failed (requires sudo)")
@@ -36,15 +65,20 @@ export async function POST() {
 
     // 4. Clear any stuck ALSA states
     try {
-      await execAsync("amixer -c 0 sset 'Master' 0% && amixer -c 0 sset 'Master' 50%")
+      await executeCommand("amixer", ["-c", "0", "sset", "Master", "0%"])
+      await executeCommand("amixer", ["-c", "0", "sset", "Master", "50%"])
       cleanupResults.push("ALSA mixer reset")
     } catch (error) {
       cleanupResults.push("Mixer reset failed")
     }
 
     // 5. Final status check
-    const { stdout: finalStatus } = await execAsync("pgrep -f aplay || echo 'No aplay processes'")
-    cleanupResults.push(`Final check: ${finalStatus.trim()}`)
+    try {
+      const { stdout: finalStatus } = await executeCommand("pgrep", ["-f", "aplay"])
+      cleanupResults.push(`Final check: ${finalStatus.trim() || "No aplay processes"}`)
+    } catch (error) {
+      cleanupResults.push("Final check failed")
+    }
 
     return NextResponse.json({
       success: true,
